@@ -1,0 +1,46 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# IDE and generated project files
+.vs/
+.idea/
+*.csproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity crash reports and profiler captures
+sysinfo.txt
+*.stacktrace
+*.raw
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build artifacts
+*.apk
+*.aab
+*.unitypackage
+*.app
+*.exe
+*.dll
+*.zip
+
+# Local tooling state
+.codex/
+.agents/

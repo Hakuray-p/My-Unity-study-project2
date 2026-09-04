@@ -1,0 +1,450 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 989cad0eb51899d4aa8af2399ad5784c, type: 3}
+  m_Name: ArkCardsDatabase
+  m_EditorClassIdentifier: 
+  cards:
+  - index: 1001
+    cardType: 1
+    name: "\u5FB7\u514B\u8428\u65AF"
+    cost: 2
+    attack: 3
+    health: 2
+    image: {fileID: 21300000, guid: 16ed2831b3a681a45991fbea7abb2916, type: 3}
+    effectDescription: "\u51B2\u950B\n\u9000\u573A\uFF1A\u52A01\u90E8\u7F72\u70B9\u4E0A\u9650"
+    triggerType: 4
+    effectType: 10
+    effectValue: 01000000
+    effectCondition: 0
+    passiveType: 1
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1002
+    cardType: 1
+    name: "\u63A8\u8FDB\u4E4B\u738B"
+    cost: 3
+    attack: 2
+    health: 3
+    image: {fileID: 21300000, guid: d693ca6b8fe054945865a7f13b9567a9, type: 3}
+    effectDescription: "\u6A2A\u626B\\n\u56DE\u5408\u5F00\u59CB\u81EA\u8EAB+1\u653B"
+    triggerType: 1
+    effectType: 5
+    effectValue: 0100000000000000
+    effectCondition: 0
+    passiveType: 3
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1003
+    cardType: 1
+    name: "\u86C7\u5C60\u7BB1"
+    cost: 3
+    attack: 1
+    health: 3
+    image: {fileID: 21300000, guid: 4164de16f9bd314458992073fb5bc2f1, type: 3}
+    effectDescription: "\u5B88\u62A4\\n\u53D7\u4F24\u65F6\u62BD1\u5F20\u724C"
+    triggerType: 5
+    effectType: 3
+    effectValue: 01000000
+    effectCondition: 0
+    passiveType: 2
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1004
+    cardType: 1
+    name: "\u661F\u718A"
+    cost: 5
+    attack: 4
+    health: 5
+    image: {fileID: 21300000, guid: 5015287d22febd949ba88b2185b91cc0, type: 3}
+    effectDescription: "\u5B88\u62A4\\n\u53D7\u4F24\u65F6\u81EA\u8EAB+1/+1"
+    triggerType: 5
+    effectType: 5
+    effectValue: 0100000001000000
+    effectCondition: 0
+    passiveType: 2
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1005
+    cardType: 1
+    name: "\u80FD\u5929\u4F7F"
+    cost: 4
+    attack: 5
+    health: 3
+    image: {fileID: 21300000, guid: 1d95cbcba77f46540ab76d73d9bf9d95, type: 3}
+    effectDescription: "\u53D6\u80DC\uFF1A\u5BF9\u968F\u673A1\u540D\u654C\u65B9\u5E72\u5458\u9020\u62102\u70B9\u4F24\u5BB3"
+    triggerType: 6
+    effectType: 13
+    effectValue: 0100000002000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1006
+    cardType: 1
+    name: W
+    cost: 7
+    attack: 8
+    health: 5
+    image: {fileID: 21300000, guid: 6101c4b445c463240872942fae503d4e, type: 3}
+    effectDescription: "\u56DE\u5408\u7ED3\u675F\uFF1A\u5BF9\u968F\u673A2\u540D\u654C\u65B9\u5E72\u5458\u9020\u62103\u70B9\u4F24\u5BB3"
+    triggerType: 2
+    effectType: 13
+    effectValue: 0200000003000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1007
+    cardType: 1
+    name: "\u963F\u7C73\u5A05"
+    cost: 8
+    attack: 8
+    health: 6
+    image: {fileID: 21300000, guid: 1b95c6e2ad9990b4490945bc13526dfd, type: 3}
+    effectDescription: "\u53D6\u80DC\uFF1A\u81EA\u8EAB+2/+1"
+    triggerType: 6
+    effectType: 5
+    effectValue: 0200000001000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 8300000, guid: 0f8daecb58d4bbd4bad7c7dd12b05c75, type: 3}
+    enterAudio: {fileID: 8300000, guid: 82de141311df4c94b9de25baf5b0690a, type: 3}
+  - index: 1008
+    cardType: 1
+    name: "\u827E\u96C5\u6CD5\u62C9"
+    cost: 9
+    attack: 7
+    health: 7
+    image: {fileID: 21300000, guid: f2711d4a594c4f545bf55fc8fb115ff6, type: 3}
+    effectDescription: "\u767B\u573A\uFF1A\u5BF9\u6240\u6709\u654C\u65B9\u5E72\u5458\u9020\u62105\u70B9\u4F24\u5BB3"
+    triggerType: 3
+    effectType: 14
+    effectValue: 05000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 8300000, guid: 125731fe4dcf97f418f77864da1d1b48, type: 3}
+    enterAudio: {fileID: 8300000, guid: e2574b4e184cef84e8b003033c36fdf2, type: 3}
+  - index: 1009
+    cardType: 1
+    name: "\u534E\u6CD5\u7433"
+    cost: 4
+    attack: 3
+    health: 4
+    image: {fileID: 21300000, guid: 7d42c38eec5f4214aba629e7806792f6, type: 3}
+    effectDescription: "\u9000\u573A\uFF1A\u9009\u62E91\u540D\u654C\u4EBA-4/-0"
+    triggerType: 4
+    effectType: 15
+    effectValue: fcffffff00000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1010
+    cardType: 1
+    name: "\u95EA\u7075"
+    cost: 8
+    attack: 6
+    health: 8
+    image: {fileID: 21300000, guid: 2c9caeddf25bcab4c94537aec32d5288, type: 3}
+    effectDescription: "\u56DE\u5408\u5F00\u59CB\u65F6\uFF0C\u6CBB\u7597\u968F\u673A1\u540D\u53CB\u65B9\u5E72\u54583\u70B9\u751F\u547D\u503C"
+    triggerType: 1
+    effectType: 16
+    effectValue: 0100000003000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1011
+    cardType: 1
+    name: "\u62C9\u666E\u5170\u5FB7"
+    cost: 4
+    attack: 5
+    health: 4
+    image: {fileID: 21300000, guid: 2d80a957a19eb194cbb36b2b650474bb, type: 3}
+    effectDescription: "\u767B\u573A\uFF1A\u9009\u62E91\u540D\u654C\u65B9\u5E72\u5458\u6548\u679C\u65E0\u6548\u5316"
+    triggerType: 3
+    effectType: 17
+    effectValue: 
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 8300000, guid: cf26b26c578441b48be7c5eb3bfb6975, type: 3}
+    enterAudio: {fileID: 8300000, guid: b0f5d76c4df0f16428138ba61fe29baf, type: 3}
+  - index: 1012
+    cardType: 1
+    name: "\u53F2\u5C14\u7279\u5C14"
+    cost: 6
+    attack: 4
+    health: 2
+    image: {fileID: 21300000, guid: 8e0d39c948a673f42847e25fe1673b24, type: 3}
+    effectDescription: "\u91CA\u653E\uFF1A\u5BF91\u540D\u654C\u65B9\u5E72\u5458\u9020\u621010\u70B9\u4F24\u5BB3"
+    triggerType: 7
+    effectType: 1
+    effectValue: 0a000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1013
+    cardType: 1
+    name: "\u963F\u6D88"
+    cost: 1
+    attack: 1
+    health: 1
+    image: {fileID: 21300000, guid: 9ae2890cae725594d8b98c084e6eb24a, type: 3}
+    effectDescription: "\u767B\u573A\uFF1A\u9009\u62E91\u540D\u5176\u4ED6\u5E72\u5458\u8FD4\u56DE\u624B\u724C"
+    triggerType: 3
+    effectType: 18
+    effectValue: 
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1014
+    cardType: 1
+    name: "\u783E"
+    cost: 2
+    attack: 1
+    health: 1
+    image: {fileID: 21300000, guid: 3cdebf3f6f5f43046a8317a4d42a07d0, type: 3}
+    effectDescription: "\u9000\u573A\uFF1A\u9009\u62E9\u5DF1\u65B9\u5893\u5730\u4E2D1\u5F20\u5E72\u5458\u724C\u52A0\u5165\u624B\u724C"
+    triggerType: 4
+    effectType: 19
+    effectValue: 
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1015
+    cardType: 1
+    name: "\u7A7A"
+    cost: 3
+    attack: 0
+    health: 2
+    image: {fileID: 21300000, guid: 3d31ab72ee0c93b42a1e4f64ff1dc304, type: 3}
+    effectDescription: "\u56DE\u5408\u7ED3\u675F\u65F6\uFF1A\u6240\u6709\u53CB\u65B9\u5E72\u5458+1/+0"
+    triggerType: 2
+    effectType: 9
+    effectValue: 0100000000000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1016
+    cardType: 1
+    name: "\u5B89\u6D01\u8389\u5A1C"
+    cost: 2
+    attack: 1
+    health: 2
+    image: {fileID: 21300000, guid: 66affa7238e6f5844818bfa4a0655ada, type: 3}
+    effectDescription: "\u767B\u573A\uFF1A\u5BF9\u624B\u968F\u673A\u4E22\u5F031\u5F20\u624B\u724C"
+    triggerType: 3
+    effectType: 30
+    effectValue: 01000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1101
+    cardType: 2
+    name: "\u4E24\u9762\u5305\u5939\u829D\u58EB"
+    cost: 2
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 718442aec0ac2424e842ec274b942fac, type: 3}
+    effectDescription: "\u6211\u65B9\u573A\u4E0A\u67092\u540D\u5E72\u5458\u65F6\u624D\u80FD\u53D1\u52A8\uFF0C\u7834\u574F\u654C\u65B91\u540D\u5E72\u5458"
+    triggerType: 0
+    effectType: 20
+    effectValue: 
+    effectCondition: 1
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1102
+    cardType: 2
+    name: "\u8D85\u5927\u676F"
+    cost: 4
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 838b22dd37f0be6479920f16d5987d4d, type: 3}
+    effectDescription: "\u4ECE\u5361\u7EC4\u91CC\u90091\u540D\u90E8\u7F72\u8D398\u4EE5\u4E0A\u7684\u5E72\u5458\u52A0\u5165\u624B\u724C"
+    triggerType: 0
+    effectType: 21
+    effectValue: 08000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1103
+    cardType: 2
+    name: GET ALL
+    cost: 10
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 16ccc4dd689b4374a8ebb2e43877e965, type: 3}
+    effectDescription: "\u5BF9\u654C\u65B91\u540D\u5E72\u5458\u9020\u62105\u70B9\u4F24\u5BB3\uFF0C\u53CB\u65B9\u535A\u58EB\u6CBB\u75975\u70B9\uFF0C\u62BD5\u5F20\u724C"
+    triggerType: 0
+    effectType: 22
+    effectValue: 
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1104
+    cardType: 2
+    name: "\u5FB7\u514B\u8428\u65AF\u505A\u7684\u5230\u5417\uFF1F"
+    cost: 1
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 87d2b7785e91a714d8d4618bd3b91581, type: 3}
+    effectDescription: "\u9009\u62E91\u540D\u654C\u65B9\u5E72\u5458\u6548\u679C\u65E0\u6548\u5316"
+    triggerType: 0
+    effectType: 17
+    effectValue: 
+    effectCondition: 4
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1105
+    cardType: 2
+    name: "\u731B\u731B\u6C2A\u91D1"
+    cost: 3
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 40900c708f35a904c9612f4f77ee4535, type: 3}
+    effectDescription: "\u4ECE\u5361\u7EC4\u91CC\u5C061\u540D\u767B\u573A\u6548\u679C\u7684\u5E72\u5458\u52A0\u5165\u624B\u724C"
+    triggerType: 0
+    effectType: 23
+    effectValue: 03000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1106
+    cardType: 2
+    name: "\u5F02\u683C\u53D8\u8EAB"
+    cost: 2
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 7360d1b90bf24ea4bb4ec41671296417, type: 3}
+    effectDescription: "\u9009\u62E9\u53CB\u65B9\u573A\u4E0A1\u540D\u5E72\u5458\uFF0C\u53D8\u4E3A\u5F02\u683C\u5F62\u6001\uFF08\u751F\u547D\u503C\u56DE\u6EE1\uFF09"
+    triggerType: 0
+    effectType: 24
+    effectValue: 
+    effectCondition: 3
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1107
+    cardType: 2
+    name: "\u62A2\u6551\u4E00\u4E0B"
+    cost: 7
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: e5f51f51a1721d74dbe35d3b7376267d, type: 3}
+    effectDescription: "\u590D\u6D3B1\u540D\u53CB\u65B9\u5E72\u5458"
+    triggerType: 0
+    effectType: 25
+    effectValue: 
+    effectCondition: 6
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1108
+    cardType: 2
+    name: "\u70C8\u706B\u62D4\u5200"
+    cost: 5
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 5f274785a39976a4dbda667b7a995fea, type: 3}
+    effectDescription: "\u9009\u62E9\u53CB\u65B9\u573A\u4E0A1\u540D\u8840\u91CF2\u70B9\u4EE5\u4E0B\u7684\u5E72\u5458\uFF0C\u653B\u51FB\u529B+10"
+    triggerType: 0
+    effectType: 28
+    effectValue: 0a00000000000000
+    effectCondition: 5
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1109
+    cardType: 2
+    name: "\u5E0C\u671B\u4E4B\u82B1"
+    cost: 2
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 505ac2801d909d6499cd302195929b64, type: 3}
+    effectDescription: "\u9009\u62E91\u540D\u654C\u65B9\u5E72\u5458\u8FD4\u56DE\u624B\u724C"
+    triggerType: 0
+    effectType: 12
+    effectValue: 
+    effectCondition: 4
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1110
+    cardType: 2
+    name: "\u4E0B\u5348\u8336\u65F6\u95F4"
+    cost: 0
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 1143294b087c0034d95adf02ec66dfc9, type: 3}
+    effectDescription: "\u5C06\u6211\u65B91\u540D\u5E72\u5458\u8FD4\u56DE\u624B\u724C\uFF0C\u8865\u51452\u70B9\u90E8\u7F72\u70B9"
+    triggerType: 0
+    effectType: 27
+    effectValue: 02000000
+    effectCondition: 5
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1111
+    cardType: 2
+    name: "\u65E0\u654C\u7684\u5C0F\u706B\u9F99"
+    cost: 6
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 836b9514dcd288f4ead1fe45c0ce6144, type: 3}
+    effectDescription: "\u5BF9\u6240\u6709\u5E72\u5458\u9020\u62107\u70B9\u4F24\u5BB3"
+    triggerType: 0
+    effectType: 8
+    effectValue: 07000000
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1112
+    cardType: 2
+    name: "\u4F60\u9192\u5566"
+    cost: 2
+    attack: 0
+    health: 0
+    image: {fileID: 21300000, guid: 0863260622d53e14cbd9974e5d2e7c46, type: 3}
+    effectDescription: "\u4E22\u5F032\u5F20\u624B\u724C\uFF0C\u62BD3\u5F20\u724C"
+    triggerType: 0
+    effectType: 31
+    effectValue: 0200000003000000
+    effectCondition: 2
+    passiveType: 0
+    attackAudio: {fileID: 0}
+    enterAudio: {fileID: 0}
+  - index: 1017
+    cardType: 1
+    name: "\u8FD1\u536B\u963F\u7C73\u5A05"
+    cost: 8
+    attack: 6
+    health: 8
+    image: {fileID: 21300000, guid: b204484532e50b546bc56e281592beaa, type: 3}
+    effectDescription: "\u5F97\u80DC\uFF1A\u53EF\u4EE5\u518D\u653B\u51FB1\u6B21"
+    triggerType: 6
+    effectType: 29
+    effectValue: 
+    effectCondition: 0
+    passiveType: 0
+    attackAudio: {fileID: 8300000, guid: 3f3cee25e43952540b11862e7ef3130f, type: 3}
+    enterAudio: {fileID: 8300000, guid: a4c1faf377c989c4aa3452f1c7d40770, type: 3}
