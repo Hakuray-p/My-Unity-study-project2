@@ -168,7 +168,6 @@ public sealed class HDAdventureRuntime : MonoBehaviour
 
         if (!worldInitialized)
         {
-            CreateWorldActors();
             CreateUi();
             worldInitialized = true;
         }
@@ -207,87 +206,6 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         if (cameraFollow == null) ConfigureCameraFollow();
         if (cameraFollow != null) cameraFollow.Bind(player, cameraOffset, cameraRotation);
         adventureCamera.transform.SetPositionAndRotation(player.position + cameraOffset, cameraRotation);
-    }
-
-    private void CreateWorldActors()
-    {
-        Transform root = new GameObject("First Light Interactions").transform;
-        Vector3 origin = player.position;
-        CreateActor("练习赛教练", "first_light_practice", WorldInteractionType.Match, origin + new Vector3(-7f, 0f, -1f), new Color(0.2f, 0.8f, 0.7f), root, "Ark Image/NPC/npc_archer_idle");
-        CreateActor("河畔赛事 NPC", "first_light_public_01", WorldInteractionType.Match, origin + new Vector3(7f, 0f, 2f), new Color(0.3f, 0.65f, 0.9f), root, "Ark Image/NPC/npc_black_cat_idle");
-        CreateActor("灯会赛事 NPC", "first_light_public_02", WorldInteractionType.Match, origin + new Vector3(-7f, 0f, 10f), new Color(0.95f, 0.65f, 0.25f), root, "Ark Image/NPC/npc_catgirl_idle");
-        CreateActor("落日赛事 NPC", "first_light_public_03", WorldInteractionType.Match, origin + new Vector3(7f, 0f, 10f), new Color(0.9f, 0.4f, 0.3f), root, "Ark Image/NPC/npc_penguin_idle");
-        CreateActor("城市冠军", "first_light_champion", WorldInteractionType.Match, origin + new Vector3(0f, 0f, 20f), new Color(0.95f, 0.3f, 0.5f), root);
-        CreateActor("卡牌商人", "first_light_shop", WorldInteractionType.Shop, origin + new Vector3(10f, 0f, 15f), new Color(0.95f, 0.75f, 0.2f), root);
-        CreateActor("街角信使", "first_light_event", WorldInteractionType.Event, origin + new Vector3(-10f, 0f, 15f), new Color(0.65f, 0.45f, 0.9f), root);
-    }
-
-    private void CreateActor(string label, string id, WorldInteractionType type, Vector3 position, Color color, Transform parent, string idleResource = null)
-    {
-        GameObject actor = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        actor.name = label;
-        actor.transform.SetParent(parent);
-        actor.transform.position = position;
-        actor.transform.localScale = new Vector3(0.55f, 0.9f, 0.55f);
-        Renderer placeholderRenderer = actor.GetComponent<Renderer>();
-        if (placeholderRenderer != null)
-        {
-            placeholderRenderer.material.color = color;
-            placeholderRenderer.enabled = string.IsNullOrEmpty(idleResource);
-        }
-        CapsuleCollider placeholderCollider = actor.GetComponent<CapsuleCollider>();
-        if (placeholderCollider != null) placeholderCollider.enabled = false;
-        SpriteRenderer spriteRenderer = actor.AddComponent<SpriteRenderer>();
-        spriteRenderer.sortingOrder = 45;
-        spriteRenderer.color = color;
-        if (!string.IsNullOrEmpty(idleResource))
-        {
-            Sprite[] idleFrames = CreateNpcIdleFrames(idleResource);
-            if (idleFrames != null && idleFrames.Length > 0)
-            {
-                spriteRenderer.color = Color.white;
-                spriteRenderer.sprite = idleFrames[0];
-                actor.transform.localScale = Vector3.one;
-                WorldInteractionActor animatedInteraction = actor.AddComponent<WorldInteractionActor>();
-                animatedInteraction.Bind(this, id, label, type);
-                animatedInteraction.SetIdleFrames(idleFrames, 8f);
-                SphereCollider animatedTrigger = actor.AddComponent<SphereCollider>();
-                animatedTrigger.isTrigger = true;
-                animatedTrigger.radius = 1.8f;
-                return;
-            }
-        }
-        SphereCollider trigger = actor.AddComponent<SphereCollider>();
-        trigger.isTrigger = true;
-        trigger.radius = 1.8f;
-        WorldInteractionActor interaction = actor.AddComponent<WorldInteractionActor>();
-        interaction.Bind(this, id, label, type);
-    }
-
-    private Sprite[] CreateNpcIdleFrames(string resourcePath)
-    {
-        Texture2D sheet = Resources.Load<Texture2D>(resourcePath);
-        if (sheet == null) return null;
-
-        const int columns = 3;
-        const int rows = 3;
-        const int frameCount = 8;
-        int cellWidth = sheet.width / columns;
-        int cellHeight = sheet.height / rows;
-        if (cellWidth < 1 || cellHeight < 1) return null;
-
-        Sprite[] frames = new Sprite[frameCount];
-        float pixelsPerUnit = cellHeight / 2.2f;
-        for (int index = 0; index < frameCount; index++)
-        {
-            int rowFromTop = index / columns;
-            int column = index % columns;
-            int textureRow = rows - 1 - rowFromTop;
-            Rect rect = new Rect(column * cellWidth, textureRow * cellHeight, cellWidth, cellHeight);
-            frames[index] = Sprite.Create(sheet, rect, new Vector2(0.5f, 0.08f), pixelsPerUnit);
-            frames[index].name = resourcePath + "_frame_" + index;
-        }
-        return frames;
     }
 
     private void CreateUi()
