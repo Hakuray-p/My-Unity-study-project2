@@ -16,6 +16,7 @@ public static class StageCatalog
                 Cell("riverside", 3, 2, StageNodeType.Battle, "first_light_public_01"),
                 Cell("market", 3, 1, StageNodeType.Shop, "first_light_shop"),
                 Cell("lantern", 4, 2, StageNodeType.Battle, "first_light_public_02"),
+                Cell("sunset", 4, 1, StageNodeType.Battle, "first_light_public_03"),
                 Cell("champion", 5, 2, StageNodeType.Champion, "first_light_champion"),
                 Cell("exit", 6, 2, StageNodeType.Exit, null)
             }),
@@ -101,3 +102,5 @@ public static class StageCatalog
         }
     }
 }
+
+

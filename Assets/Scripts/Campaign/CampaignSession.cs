@@ -18,6 +18,8 @@ public class CampaignSession : MonoBehaviour
     public event Action ProgressChanged;
 
     public bool HasLegalDeck => State != null && IsLegalDeck(State.lastValidDeckCardIds);
+    public bool HasPendingBattle => State != null && State.pendingBattle != null &&
+                                    !string.IsNullOrEmpty(State.pendingBattle.matchId);
 
     public string GetDeckValidationError(IList<int> deck)
     {
@@ -181,7 +183,7 @@ public class CampaignSession : MonoBehaviour
     public void SelectCity(string cityId)
     {
         CityData city = CampaignCatalog.GetCity(cityId);
-        if (city == null || !IsCityUnlocked(cityId) || State.pendingBattle != null) return;
+        if (city == null || !IsCityUnlocked(cityId) || HasPendingBattle) return;
 
         State.currentCityId = cityId;
         CitySaveData cityState = GetCityState(cityId);
@@ -359,7 +361,7 @@ public class CampaignSession : MonoBehaviour
     public bool CanStartMatch(MatchData match)
     {
         if (match == null || !IsCityUnlocked(match.cityId)) return false;
-        if (State.pendingBattle != null) return false;
+        if (HasPendingBattle) return false;
         if (!HasLegalDeck) return false;
         if (match.matchType == MatchType.Champion)
         {

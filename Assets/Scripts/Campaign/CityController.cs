@@ -84,7 +84,7 @@ public class CityController : MonoBehaviour
         }
 
         if (nearestPoint != null && Input.GetKeyDown(KeyCode.E)) TryStartMatch(nearestPoint.matchId);
-        if (Input.GetKeyDown(KeyCode.Escape)) SceneFlowService.LoadWorldMap();
+        if (Input.GetKeyDown(KeyCode.Escape)) { /* Pause UI owns Esc in the adventure runtime. */ }
     }
 
     public void TryStartMatch(string matchId)
@@ -104,7 +104,6 @@ public class CityController : MonoBehaviour
         GUI.Box(new Rect(20f, 18f, 390f, 108f), city != null ? city.displayName : cityId);
         GUI.Label(new Rect(38f, 48f, 350f, 22f), $"League points: {cityState.leaguePoints}/{(city != null ? city.requiredPoints : 0)}");
         GUI.Label(new Rect(38f, 74f, 350f, 22f), "WASD / arrows: explore     E: talk and play");
-        if (GUI.Button(new Rect(38f, 98f, 150f, 22f), "World map")) SceneFlowService.LoadWorldMap();
 
         float y = 145f;
         if (city != null)
@@ -149,3 +148,5 @@ public class CityMatchPoint : MonoBehaviour
         if (city != null) city.TryStartMatch(matchId);
     }
 }
+
+

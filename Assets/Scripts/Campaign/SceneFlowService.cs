@@ -11,7 +11,7 @@ public static class SceneFlowService
     public static void ContinueGame()
     {
         CampaignSession.Instance.LoadOrCreate();
-        if (CampaignSession.Instance.State.pendingBattle != null)
+        if (CampaignSession.Instance.HasPendingBattle)
             SceneManager.LoadScene("BattleScene");
         else
             LoadAdventureScene();

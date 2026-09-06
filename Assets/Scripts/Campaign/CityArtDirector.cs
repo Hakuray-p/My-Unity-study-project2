@@ -46,7 +46,7 @@ public class CityArtDirector : MonoBehaviour
         {
             CreateMatchMarker("Practice Table", "first_light_practice", new Vector3(-7f, 0.7f, -1f), new Color(0.31f, 0.82f, 0.70f), artRoot);
             CreateMatchMarker("Riverside Open", "first_light_public_01", new Vector3(7f, 0.7f, 2f), new Color(0.36f, 0.64f, 0.90f), artRoot);
-            CreateMatchMarker("Lantern Open", "first_light_public_02", new Vector3(-7f, 0.7f, 10f), new Color(0.94f, 0.65f, 0.27f), artRoot);
+            CreateMatchMarker("Lantern / Sunset Open", "first_light_public_02", new Vector3(-7f, 0.7f, 10f), new Color(0.94f, 0.65f, 0.27f), artRoot);
             CreateMatchMarker("City Champion", "first_light_champion", new Vector3(0f, 0.7f, 20f), new Color(0.92f, 0.35f, 0.48f), artRoot);
         }
 
@@ -101,3 +101,4 @@ public class CityArtDirector : MonoBehaviour
         point.displayName = label;
     }
 }
+

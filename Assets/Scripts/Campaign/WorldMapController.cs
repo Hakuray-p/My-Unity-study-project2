@@ -82,7 +82,7 @@ public class WorldMapController : MonoBehaviour
             y += 44f;
         }
 
-        if (CampaignSession.Instance.State.pendingBattle != null &&
+        if (CampaignSession.Instance.HasPendingBattle &&
             GUI.Button(new Rect(42f, y + 8f, 300f, 34f), "Resume pending match"))
         {
             SceneFlowService.ResumePendingBattle();

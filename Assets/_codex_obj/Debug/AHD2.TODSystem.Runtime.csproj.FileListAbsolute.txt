@@ -1,0 +1,5 @@
+D:\Unity Card War\ArkCard\Temp\bin\Debug\AHD2.TODSystem.Runtime.dll
+D:\Unity Card War\ArkCard\Assets\_codex_obj\Debug\AHD2.TODSystem.Runtime.csproj.AssemblyReference.cache
+D:\Unity Card War\ArkCard\Assets\_codex_obj\Debug\AHD2.TODSystem.Runtime.csproj.CoreCompileInputs.cache
+D:\Unity Card War\ArkCard\Assets\_codex_obj\Debug\AHD2.TODSystem.Runtime.dll
+D:\Unity Card War\ArkCard\Assets\_codex_obj\Debug\AHD2.TODSystem.Runtime.pdb

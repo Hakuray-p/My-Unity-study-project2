@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
@@ -55,10 +56,19 @@ public sealed class HDAdventureRuntime : MonoBehaviour
     private string statusMessage = string.Empty;
     private float statusUntil;
     private WorldInteractionActor dialogueActor;
+    private WorldInteractionActor nearestActor;
+    private readonly List<WorldInteractionActor> actors = new List<WorldInteractionActor>();
+    private readonly Dictionary<string, Canvas> dialogueCanvases = new Dictionary<string, Canvas>();
+    private readonly HashSet<Button> dialogueButtonsBound = new HashSet<Button>();
     private bool dialogueOpen;
     private bool shopOpen;
     private bool deckOpen;
     private bool eventOpen;
+    private Canvas pauseCanvas;
+    private bool pauseOpen;
+    private bool pauseCanvasBound;
+    private float timeScaleBeforePause = 1f;
+    [SerializeField] private float dialogueCloseDistance = 3.5f;
     private Vector2 shopScroll;
     private List<int> deckDraft = new List<int>();
 
@@ -71,6 +81,11 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         ConfigureCamera();
         DisableAdventureDepthOfField();
         TryInitializeAdventure();
+        BindDialogueCanvases();
+        BindPauseCanvas();
+        CatDialogueBattleButton catButton = gameObject.GetComponent<CatDialogueBattleButton>();
+        if (catButton == null) catButton = gameObject.AddComponent<CatDialogueBattleButton>();
+        catButton.Bind();
     }
 
     private void OnDestroy()
@@ -169,6 +184,7 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         if (!worldInitialized)
         {
             CreateUi();
+            CreateWorldActors();
             worldInitialized = true;
         }
     }
@@ -188,8 +204,8 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         cameraRotation = adventureCamera.transform.rotation;
         Vector3 cameraForward = cameraRotation * Vector3.forward;
         Vector3 focusPoint = player.position + Vector3.up * 0.9f;
-        float cameraDistance = Vector3.Distance(focusPoint, adventureCamera.transform.position);
-        cameraOffset = Vector3.up * 0.9f - cameraForward.normalized * cameraDistance;
+        float cameraDistance = 8f;
+        cameraOffset = Vector3.up * 1.2f - cameraForward.normalized * cameraDistance;
     }
 
     private void ConfigureCameraFollow()
@@ -232,6 +248,272 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         hudText.rectTransform.sizeDelta = new Vector2(850f, 150f);
     }
 
+    private void BindDialogueCanvases()
+    {
+        dialogueCanvases.Clear();
+        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
+        foreach (Canvas dialogueCanvas in canvases)
+        {
+            if (dialogueCanvas == null) continue;
+            string name = dialogueCanvas.gameObject.name;
+            if (name.Contains("猫姬")) dialogueCanvases["猫姬"] = dialogueCanvas;
+            else if (name.Contains("企鹅")) dialogueCanvases["企鹅"] = dialogueCanvas;
+            else if (name.Contains("神秘弓兵")) dialogueCanvases["神秘弓兵"] = dialogueCanvas;
+            else if (name.Contains("黑猫少女")) dialogueCanvases["黑猫少女"] = dialogueCanvas;
+            else if (name.Contains("阿米娅")) dialogueCanvases["阿米娅"] = dialogueCanvas;
+        }
+
+        foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
+        {
+            if (dialogueCanvas == null) continue;
+            if (dialogueCanvas.GetComponent<GraphicRaycaster>() == null)
+                dialogueCanvas.gameObject.AddComponent<GraphicRaycaster>();
+            dialogueCanvas.sortingOrder = Mathf.Max(dialogueCanvas.sortingOrder, 200);
+            dialogueCanvas.gameObject.SetActive(false);
+            BindDialogueButtons(dialogueCanvas);
+        }
+    }
+
+    private void BindDialogueButtons(Canvas dialogueCanvas)
+    {
+        if (dialogueCanvas == null) return;
+        Button[] buttons = dialogueCanvas.GetComponentsInChildren<Button>(true);
+        foreach (Button button in buttons)
+        {
+            if (button == null) continue;
+            string name = button.gameObject.name;
+            if (!IsChallengeButtonName(name) && !IsShopButtonName(name) &&
+                !IsEventButtonName(name) && !IsLeaveButtonName(name) && !IsChatButtonName(name)) continue;
+            Canvas ownerCanvas = button.GetComponentInParent<Canvas>();
+            if (ownerCanvas != null && ownerCanvas.gameObject.name.Contains("猫姬") && IsChallengeButtonName(name))
+                continue;
+            if (dialogueButtonsBound.Contains(button)) continue;
+            dialogueButtonsBound.Add(button);
+            Button capturedButton = button;
+            Graphic[] graphics = button.GetComponentsInChildren<Graphic>(true);
+            foreach (Graphic graphic in graphics)
+            {
+                if (graphic != null && graphic.gameObject != button.gameObject)
+                    graphic.raycastTarget = false;
+            }
+            button.onClick.AddListener(() => HandleDialogueButton(capturedButton));
+        }
+    }
+
+    private void HandleDialogueButton(Button button)
+    {
+        if (button == null) return;
+        string name = button.gameObject.name;
+        if (IsLeaveButtonName(name))
+        {
+            ClosePanels();
+            return;
+        }
+        if (dialogueActor == null) return;
+
+        Canvas activeCanvas = button.GetComponentInParent<Canvas>();
+        if (IsChatButtonName(name))
+        {
+            ShowChatDialogue(activeCanvas, dialogueActor);
+            return;
+        }
+        if (IsEventButtonName(name))
+        {
+            // 事件内容暂未接入，保留当前对话框，避免误进入旧的事件面板。
+            Debug.Log("事件按钮暂未启用：" + dialogueActor.displayName);
+            return;
+        }
+        if (IsChallengeButtonName(name))
+        {
+            Debug.Log("点击挑战按钮：" + name);
+            string matchId = dialogueActor.id;
+            if (activeCanvas != null && activeCanvas.gameObject.name.Contains("猫姬"))
+                matchId = "first_light_practice";
+            if (activeCanvas != null)
+            {
+                Button[] challengeButtons = activeCanvas.GetComponentsInChildren<Button>(true);
+                int challengeIndex = 0;
+                foreach (Button challengeButton in challengeButtons)
+                {
+                    if (challengeButton == null || !IsChallengeButtonName(challengeButton.gameObject.name)) continue;
+                    if (challengeButton == button) break;
+                    challengeIndex++;
+                }
+                if (challengeIndex > 0 && !activeCanvas.gameObject.name.Contains("猫姬"))
+                    matchId = dialogueActor.alternateId;
+            }
+            if (string.IsNullOrEmpty(matchId))
+            {
+                ShowStatus("这个挑战暂未配置");
+                return;
+            }
+            ActivateMatch(matchId);
+        }
+        else if (IsShopButtonName(name))
+        {
+            dialogueOpen = false;
+            if (activeCanvas != null) activeCanvas.gameObject.SetActive(false);
+            shopOpen = true;
+        }
+    }
+
+    private Canvas GetDialogueCanvas(WorldInteractionActor actor)
+    {
+        if (dialogueCanvases.Count == 0) BindDialogueCanvases();
+        string actorName = actor != null ? actor.displayName ?? string.Empty : string.Empty;
+        foreach (KeyValuePair<string, Canvas> item in dialogueCanvases)
+            if (actorName.Contains(item.Key)) return item.Value;
+        return null;
+    }
+
+    private static bool ContainsName(string objectName, string value)
+    {
+        return !string.IsNullOrEmpty(objectName) &&
+               objectName.IndexOf(value, System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static bool IsChallengeButtonName(string objectName)
+    {
+        return ContainsName(objectName, "挑战Button") || ContainsName(objectName, "ChallengeButton");
+    }
+
+    private static bool IsShopButtonName(string objectName)
+    {
+        return ContainsName(objectName, "商店Button") || ContainsName(objectName, "ShopButton");
+    }
+
+    private static bool IsEventButtonName(string objectName)
+    {
+        return ContainsName(objectName, "事件类Button") || ContainsName(objectName, "事件Button") ||
+               ContainsName(objectName, "EventButton");
+    }
+
+    private static bool IsChatButtonName(string objectName)
+    {
+        return ContainsName(objectName, "闲聊Button") || ContainsName(objectName, "闲聊Buttom") ||
+               ContainsName(objectName, "ChatButton");
+    }
+
+    private static bool IsLeaveButtonName(string objectName)
+    {
+        return ContainsName(objectName, "离开Button") || ContainsName(objectName, "离开Buttom") ||
+               ContainsName(objectName, "LeaveButton");
+    }
+
+    private static string GetChatText(string npcName)
+    {
+        if (ContainsName(npcName, "猫姬")) return "先熟悉一下规则吧。真正的比赛开始后，每一步都要谨慎选择。";
+        if (ContainsName(npcName, "企鹅")) return "河岸边的赛事马上就要开始了，记得先准备好你的卡组。";
+        if (ContainsName(npcName, "黑猫少女")) return "夜灯亮起之前，还有时间再检查一次你的战术。";
+        if (ContainsName(npcName, "神秘弓兵")) return "冠军之路不会因为一次胜利就结束，继续保持专注。";
+        if (ContainsName(npcName, "阿米娅")) return "我们一起探索这座城市吧。";
+        return "今天也要加油。";
+    }
+
+    private static void SetDialogueText(Canvas dialogueCanvas, string objectName, string value)
+    {
+        if (dialogueCanvas == null) return;
+        TMP_Text[] tmpTexts = dialogueCanvas.GetComponentsInChildren<TMP_Text>(true);
+        foreach (TMP_Text text in tmpTexts)
+        {
+            if (text != null && text.gameObject.name == objectName)
+            {
+                text.text = value;
+                return;
+            }
+        }
+
+        Text[] legacyTexts = dialogueCanvas.GetComponentsInChildren<Text>(true);
+        foreach (Text text in legacyTexts)
+        {
+            if (text != null && text.gameObject.name == objectName)
+            {
+                text.text = value;
+                return;
+            }
+        }
+    }
+
+    private static void ShowChatDialogue(Canvas dialogueCanvas, WorldInteractionActor actor)
+    {
+        if (dialogueCanvas == null || actor == null) return;
+        SetDialogueText(dialogueCanvas, "SpeakerName", actor.displayName);
+        SetDialogueText(dialogueCanvas, "DialogueText", GetChatText(actor.displayName));
+        Debug.Log("显示闲聊内容：" + actor.displayName);
+    }
+
+    private void BindPauseCanvas()
+    {
+        pauseCanvasBound = true;
+        pauseCanvas = null;
+        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
+        foreach (Canvas candidate in canvases)
+        {
+            if (candidate == null) continue;
+            string name = candidate.gameObject.name;
+            if (name.Contains("PauseCanvas") || name.Contains("暂停Canvas") || name.Contains("暂停菜单"))
+            {
+                pauseCanvas = candidate;
+                break;
+            }
+        }
+
+        if (pauseCanvas == null)
+        {
+            Debug.LogWarning("没有找到暂停菜单 Canvas。请确认 Canvas 名称为 PauseCanvas，并保存 HD_2D_Day 场景。");
+            return;
+        }
+
+        pauseCanvas.gameObject.SetActive(false);
+        Button[] buttons = pauseCanvas.GetComponentsInChildren<Button>(true);
+        foreach (Button button in buttons)
+        {
+            if (button == null) continue;
+            string name = button.gameObject.name;
+            if (name.Contains("Resume") || name.Contains("继续"))
+            {
+                button.onClick.RemoveListener(ClosePauseMenu);
+                button.onClick.AddListener(ClosePauseMenu);
+            }
+        }
+    }
+
+    private void UpdatePauseInput()
+    {
+        if (!Input.GetKeyDown(KeyCode.Escape)) return;
+
+        if (pauseOpen)
+        {
+            ClosePauseMenu();
+            return;
+        }
+
+        if (dialogueOpen || shopOpen || deckOpen || eventOpen)
+        {
+            ClosePanels();
+            return;
+        }
+
+        OpenPauseMenu();
+    }
+
+    private void OpenPauseMenu()
+    {
+        if (!pauseCanvasBound) BindPauseCanvas();
+        if (pauseCanvas == null) return;
+        timeScaleBeforePause = Time.timeScale;
+        pauseOpen = true;
+        pauseCanvas.gameObject.SetActive(true);
+        Time.timeScale = 0f;
+    }
+
+    private void ClosePauseMenu()
+    {
+        pauseOpen = false;
+        if (pauseCanvas != null) pauseCanvas.gameObject.SetActive(false);
+        Time.timeScale = timeScaleBeforePause > 0f ? timeScaleBeforePause : 1f;
+    }
+
     private Text CreateText(string name, Transform parent, int size, Color color)
     {
         GameObject textObject = new GameObject(name);
@@ -248,8 +530,11 @@ public sealed class HDAdventureRuntime : MonoBehaviour
     private void Update()
     {
         TryInitializeAdventure();
+        UpdatePauseInput();
+        if (pauseOpen) return;
         if (session == null || session.State == null || player == null) return;
         UpdateHud();
+        UpdateInteraction();
     }
 
     private void LateUpdate()
@@ -264,16 +549,106 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         ApplyCameraFollow();
     }
 
+    private void CreateWorldActors()
+    {
+        if (actors.Count > 0) return;
+        HDNpcCharacter[] sceneNpcs = FindObjectsOfType<HDNpcCharacter>(true);
+        for (int i = 0; i < sceneNpcs.Length; i++)
+        {
+            HDNpcCharacter npc = sceneNpcs[i];
+            if (npc == null) continue;
+            string npcName = npc.name;
+            string actorId = npcName.Contains("猫姬") ? "first_light_practice" :
+                npcName.Contains("企鹅") ? "first_light_public_01" :
+                npcName.Contains("黑猫少女") ? "first_light_public_02" :
+                npcName.Contains("神秘弓兵") ? "first_light_champion" : null;
+            if (string.IsNullOrEmpty(actorId)) continue;
+            string alternateId = npcName.Contains("猫姬") ? "first_light_public_01" :
+                npcName.Contains("神秘弓兵") ? "first_light_public_03" : null;
+            Collider collider = npc.GetComponent<Collider>();
+            if (collider == null) collider = npc.gameObject.AddComponent<SphereCollider>();
+            collider.isTrigger = true;
+            WorldInteractionActor actor = npc.GetComponent<WorldInteractionActor>();
+            if (actor == null) actor = npc.gameObject.AddComponent<WorldInteractionActor>();
+            actor.Bind(this, actorId, npc.name, WorldInteractionType.Match);
+            actor.alternateId = alternateId;
+            actors.Add(actor);
+        }
+        if (actors.Count == 0)
+        {
+            CreateActor("练习赛 / 正式赛1", WorldInteractionType.Match, "first_light_practice", "first_light_public_01", new Vector3(-7f, 1f, -1f));
+            CreateActor("正式赛2 / 正式赛3", WorldInteractionType.Match, "first_light_public_02", "first_light_public_03", new Vector3(-7f, 1f, 10f));
+            CreateActor("城市冠军赛", WorldInteractionType.Match, "first_light_champion", null, new Vector3(0f, 1f, 20f));
+        }
+        CreateActor("卡牌商店", WorldInteractionType.Shop, "first_light_shop", null, player.position + new Vector3(3f, 0f, 2f));
+        CreateActor("街角事件", WorldInteractionType.Event, "first_light_event_01", null, player.position + new Vector3(-3f, 0f, 2f));
+    }
+    private void CreateActor(string label, WorldInteractionType type, string id, string alternateId, Vector3 position)
+    {
+        GameObject actorObject = new GameObject("NPC - " + label);
+        actorObject.transform.position = position;
+        SphereCollider trigger = actorObject.AddComponent<SphereCollider>();
+        trigger.isTrigger = true;
+        trigger.radius = 0.65f;
+        SpriteRenderer renderer = actorObject.AddComponent<SpriteRenderer>();
+        renderer.color = type == WorldInteractionType.Match ? new Color(0.95f, 0.75f, 0.25f) : Color.white;
+        WorldInteractionActor actor = actorObject.AddComponent<WorldInteractionActor>();
+        actor.Bind(this, id, label, type);
+        actor.alternateId = alternateId;
+        actors.Add(actor);
+    }
+
+    private void UpdateInteraction()
+    {
+        nearestActor = null;
+        float bestDistance = 2.2f;
+        foreach (WorldInteractionActor actor in actors)
+        {
+            if (actor == null) continue;
+            float distance = Vector3.Distance(player.position, actor.transform.position);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                nearestActor = actor;
+            }
+        }
+
+        if (dialogueOpen)
+        {
+            bool movedAway = dialogueActor == null || player == null ||
+                Vector3.Distance(player.position, dialogueActor.transform.position) > dialogueCloseDistance;
+            if (movedAway || Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)) ClosePanels();
+            return;
+        }
+
+        if (!shopOpen && !deckOpen && !eventOpen && nearestActor != null && Input.GetKeyDown(KeyCode.E))
+            OpenDialogue(nearestActor);
+    }
+
     private void OpenDialogue(WorldInteractionActor actor)
     {
         dialogueActor = actor;
+        Canvas activeCanvas = GetDialogueCanvas(actor);
+        if (activeCanvas == null)
+        {
+            Debug.LogWarning("没有找到 NPC 对应的 DialogueCanvas：" + (actor != null ? actor.displayName : "未知 NPC"));
+            return;
+        }
+
+        foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
+            if (dialogueCanvas != null) dialogueCanvas.gameObject.SetActive(false);
+        activeCanvas.gameObject.SetActive(true);
+        SetDialogueText(activeCanvas, "SpeakerName", actor.displayName);
+        SetDialogueText(activeCanvas, "DialogueText", GetChatText(actor.displayName));
         dialogueOpen = true;
-        Time.timeScale = 0f;
     }
 
     private void ClosePanels()
     {
+        dialogueActor = null;
         dialogueOpen = shopOpen = deckOpen = eventOpen = false;
+        foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
+            if (dialogueCanvas != null) dialogueCanvas.gameObject.SetActive(false);
         Time.timeScale = 1f;
     }
 
@@ -300,9 +675,47 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         else { dialogueOpen = false; eventOpen = true; }
     }
 
+    private void ActivateMatch(string matchId)
+    {
+        MatchData match = CampaignCatalog.GetMatch(matchId);
+        if (match == null)
+        {
+            Debug.LogWarning("挑战失败：找不到赛事 " + matchId);
+            ShowStatus("赛事不存在");
+            return;
+        }
+        if (session.HasPendingBattle)
+        {
+            Debug.Log("挑战按钮继续未结束的战斗：" + session.State.pendingBattle.matchId);
+            Time.timeScale = 1f;
+            ClosePanels();
+            SceneFlowService.ResumePendingBattle();
+            return;
+        }
+        if (!session.HasLegalDeck)
+        {
+            Debug.LogWarning("挑战失败：当前卡组不合法，必须正好 20 张且同名卡不超过 2 张。");
+            ShowStatus("当前卡组不合法，请先完成卡组编辑");
+            OpenDeck();
+            return;
+        }
+        if (!session.CanStartMatch(match))
+        {
+            string reason = GetMatchLockReason(match);
+            Debug.LogWarning("挑战失败：" + reason);
+            ShowStatus(reason);
+            return;
+        }
+        Debug.Log("开始赛事并进入 BattleScene：" + match.matchId);
+        SavePlayer();
+        ClosePanels();
+        SceneFlowService.StartMatch(match.matchId, player.position);
+    }
     private string GetMatchLockReason(MatchData match)
     {
         if (match == null) return "赛事不存在";
+        if (session.HasPendingBattle) return "当前已有一场未结束的战斗";
+        if (!session.IsCityUnlocked(match.cityId)) return "当前城市尚未解锁";
         if (match.matchType == MatchType.Champion && session.GetLeaguePoints(match.cityId) < CampaignCatalog.GetCity(match.cityId).requiredPoints)
             return $"城市冠军需要 {CampaignCatalog.GetCity(match.cityId).requiredPoints} 积分";
         if (!string.IsNullOrEmpty(match.prerequisiteMatchId) && !session.IsMatchComplete(match.prerequisiteMatchId))
@@ -328,7 +741,10 @@ public sealed class HDAdventureRuntime : MonoBehaviour
         CityData city = CampaignCatalog.GetCity(session.State.currentCityId);
         CitySaveData state = session.GetCityState(session.State.currentCityId);
         if (hudText != null)
-            hudText.text = $"{city?.displayName ?? "第一城"}\n积分：{state.leaguePoints}/{city?.requiredPoints}    金币：{session.State.currency}\n收藏：{session.State.collectedCardIds.Count} 张    徽章：{session.State.badgeIds.Count}" + (Time.unscaledTime < statusUntil ? "\n" + statusMessage : string.Empty);
+        {
+            string status = Time.unscaledTime < statusUntil ? "\n" + statusMessage : string.Empty;
+            hudText.text = (city?.displayName ?? "第一城") + " | 积分：" + state.leaguePoints + "/" + city?.requiredPoints + " | 金币：" + session.State.currency + " | 收藏：" + session.State.collectedCardIds.Count + " 张 | 徽章：" + session.State.badgeIds.Count + status;
+        }
     }
 
     private void SavePlayer()
@@ -347,26 +763,10 @@ public sealed class HDAdventureRuntime : MonoBehaviour
     private void OnGUI()
     {
         if (session == null || session.State == null) return;
-        if (dialogueOpen) DrawDialogue();
+
         if (shopOpen) DrawShop();
         if (deckOpen) DrawDeckEditor();
         if (eventOpen) DrawEvent();
-    }
-
-    private void DrawDialogue()
-    {
-        GUI.Box(new Rect(280f, Screen.height - 260f, Screen.width - 560f, 190f), dialogueActor.displayName);
-        MatchData match = CampaignCatalog.GetMatch(dialogueActor.id);
-        string text = match != null ? $"{match.displayName}\n对手：{match.opponentId}\n奖励：{match.goldReward} 金币 / {match.pointReward} 积分" : "欢迎来到第一城。这里的每一场比赛都会留下你的足迹。";
-        GUI.Label(new Rect(310f, Screen.height - 225f, Screen.width - 620f, 70f), text);
-        if (dialogueActor.type == WorldInteractionType.Match)
-        {
-            if (GUI.Button(new Rect(320f, Screen.height - 145f, 190f, 42f), "挑战")) Activate(dialogueActor);
-            if (GUI.Button(new Rect(530f, Screen.height - 145f, 190f, 42f), "查看条件")) ShowStatus(GetMatchLockReason(match));
-        }
-        else if (dialogueActor.type == WorldInteractionType.Shop && GUI.Button(new Rect(320f, Screen.height - 145f, 190f, 42f), "购买")) { dialogueOpen = false; shopOpen = true; }
-        else if (dialogueActor.type == WorldInteractionType.Event && GUI.Button(new Rect(320f, Screen.height - 145f, 190f, 42f), "查看事件")) { dialogueOpen = false; eventOpen = true; }
-        if (GUI.Button(new Rect(Screen.width - 520f, Screen.height - 145f, 150f, 42f), "离开")) ClosePanels();
     }
 
     private void DrawShop()
@@ -454,13 +854,10 @@ public sealed class HDAdventureCameraFollow : MonoBehaviour
 public sealed class HDAdventureBuildingOcclusion : MonoBehaviour
 {
     [SerializeField] private float focusHeight = 0.9f;
-    [SerializeField] private float refreshInterval = 0.1f;
     [SerializeField] private float rayPadding = 0.15f;
 
     private Camera gameplayCamera;
     private Transform target;
-    private float nextRefreshTime;
-    private Renderer[] sceneRenderers = new Renderer[0];
     private readonly HashSet<Renderer> hiddenRenderers = new HashSet<Renderer>();
     private readonly HashSet<Renderer> currentOccluders = new HashSet<Renderer>();
     private readonly RaycastHit[] raycastHits = new RaycastHit[64];
@@ -469,25 +866,18 @@ public sealed class HDAdventureBuildingOcclusion : MonoBehaviour
     {
         gameplayCamera = camera;
         target = followTarget;
-        RefreshSceneRenderers();
     }
 
     private void LateUpdate()
     {
         if (gameplayCamera == null) gameplayCamera = HDAdventureRuntime.GameplayCamera;
         if (target == null) target = transform;
-        if (Time.unscaledTime >= nextRefreshTime)
-        {
-            RefreshSceneRenderers();
-            nextRefreshTime = Time.unscaledTime + refreshInterval;
-        }
         if (gameplayCamera != null && target != null) FindOccluders();
     }
 
-    private void RefreshSceneRenderers()
-    {
-        sceneRenderers = FindObjectsOfType<Renderer>(true);
-    }
+    private void OnDisable() => RestoreOccluders();
+
+    private void OnDestroy() => RestoreOccluders();
 
     private void FindOccluders()
     {
@@ -503,15 +893,14 @@ public sealed class HDAdventureBuildingOcclusion : MonoBehaviour
         }
 
         Ray ray = new Ray(origin, toTarget / distance);
-        int hitCount = Physics.RaycastNonAlloc(ray, raycastHits, Mathf.Max(0f, distance - rayPadding),
+        float maxDistance = Mathf.Max(0f, distance - rayPadding);
+        int hitCount = Physics.RaycastNonAlloc(ray, raycastHits, maxDistance,
             ~0, QueryTriggerInteraction.Ignore);
-        for (int i = 0; i < hitCount; i++) AddOccluderFromCollider(raycastHits[i].collider);
-
-        foreach (Renderer renderer in sceneRenderers)
+        for (int i = 0; i < hitCount; i++)
         {
-            if (!IsBuildingRenderer(renderer)) continue;
-            if (renderer.bounds.IntersectRay(ray, out float hitDistance) && hitDistance < distance - rayPadding)
-                currentOccluders.Add(renderer);
+            RaycastHit hit = raycastHits[i];
+            if (hit.collider == null || hit.distance <= 0f || hit.distance >= maxDistance) continue;
+            AddOccluderFromCollider(hit.collider);
         }
 
         foreach (Renderer renderer in currentOccluders)
@@ -580,6 +969,7 @@ public sealed class WorldInteractionActor : MonoBehaviour
     internal string id;
     internal string displayName;
     internal WorldInteractionType type;
+    internal string alternateId;
     public Sprite[] idleFrames;
     public float animationFPS = 8f;
     private SpriteRenderer spriteRenderer;
@@ -619,4 +1009,26 @@ public sealed class WorldInteractionActor : MonoBehaviour
         spriteRenderer.sprite = idleFrames[frame];
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
