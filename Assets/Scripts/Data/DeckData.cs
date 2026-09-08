@@ -1,9 +1,0 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-[System.Serializable]
-public class DeckData
-{
-    public List<int> cardDataList = new();
-}
