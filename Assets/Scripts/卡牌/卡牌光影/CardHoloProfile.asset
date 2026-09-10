@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3f1bcce9d94a2b9c4e23f7cbe31a11, type: 3}
+  m_Name: CardHoloProfile
+  m_EditorClassIdentifier:
+  r:
+    frameIntensity: 1.059
+    surfaceIntensity: 0.2
+    artIntensity: 0.08
+    textureStrength: 0
+    textureScale: 25
+    bandWidth: 0.22
+    spectrumFrequency: 0.8
+    reflectionSharpness: 2.76
+    idleStrength: 0.75
+    pearlTint: {r: 0.97, g: 0.99, b: 1, a: 0.95}
+    rainbowTint: {r: 0.78, g: 0.92, b: 1, a: 0.28}
+  sr:
+    frameIntensity: 0.78
+    surfaceIntensity: 0.48
+    artIntensity: 0.28
+    textureStrength: 0.62
+    textureScale: 30
+    bandWidth: 0.274
+    spectrumFrequency: 0.41
+    reflectionSharpness: 3.79
+    idleStrength: 0.75
+    pearlTint: {r: 0.97, g: 0.99, b: 1, a: 0.96}
+    rainbowTint: {r: 0.68, g: 0.72, b: 1, a: 0.62}
+  ur:
+    frameIntensity: 1.08
+    surfaceIntensity: 0.92
+    artIntensity: 0.58
+    textureStrength: 0.82
+    textureScale: 22
+    bandWidth: 0.4
+    spectrumFrequency: 1
+    reflectionSharpness: 1.35
+    idleStrength: 0.48
+    pearlTint: {r: 0.98, g: 0.99, b: 1, a: 0.98}
+    rainbowTint: {r: 0.86, g: 0.97, b: 1, a: 0.9}

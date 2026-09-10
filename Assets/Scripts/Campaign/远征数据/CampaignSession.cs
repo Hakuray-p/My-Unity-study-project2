@@ -7,7 +7,7 @@ using UnityEngine;
 public class CampaignSession : MonoBehaviour
 {
     private const string SaveFileName = "campaign_save.json";
-    private const int CurrentSaveVersion = 6;
+    private const int CurrentSaveVersion = 7;
     private static CampaignSession instance;
 
     public static CampaignSession Instance => EnsureInstance();
@@ -74,8 +74,19 @@ public class CampaignSession : MonoBehaviour
         if (!CanBuyCard(entry, out reason)) return false;
         State.currency -= entry.price;
         State.collectedCardIds.Add(entry.cardId);
+        SaveCardHoloVariant(entry);
         Save();
         ProgressChanged?.Invoke();
+        return true;
+    }
+
+    public bool TryGetCardHoloVariantSeed(int cardId, out int colorSeed)
+    {
+        colorSeed = 0;
+        if (State == null || State.cardHoloVariants == null) return false;
+        CardHoloVariantSaveData variant = State.cardHoloVariants.Find(item => item != null && item.cardId == cardId);
+        if (variant == null) return false;
+        colorSeed = variant.colorSeed;
         return true;
     }
 
@@ -405,6 +416,7 @@ public class CampaignSession : MonoBehaviour
         if (State.deckDraftCardIds.Count == 0) State.deckDraftCardIds = new List<int>(State.lastValidDeckCardIds);
         State.sharedDeckCardIds = new List<int>(State.lastValidDeckCardIds);
         if (State.cardUpgrades == null) State.cardUpgrades = new List<CardUpgradeSaveData>();
+        if (State.cardHoloVariants == null) State.cardHoloVariants = new List<CardHoloVariantSaveData>();
 
         State.cityStates.RemoveAll(city => city == null || CampaignCatalog.GetCity(city.cityId) == null);
         State.unlockedCityIds.RemoveAll(cityId => CampaignCatalog.GetCity(cityId) == null);
@@ -430,6 +442,18 @@ public class CampaignSession : MonoBehaviour
         if (cityState.activeEventIds == null) cityState.activeEventIds = new List<string>();
         if (cityState.resolvedEventIds == null) cityState.resolvedEventIds = new List<string>();
         if (cityState.collectedObjectIds == null) cityState.collectedObjectIds = new List<string>();
+    }
+
+    private void SaveCardHoloVariant(CardShopEntry entry)
+    {
+        if (entry.rarity != CardRarity.Limited) return;
+        if (State.cardHoloVariants == null) State.cardHoloVariants = new List<CardHoloVariantSaveData>();
+        State.cardHoloVariants.RemoveAll(item => item != null && item.cardId == entry.cardId);
+        State.cardHoloVariants.Add(new CardHoloVariantSaveData
+        {
+            cardId = entry.cardId,
+            colorSeed = StableSeed(Guid.NewGuid().ToString("N") + entry.cardId)
+        });
     }
 
     private static int StableSeed(string value)

@@ -41,6 +41,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
     private Button shopRaritySRButton;
     private Button shopRarityURButton;
     private Button shopBuyButton;
+    private Button shopPreviewButton;
     private TMP_Text shopGoldText;
     private TMP_FontAsset shopFontAsset;
     private TMP_Text shopNameText;
@@ -53,6 +54,8 @@ public sealed class HD2DSceneGM : MonoBehaviour
     private CardController shopPreviewCardController;
     private CardShopEntry selectedShopEntry;
     private CardRarity selectedShopRarity = CardRarity.Common;
+    private bool restoringShopState;
+    private Vector2 restoreShopScrollPosition;
     private readonly List<GameObject> shopItems = new List<GameObject>();
     private bool shopUiInitialized;
 
@@ -165,6 +168,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
             dialogueGM.Initialize(characterGM, session, eventGM, StartMatch, OpenShopPanel, ShowStatus, ClosePanels);
             pauseGM.Initialize(characterGM, session, SavePlayer, ClosePanels);
             InitializeShopUi();
+            TryRestoreShopState();
             worldInitialized = true;
         }
     }
@@ -321,6 +325,25 @@ public sealed class HD2DSceneGM : MonoBehaviour
         SelectShopRarity(selectedShopRarity);
     }
 
+    private void TryRestoreShopState()
+    {
+        if (!SceneFlowService.TryConsumeShopRestoreState(out int cardId, out CardRarity rarity, out Vector2 scrollPosition)) return;
+        restoringShopState = true;
+        restoreShopScrollPosition = scrollPosition;
+        selectedShopRarity = rarity;
+        selectedShopEntry = new CardShopEntry { cardId = cardId, rarity = rarity };
+        OpenShopPanel();
+    }
+
+    private void OpenSelectedCardPreview()
+    {
+        if (selectedShopEntry == null) return;
+        Vector2 scrollPosition = shopScrollRect == null ? Vector2.one : shopScrollRect.normalizedPosition;
+        shopOpen = false;
+        Time.timeScale = 1f;
+        SceneFlowService.OpenCardPreview(selectedShopEntry.cardId, selectedShopRarity, scrollPosition);
+    }
+
     internal void Activate(WorldInteractionActor actor)
     {
         if (actor.type == WorldInteractionType.Match)
@@ -469,6 +492,8 @@ public sealed class HD2DSceneGM : MonoBehaviour
         shopNameText = FindTextByName(shopCanvasObject, "此处为卡片物品的名字预览");
         shopEffectText = FindTextByName(shopCanvasObject, "此处为卡片效果描述Text");
         shopPreviewText = FindTextContainsName(shopCanvasObject, "此处为预览整张3D卡详");
+        shopPreviewButton = FindButtonByName(shopCanvasObject, "卡牌预览Buttom") ??
+            FindButtonByName(shopCanvasObject, "卡牌预览Button");
         shopPreviewRawImage = FindRawImageByName(shopCanvasObject, "CardPreviewRawImage");
         shopPreviewCamera = FindSceneObject("ShopCardPreviewCamera")?.GetComponent<Camera>();
         shopPreviewModel = FindSceneObject("CarShopCardPreviewModel");
@@ -507,6 +532,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         shopRaritySRButton.onClick.AddListener(() => SelectShopRarity(CardRarity.Rare));
         shopRarityURButton.onClick.AddListener(() => SelectShopRarity(CardRarity.Limited));
         shopBuyButton.onClick.AddListener(BuySelectedShopCard);
+        if (shopPreviewButton != null) shopPreviewButton.onClick.AddListener(OpenSelectedCardPreview);
         shopUiInitialized = true;
         shopCanvasObject.SetActive(false);
         UpdateShopGold();
@@ -543,7 +569,16 @@ public sealed class HD2DSceneGM : MonoBehaviour
         selectedShopEntry = restoredEntry ?? firstEntry;
         if (selectedShopEntry != null) UpdateShopPreview();
         else ClearShopPreview();
-        if (shopContent != null) shopContent.anchoredPosition = Vector2.zero;
+        if (restoringShopState && shopScrollRect != null)
+        {
+            Canvas.ForceUpdateCanvases();
+            shopScrollRect.normalizedPosition = restoreShopScrollPosition;
+            restoringShopState = false;
+        }
+        else if (shopContent != null)
+        {
+            shopContent.anchoredPosition = Vector2.zero;
+        }
     }
 
     private void CreateShopItem(CardShopEntry entry)
@@ -600,6 +635,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
 
         CardData cardData = CampaignCatalog.GetCardData(selectedShopEntry.cardId);
         UpdateShopCardPreview(cardData);
+        if (shopPreviewButton != null) shopPreviewButton.interactable = cardData != null;
 
         string reason;
         bool canBuy = session.CanBuyCard(selectedShopEntry, out reason);

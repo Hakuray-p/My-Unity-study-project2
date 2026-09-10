@@ -104,6 +104,13 @@ public class CardShopEntry
 }
 
 [Serializable]
+public class CardHoloVariantSaveData
+{
+    public int cardId;
+    public int colorSeed;
+}
+
+[Serializable]
 public class ShopDefinition
 {
     public string shopId;
@@ -209,7 +216,7 @@ public class BattleResult
 [Serializable]
 public class CampaignSaveData
 {
-    public int version = 6;
+    public int version = 7;
     public string currentCityId;
     public Vector3 playerPosition;
     public List<string> unlockedCityIds = new List<string>();
@@ -221,6 +228,7 @@ public class CampaignSaveData
     public List<int> deckDraftCardIds = new List<int>();
     public List<int> lastValidDeckCardIds = new List<int>();
     public List<CardUpgradeSaveData> cardUpgrades = new List<CardUpgradeSaveData>();
+    public List<CardHoloVariantSaveData> cardHoloVariants = new List<CardHoloVariantSaveData>();
     public BattleSnapshot pendingBattle;
     public string pendingMatchId;
 }
