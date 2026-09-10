@@ -1146,7 +1146,7 @@ MonoBehaviour:
   minObservationDistance: 3.5
   maxObservationDistance: 10
   horizontalRotationReversed: 1
-  verticalRotationReversed: 1
+  verticalRotationReversed: 0
   verticalRotationLimit: 80
 --- !u!1 &5067934814639704887
 GameObject:

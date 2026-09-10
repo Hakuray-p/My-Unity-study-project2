@@ -63,7 +63,6 @@ public class CampaignSession : MonoBehaviour
     {
         reason = string.Empty;
         if (entry == null) { reason = "商品不存在"; return false; }
-        if (GetLeaguePoints(State.currentCityId) < entry.unlockPoints) { reason = $"需要 {entry.unlockPoints} 积分"; return false; }
         if (State.collectedCardIds.Contains(entry.cardId)) { reason = "已经拥有这张卡"; return false; }
         if (State.currency < entry.price) { reason = "金币不足"; return false; }
         return true;

@@ -11,6 +11,7 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
     [SerializeField] private Vector2 referenceResolution = new Vector2(1920f, 1080f); // UI参考分辨率
 
     private Camera previewCamera;
+    private RectTransform canvasRoot; // 预览界面 Canvas 根节点
 
     /// <summary>
     /// 注册卡牌预览场景加载事件。
@@ -50,6 +51,7 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         var cardData = CampaignCatalog.GetCardData(cardId);
         previewController.SetPreviewCamera(previewCamera);
         previewController.SetCard(cardData);
+        CreateHoloTuner(cardData);
     }
 
     private void Update()
@@ -103,6 +105,7 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         canvasScaler.referenceResolution = referenceResolution;
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         canvasObject.AddComponent<GraphicRaycaster>();
+        canvasRoot = canvasObject.GetComponent<RectTransform>();
 
         var returnButton = CreateButton(canvasObject.transform, "返回商店Button", "返回商店");
         var returnRect = returnButton.GetComponent<RectTransform>();
@@ -113,13 +116,13 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         returnRect.sizeDelta = new Vector2(190f, 58f);
         returnButton.onClick.AddListener(ReturnToShop);
 
-        var hintText = CreateText(canvasObject.transform, "操作提示Text", "左键拖拽旋转 · 滚轮缩放 · Esc 返回商店");
+        var hintText = CreateText(canvasObject.transform, "操作提示Text", "左键拖拽旋转 · 滚轮缩放 · 右侧面板调节光影 · Esc 返回商店");
         var hintRect = hintText.GetComponent<RectTransform>();
         hintRect.anchorMin = new Vector2(0.5f, 0f);
         hintRect.anchorMax = new Vector2(0.5f, 0f);
         hintRect.pivot = new Vector2(0.5f, 0f);
         hintRect.anchoredPosition = new Vector2(0f, 28f);
-        hintRect.sizeDelta = new Vector2(760f, 42f);
+        hintRect.sizeDelta = new Vector2(980f, 42f);
         hintText.alignment = TextAlignmentOptions.Center;
         hintText.fontSize = 24f;
         hintText.raycastTarget = false;
@@ -157,6 +160,21 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         text.enableWordWrapping = true;
         text.overflowMode = TextOverflowModes.Ellipsis;
         return text;
+    }
+
+    /// <summary>
+    /// 创建卡牌光影调参面板。
+    /// </summary>
+    private void CreateHoloTuner(CardData cardData)
+    {
+        var tunerObject = new GameObject("CardHoloTunerPanel", typeof(RectTransform));
+        var tunerRect = tunerObject.GetComponent<RectTransform>();
+        tunerRect.SetParent(canvasRoot, false);
+        tunerRect.anchorMin = Vector2.zero;
+        tunerRect.anchorMax = Vector2.one;
+        tunerRect.offsetMin = Vector2.zero;
+        tunerRect.offsetMax = Vector2.zero;
+        tunerObject.AddComponent<CardHoloTunerPanel>().Initialize(previewController, previewFont, CardHoloTierMapper.FromRarity(cardData.rarity));
     }
 
     private void ReturnToShop()

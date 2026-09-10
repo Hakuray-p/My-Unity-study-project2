@@ -18,6 +18,8 @@ public sealed class CardHoloProfile : ScriptableObject
         [Range(0f, 0.75f)] public float idleStrength; // 静止时的光影强度
         public Color pearlTint; // 珍珠色
         public Color rainbowTint; // 虹彩色
+        [Range(0f, 1f)] public float textIntensity; // 名称与效果文字变色强度
+        public Color textTint; // 名称与效果文字颜色
 
         public TierSettings(
             float frame,
@@ -30,7 +32,9 @@ public sealed class CardHoloProfile : ScriptableObject
             float sharpness,
             float idle,
             Color pearl,
-            Color rainbow)
+            Color rainbow,
+            float text,
+            Color textColor)
         {
             frameIntensity = frame;
             surfaceIntensity = surface;
@@ -43,6 +47,8 @@ public sealed class CardHoloProfile : ScriptableObject
             idleStrength = idle;
             pearlTint = pearl;
             rainbowTint = rainbow;
+            textIntensity = text;
+            textTint = textColor;
         }
     }
 
@@ -66,20 +72,29 @@ public sealed class CardHoloProfile : ScriptableObject
         };
     }
 
+    /// <summary>
+    /// 写回指定档位的光影参数。
+    /// </summary>
+    public void SetSettings(CardHoloTier tier, TierSettings settings)
+    {
+        switch (tier)
+        {
+            case CardHoloTier.R:
+                r = settings;
+                break;
+            case CardHoloTier.SR:
+                sr = settings;
+                break;
+            case CardHoloTier.UR:
+                ur = settings;
+                break;
+        }
+    }
+
+    // R 档与 SR 同档，直接复用 SR 默认值
     public static TierSettings CreateRDefault()
     {
-        return new TierSettings(
-            0.58f,
-            0.2f,
-            0.08f,
-            0f,
-            24f,
-            0.22f,
-            0.8f,
-            2.6f,
-            0.24f,
-            new Color(0.97f, 0.99f, 1f, 0.95f),
-            new Color(0.78f, 0.92f, 1f, 0.28f));
+        return CreateSrDefault();
     }
 
     public static TierSettings CreateSrDefault()
@@ -95,7 +110,9 @@ public sealed class CardHoloProfile : ScriptableObject
             2f,
             0.3f,
             new Color(0.97f, 0.99f, 1f, 0.96f),
-            new Color(0.68f, 0.72f, 1f, 0.62f));
+            new Color(0.68f, 0.72f, 1f, 0.62f),
+            0f,
+            Color.white);
     }
 
     public static TierSettings CreateUrDefault()
@@ -111,6 +128,8 @@ public sealed class CardHoloProfile : ScriptableObject
             1.35f,
             0.48f,
             new Color(0.98f, 0.99f, 1f, 0.98f),
-            new Color(0.86f, 0.97f, 1f, 0.9f));
+            new Color(0.86f, 0.97f, 1f, 0.9f),
+            1f,
+            new Color(1f, 0.84f, 0.35f, 1f));
     }
 }

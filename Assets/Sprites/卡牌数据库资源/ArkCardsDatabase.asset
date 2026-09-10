@@ -112,9 +112,9 @@ MonoBehaviour:
     cardType: 1
     name: W
     cost: 7
-    rarity: 1
+    rarity: 2
     archetype: 
-    shopPrice: 60
+    shopPrice: 100
     unlockPoints: 10
     attack: 8
     health: 5
@@ -131,9 +131,9 @@ MonoBehaviour:
     cardType: 1
     name: "\u963F\u7C73\u5A05"
     cost: 8
-    rarity: 1
+    rarity: 2
     archetype: 
-    shopPrice: 60
+    shopPrice: 100
     unlockPoints: 10
     attack: 8
     health: 6
@@ -150,9 +150,9 @@ MonoBehaviour:
     cardType: 1
     name: "\u827E\u96C5\u6CD5\u62C9"
     cost: 9
-    rarity: 1
+    rarity: 2
     archetype: 
-    shopPrice: 60
+    shopPrice: 100
     unlockPoints: 10
     attack: 7
     health: 7
@@ -188,9 +188,9 @@ MonoBehaviour:
     cardType: 1
     name: "\u95EA\u7075"
     cost: 8
-    rarity: 1
+    rarity: 2
     archetype: 
-    shopPrice: 60
+    shopPrice: 100
     unlockPoints: 10
     attack: 6
     health: 8
@@ -226,9 +226,9 @@ MonoBehaviour:
     cardType: 1
     name: "\u53F2\u5C14\u7279\u5C14"
     cost: 6
-    rarity: 1
+    rarity: 2
     archetype: 
-    shopPrice: 60
+    shopPrice: 100
     unlockPoints: 10
     attack: 4
     health: 2
@@ -511,9 +511,9 @@ MonoBehaviour:
     cardType: 2
     name: "\u65E0\u654C\u7684\u5C0F\u706B\u9F99"
     cost: 6
-    rarity: 1
+    rarity: 2
     archetype: 
-    shopPrice: 60
+    shopPrice: 100
     unlockPoints: 10
     attack: 0
     health: 0
@@ -549,9 +549,9 @@ MonoBehaviour:
     cardType: 1
     name: "\u8FD1\u536B\u963F\u7C73\u5A05"
     cost: 8
-    rarity: 1
+    rarity: 2
     archetype: 
-    shopPrice: 60
+    shopPrice: 100
     unlockPoints: 10
     attack: 6
     health: 8

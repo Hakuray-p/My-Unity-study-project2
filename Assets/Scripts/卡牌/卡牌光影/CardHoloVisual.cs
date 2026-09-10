@@ -30,6 +30,17 @@ public sealed class CardHoloVisual : MonoBehaviour
     private CardHoloProfile holoProfile; // 光影分级配置
     private CardHoloTier holoTier; // 当前光影等级
     private int colorVariantSeed; // 当前卡牌光影颜色种子
+    private Color textTint = Color.white; // 当前档位的名称与效果文字颜色
+
+    /// <summary>
+    /// 当前档位的名称与效果文字颜色。
+    /// </summary>
+    public Color TextTint => textTint;
+
+    /// <summary>
+    /// 当前生效的光影等级。
+    /// </summary>
+    public CardHoloTier Tier => holoTier;
 
     /// <summary>
     /// 初始化卡牌光影叠加层。
@@ -63,6 +74,14 @@ public sealed class CardHoloVisual : MonoBehaviour
     public void SetTier(CardHoloTier tier)
     {
         holoTier = tier;
+        ApplyProfile();
+    }
+
+    /// <summary>
+    /// 用当前光影配置重新套用参数。
+    /// </summary>
+    public void Refresh()
+    {
         ApplyProfile();
     }
 
@@ -152,6 +171,7 @@ public sealed class CardHoloVisual : MonoBehaviour
             rainbowTint = Color.Lerp(settings.rainbowTint, variantColor, 0.82f);
         }
 
+        textTint = settings.textTint;
         runtimeMaterial.SetFloat(HueOffsetId, hueOffset);
         runtimeMaterial.SetColor(RainbowTintId, rainbowTint);
     }

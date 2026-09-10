@@ -201,9 +201,9 @@ public static class CampaignCatalog
 
     private static CardRarity GetLegacyRarity(int cardId)
     {
-        if (cardId == 1103 || cardId == 1107) return CardRarity.Limited;
-        if ((cardId >= 1005 && cardId <= 1008) || cardId == 1010 || cardId == 1012 || cardId == 1017 ||
-            cardId == 1102 || cardId == 1106 || cardId == 1108 || cardId == 1111) return CardRarity.Rare;
+        if (cardId == 1103 || cardId == 1107 || (cardId >= 1006 && cardId <= 1008) || cardId == 1010 ||
+            cardId == 1012 || cardId == 1017 || cardId == 1111) return CardRarity.Limited;
+        if (cardId == 1005 || cardId == 1102 || cardId == 1106 || cardId == 1108) return CardRarity.Rare;
         return CardRarity.Common;
     }
 

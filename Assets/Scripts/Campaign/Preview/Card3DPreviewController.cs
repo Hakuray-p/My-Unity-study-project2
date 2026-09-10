@@ -42,6 +42,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
     private bool isDragging;
     private Material cardBodyMaterial;
     private CardHoloVisual holoVisual;
+    private CardDisplay previewDisplay; // 当前预览卡牌的显示组件
 
     private void Awake()
     {
@@ -116,9 +117,33 @@ public sealed class Card3DPreviewController : MonoBehaviour
         var holoTier = CardHoloTierMapper.FromRarity(cardData.rarity);
         var colorSeed = GetHoloColorSeed(cardData, holoTier);
         ConfigureHoloVisual(cardDisplay != null ? cardDisplay.cardImage : null, holoTier, colorSeed);
+        previewDisplay = cardDisplay;
+        RefreshTextTint();
         if (backCardRenderer != null) backCardRenderer.color = Color.white;
         UpdateVisibleSide();
     }
+
+    /// <summary>
+    /// 按当前档位的字体变色强度刷新名称与效果文字颜色。
+    /// </summary>
+    public void RefreshTextTint()
+    {
+        if (previewDisplay == null || holoVisual == null) return;
+        var tint = Color.Lerp(Color.white, holoVisual.TextTint, holoProfile.GetSettings(holoVisual.Tier).textIntensity);
+        tint.a = 1f;
+        if (previewDisplay.nameText != null) previewDisplay.nameText.color = tint;
+        if (previewDisplay.effectText != null) previewDisplay.effectText.color = tint;
+    }
+
+    /// <summary>
+    /// 当前卡牌光影分级配置。
+    /// </summary>
+    public CardHoloProfile HoloProfile => holoProfile;
+
+    /// <summary>
+    /// 当前卡牌光影叠加控制器。
+    /// </summary>
+    public CardHoloVisual HoloVisual => holoVisual;
 
     /// <summary>
     /// 重置卡牌的旋转和观察距离。

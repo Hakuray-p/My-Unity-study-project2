@@ -146,13 +146,7 @@ Shader "New Gamer Card/Card Pearlescent Surface"
                 float surfaceAlpha = surfaceMask * _SurfaceIntensity * reflection * textureResponse;
                 float artAlpha = artMask * _ArtIntensity * reflection * sourceResponse;
 
-                if (_EffectMode < 0.5)
-                {
-                    surfaceAlpha = 0.0;
-                    artAlpha = 0.0;
-                    pearlColor = lerp(_PearlTint.rgb, pearlColor, 0.28);
-                }
-                else if (_EffectMode < 1.5)
+                if (_EffectMode < 1.5)
                 {
                     pearlColor = lerp(_PearlTint.rgb, pearlColor, 0.62);
                 }
