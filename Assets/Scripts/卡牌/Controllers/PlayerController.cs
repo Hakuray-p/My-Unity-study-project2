@@ -5,37 +5,39 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 
+// 战斗中的一方玩家，管理牌堆、手牌、场上、墓地和费用生命
 public class PlayerController : MonoBehaviour
 {
-    public int playerId;
-    public int deckId;
+    public int playerId; // 玩家编号
+    public int deckId; // 使用的卡组编号
 
-    public int playerHealth;
-    public int playerHealthMax = 30;
+    public int playerHealth; // 当前生命值
+    public int playerHealthMax = 30; // 生命值上限
 
-    public int cost;
-    public int costMax;
+    public int cost; // 当前部署费用
+    public int costMax; // 部署费用上限
 
-    public DeckData deckData;
+    public DeckData deckData; // 这套牌的数据
 
-    public Transform deckPos;
-    public Transform iconPos;
-    public Transform gravePos;
+    public Transform deckPos; // 牌堆的挂载点
+    public Transform iconPos; // 头像挂载点
+    public Transform gravePos; // 墓地的挂载点
 
     public List<CardController> deckCards = new(); // 卡组
-    public FieldController field;
+    public FieldController field; // 战场区域
     public List<CardController> graveCards = new(); // 墓地
-    public HandContainer hands;
+    public HandContainer hands; // 手牌区域
 
-    [Header("UI")] 
-    public TMP_Text costText;
-    public TMP_Text healthText;
+    [Header("UI")]
+    public TMP_Text costText; // 费用显示
+    public TMP_Text healthText; // 生命值显示
 
 
-    public bool isMainPlayer;
-    public bool isInTurn;
-    public int fatigueLevel;
+    public bool isMainPlayer; // 是不是玩家本人
+    public bool isInTurn; // 是不是轮到这一方
+    public int fatigueLevel; // 疲劳等级
 
+    // 初始化这一方：准备牌堆、洗牌，并设好初始费用和生命
     public void Init(IList<int> cardIds = null, bool populateDeck = true)
     {
         if (deckCards == null) deckCards = new List<CardController>();
@@ -62,7 +64,7 @@ public class PlayerController : MonoBehaviour
 
         if (populateDeck)
         {
-            foreach (var cardId in deckData.cardDataList)
+            foreach (int cardId in deckData.cardDataList)
             {
                 CreateRuntimeCard(cardId, CardState.Deck);
             }
@@ -82,6 +84,7 @@ public class PlayerController : MonoBehaviour
         UpdateHealthUI();
     }
 
+    // 清掉这一方所有运行时的卡牌实例
     public void ClearRuntimeCards()
     {
         DestroyCards(deckCards);
@@ -94,6 +97,7 @@ public class PlayerController : MonoBehaviour
         if (graveCards != null) graveCards.Clear();
     }
 
+    // 销毁一批卡牌实例
     private void DestroyCards(IEnumerable<CardController> cards)
     {
         if (cards == null) return;
@@ -103,6 +107,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // 按卡牌 id 造一张运行时实例，并按目标区域挂好
     public CardController CreateRuntimeCard(int cardId, CardState state)
     {
         if (GM.Ins == null || GM.Ins.DM == null || GM.Ins.DM.cardListSO == null ||
@@ -114,7 +119,7 @@ public class PlayerController : MonoBehaviour
         CardData cardData = GM.Ins.DM.cardListSO.GetData(cardId);
         if (cardData == null) return null;
 
-        CardController card = Instantiate(GM.Ins.BM.cardPrefab).GetComponent<CardController>();
+        CardController card = Instantiate(GM.Ins.BM.cardPrefab);
         card.Init(cardData, this);
         card.cardState = state;
         switch (state)
@@ -138,12 +143,13 @@ public class PlayerController : MonoBehaviour
         return card;
     }
 
+    // 洗牌，顺便播洗牌音效
     public void shuffleDeck()
     {
         for (int i = 0; i < deckCards.Count; i++)
         {
             int rad = Random.Range(0, deckCards.Count);
-            var temp = deckCards[i];
+            CardController temp = deckCards[i];
             deckCards[i] = deckCards[rad];
             deckCards[rad] = temp;
         }
@@ -151,6 +157,7 @@ public class PlayerController : MonoBehaviour
         if (GM.Ins != null && GM.Ins.AM != null) GM.Ins.AM.PlayAudio(AudioType.Shuffle);
     }
 
+    // 回合开始：涨费用、抽牌、重置场上的攻击次数
     public virtual void TurnStart()
     {
         // 回合开始时逻辑
@@ -167,7 +174,7 @@ public class PlayerController : MonoBehaviour
         if (GM.Ins != null && GM.Ins.BM != null) GM.Ins.BM.DrawCard(this, GameConst.turnDraw);
         // 场上所有干员重置攻击
         if (field == null || field.cards == null) return;
-        foreach (var card in field.cards)
+        foreach (CardController card in field.cards)
         {
             if (card.mumberAtk != 0)
             {
@@ -176,11 +183,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // 回合结束，交出手牌权
     public virtual void TurnEnd()
     {
         isInTurn = false;
     }
 
+    // 刷新费用显示
     public void UpdateCostUI()
     {
         if (costText == null) return;
@@ -188,11 +197,13 @@ public class PlayerController : MonoBehaviour
         costText.transform.DOScale(Vector3.one * 1.5f, 0.3f).SetLoops(2, LoopType.Yoyo);
     }
 
+    // 刷新生命值显示
     public void UpdateHealthUI()
     {
         if (healthText != null) healthText.text = playerHealth.ToString();
     }
 
+    // 玩家受伤，扣血并刷新界面
     public void TakeDamage(int num)
     {
         playerHealth -= num;
@@ -200,6 +211,7 @@ public class PlayerController : MonoBehaviour
         if (GM.Ins != null && GM.Ins.AM != null) GM.Ins.AM.PlayAudio(AudioType.Damage);
     }
 
+    // 玩家回血，不超过上限
     public void Heal(int num)
     {
         playerHealth += num;

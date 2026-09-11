@@ -4,52 +4,54 @@ using UnityEngine;
 /// <summary>
 /// HD 城市探索场景中的可操作像素角色。
 /// </summary>
+// HD 城市探索场景中的可移动像素角色，负责移动、贴地和四向动画
 public sealed class AmiyaCharacter : MonoBehaviour
 {
-    [Min(0.1f)] public float moveSpeed = 4f;
-    [Min(1f)] public float animationFPS = 8f;
-    public string resourceBase = "Ark Image/Amiya/amiya";
-    public string fallbackResource = "Ark Image/阿米娅";
-    [Min(1)] public int frameCount = 8;
-    [Min(1f)] public float pixelsPerUnit = 100f;
-    [Min(1f)] public float forwardTailFrameHold = 2.5f;
+    [Min(0.1f)] public float moveSpeed = 4f; // 移动速度
+    [Min(1f)] public float animationFPS = 8f; // 动画帧率
+    public string resourceBase = "Ark Image/Amiya/amiya"; // 默认贴图的 Resources 前缀
+    public string fallbackResource = "Ark Image/阿米娅"; // 找不到贴图时的兜底资源
+    [Min(1)] public int frameCount = 8; // 每个方向的帧数
+    [Min(1f)] public float pixelsPerUnit = 100f; // 每单位像素数
+    [Min(1f)] public float forwardTailFrameHold = 2.5f; // 朝前动画末帧的停留倍数
     [Header("Authored sprite sheets")]
-    public Texture2D downRightSheet;
-    public Texture2D downLeftSheet;
-    public Texture2D leftSheet;
-    public Texture2D rightSheet;
-    public Texture2D backSheet;
-    [Min(1f)] public float sheetPixelsPerUnit = 160f;
-    [Min(1f)] public float backSheetPixelsPerUnit = 395f;
+    public Texture2D downRightSheet; // 朝右下的贴图
+    public Texture2D downLeftSheet; // 朝左下的贴图
+    public Texture2D leftSheet; // 朝左的贴图
+    public Texture2D rightSheet; // 朝右的贴图
+    public Texture2D backSheet; // 背面的贴图
+    [Min(1f)] public float sheetPixelsPerUnit = 160f; // 拼图的每单位像素数
+    [Min(1f)] public float backSheetPixelsPerUnit = 395f; // 背面拼图的每单位像素数
     [Header("Authored frame sizing")]
     [Tooltip("World-space height shared by the visible pixels of every authored frame.")]
-    [Min(0.1f)] public float authoredCharacterHeight = 1.95f;
-    public bool normalizeAuthoredFrameSize = true;
-    public Camera gameplayCamera;
+    [Min(0.1f)] public float authoredCharacterHeight = 1.95f; // 各帧统一到的世界高度
+    public bool normalizeAuthoredFrameSize = true; // 是否按可见像素统一帧尺寸
+    public Camera gameplayCamera; // 场景主相机
     [Header("Grounding")]
-    public LayerMask groundMask = ~0;
-    [Min(0.1f)] public float groundProbeDistance = 3f;
-    [Min(0f)] public float groundOffset = 0.04f;
-    public float minimumSafeY = -5f;
+    public LayerMask groundMask = ~0; // 地面检测层
+    [Min(0.1f)] public float groundProbeDistance = 3f; // 地面探测距离
+    [Min(0f)] public float groundOffset = 0.04f; // 贴地后的高度偏移
+    public float minimumSafeY = -5f; // 低于这个高度就判定为掉出场景
 
-    private SpriteRenderer spriteRenderer;
-    private CharacterController characterController;
-    private Sprite[][] frames;
-    private Sprite[] downRightFrames;
-    private Sprite[] downLeftFrames;
-    private bool usingAuthoredSheets;
-    private bool useLeftDownSheet;
-    private int facing;
-    private int currentFrame;
-    private float frameTimer;
-    private bool hasShownForwardTurn;
-    private bool forwardTurnPlaying;
-    private bool wasMovingForward;
-    private int forwardTurnFrame;
-    private Vector3 lastSafePosition;
-    private bool hasSafePosition;
-    private readonly RaycastHit[] groundHits = new RaycastHit[16];
+    private SpriteRenderer spriteRenderer; // 角色渲染器
+    private CharacterController characterController; // 角色控制器
+    private Sprite[][] frames; // 四个方向的动画帧
+    private Sprite[] downRightFrames; // 朝右下的动画帧
+    private Sprite[] downLeftFrames; // 朝左下的动画帧
+    private bool usingAuthoredSheets; // 是否在用 Inspector 指定的大图
+    private bool useLeftDownSheet; // 朝下时是否改用左下的那张图
+    private int facing; // 当前朝向，0 下 1 上 2 左 3 右
+    private int currentFrame; // 当前帧序号
+    private float frameTimer; // 帧计时
+    private bool hasShownForwardTurn; // 是否已经播过第一次转身
+    private bool forwardTurnPlaying; // 是否正在播转身动画
+    private bool wasMovingForward; // 上一帧是否在朝前移动
+    private int forwardTurnFrame; // 转身动画的当前帧
+    private Vector3 lastSafePosition; // 最近一次的安全位置
+    private bool hasSafePosition; // 是否记录过安全位置
+    private readonly RaycastHit[] groundHits = new RaycastHit[16]; // 地面检测结果缓存
 
+    // 补齐渲染器和角色控制器，记下初始安全位置
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -87,6 +89,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         hasSafePosition = true;
     }
 
+    // 每帧处理移动、动画和落地
     private void Update()
     {
         if (spriteRenderer == null) return;
@@ -161,6 +164,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         if (IsInvalidPosition()) RecoverToSafePosition();
     }
 
+    // 让角色朝向摄像机
     private void FaceCamera()
     {
         if (gameplayCamera == null) return;
@@ -169,6 +173,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(towardCamera.normalized, Vector3.up);
     }
 
+    // 向下打射线取最近的地面高度
     private bool TryGetGround(out RaycastHit closestHit)
     {
         closestHit = default;
@@ -193,6 +198,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         return found;
     }
 
+    // 把角色贴到地面并记成安全位置
     private void SetGroundHeight(float groundY)
     {
         Vector3 position = transform.position;
@@ -202,6 +208,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         hasSafePosition = true;
     }
 
+    // 站着不动时也把角色贴回地面，掉太深就送回安全位置
     private void MaintainGround()
     {
         if (TryGetGround(out RaycastHit hit))
@@ -213,6 +220,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         if (transform.position.y < minimumSafeY) RecoverToSafePosition();
     }
 
+    // 位置是否变成 NaN / 无穷大或掉出场景
     private bool IsInvalidPosition()
     {
         return float.IsNaN(transform.position.x) || float.IsNaN(transform.position.y) ||
@@ -221,6 +229,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
                transform.position.y < minimumSafeY;
     }
 
+    // 把角色送回最近一次的安全位置
     private void RecoverToSafePosition()
     {
         if (!hasSafePosition) return;
@@ -237,6 +246,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         frameTimer = 0f;
     }
 
+    // 加载四个朝向的行走帧
     private void LoadFrames()
     {
         if (LoadAuthoredSheets()) return;
@@ -268,6 +278,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         }
     }
 
+    // 按美术给的整张图切帧，切得出来就用它
     private bool LoadAuthoredSheets()
     {
         if (downRightSheet == null && downLeftSheet == null && leftSheet == null &&
@@ -293,6 +304,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         return hasAnyFrames;
     }
 
+    // 把一张拼图切成帧，可选按可见像素统一尺寸和轴心
     private Sprite[] CreateSheetFrames(Texture2D sheet, int columns, int rows, float sheetPpu, int frameLimit = -1)
     {
         if (sheet == null || columns < 1 || rows < 1) return null;
@@ -302,7 +314,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         if (cellWidth < 1 || cellHeight < 1) return null;
 
         int capacity = frameLimit > 0 ? Mathf.Min(frameLimit, columns * rows) : columns * rows;
-        List<Sprite> result = new List<Sprite>(capacity);
+        var result = new List<Sprite>(capacity);
         Color32[] pixels = null;
         if (normalizeAuthoredFrameSize && sheet.isReadable)
             pixels = sheet.GetPixels32();
@@ -315,9 +327,9 @@ public sealed class AmiyaCharacter : MonoBehaviour
                 if (frameLimit > 0 && result.Count >= frameLimit)
                     return result.ToArray();
 
-                Rect rect = new Rect(column * cellWidth, textureRow * cellHeight, cellWidth, cellHeight);
+                var rect = new Rect(column * cellWidth, textureRow * cellHeight, cellWidth, cellHeight);
                 float framePpu = sheetPpu;
-                Vector2 pivot = new Vector2(0.5f, 0.08f);
+                var pivot = new Vector2(0.5f, 0.08f);
                 if (pixels != null && TryGetVisibleFrameBounds(pixels, sheet.width, rect,
                     out int minX, out int minY, out int maxX, out int maxY))
                 {
@@ -338,6 +350,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         return result.ToArray();
     }
 
+    // 在单帧里找出非透明像素的包围盒
     private bool TryGetVisibleFrameBounds(Color32[] pixels, int textureWidth, Rect frameRect,
         out int minX, out int minY, out int maxX, out int maxY)
     {
@@ -367,6 +380,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         return maxX >= minX && maxY >= minY;
     }
 
+    // 加载某个朝向的序列帧
     private Sprite[] LoadDirection(string direction)
     {
         Sprite[] result = new Sprite[frameCount];
@@ -388,6 +402,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         return result;
     }
 
+    // 按移动方向决定朝哪一面
     private void UpdateFacing(Vector3 move, Vector3 forward, Vector3 right)
     {
         float forwardAmount = Vector3.Dot(move, forward);
@@ -401,6 +416,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
             SetFacing(rightAmount >= 0f ? 2 : 3);
     }
 
+    // 切换朝向，换向时重置帧
     private void SetFacing(int direction)
     {
         int nextFacing = Mathf.Clamp(direction, 0, 3);
@@ -413,6 +429,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         ApplyFrame();
     }
 
+    // 按帧率推进当前朝向的行走动画
     private void AdvanceStandardAnimation()
     {
         if (usingAuthoredSheets && facing == 0)
@@ -432,6 +449,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         }
     }
 
+    // 朝前移动的动画，普通贴图会先播一次转身再进入走路循环
     private void AdvanceForwardAnimation()
     {
         if (usingAuthoredSheets)
@@ -449,6 +467,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
             AdvanceForwardWalk();
     }
 
+    // 朝前走时先播一次转身动画
     private void BeginForwardAnimation()
     {
         frameTimer = 0f;
@@ -465,6 +484,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         currentFrame = GetForwardWalkFirstFrame();
     }
 
+    // 推进转身动画，播完接着走
     private void AdvanceForwardTurn()
     {
         int lastTurnFrame = Mathf.Min(3, Mathf.Max(0, frameCount - 1));
@@ -487,6 +507,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         }
     }
 
+    // 朝前走路循环，最后一帧多停一会
     private void AdvanceForwardWalk()
     {
         int firstWalkFrame = GetForwardWalkFirstFrame();
@@ -505,11 +526,13 @@ public sealed class AmiyaCharacter : MonoBehaviour
         }
     }
 
+    // 取朝前走动画的起始帧
     private int GetForwardWalkFirstFrame()
     {
         return Mathf.Min(4, Mathf.Max(0, frameCount - 1));
     }
 
+    // 把当前帧画到渲染器上
     private void ApplyFrame()
     {
         if (spriteRenderer == null || frames == null || frames.Length <= facing) return;
@@ -519,6 +542,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         if (directionFrames[index] != null) spriteRenderer.sprite = directionFrames[index];
     }
 
+    // 取当前朝向该用的帧数组，朝下时还要分左右
     private Sprite[] GetCurrentDirectionFrames()
     {
         if (facing == 0 && usingAuthoredSheets)
@@ -533,6 +557,7 @@ public sealed class AmiyaCharacter : MonoBehaviour
         return frames != null && frames.Length > facing ? frames[facing] : null;
     }
 
+    // 取当前朝向有多少帧
     private int GetCurrentFrameCount()
     {
         Sprite[] directionFrames = GetCurrentDirectionFrames();

@@ -4,22 +4,24 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+// 卡牌预览场景的总管理器。
+// 卡片 3D 预览场景的总管理，界面对象都是运行时现搭的。
 public sealed class CardPreviewSceneGM : MonoBehaviour
 {
     [SerializeField] private Card3DPreviewController previewController; // 场景中的3D卡牌预览
     [SerializeField] private TMP_FontAsset previewFont; // 预览界面字体
     [SerializeField] private Vector2 referenceResolution = new Vector2(1920f, 1080f); // UI参考分辨率
 
-    private Camera previewCamera;
+    private Camera previewCamera; // 预览场景的相机，取 Camera.main
     private RectTransform canvasRoot; // 预览界面 Canvas 根节点
 
     /// <summary>
     /// 注册卡牌预览场景加载事件。
     /// </summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    // 把场景加载回调挂到 Unity 的场景事件上
     private static void RegisterSceneLoaded()
     {
-        SceneManager.sceneLoaded -= CreateSceneManager;
         SceneManager.sceneLoaded += CreateSceneManager;
     }
 
@@ -33,6 +35,7 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
             new GameObject("CardPreviewSceneGM").AddComponent<CardPreviewSceneGM>();
     }
 
+    // 准备预览摄像机、灯光和界面
     private void Awake()
     {
         Time.timeScale = 1f;
@@ -45,20 +48,23 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         CreateCanvas();
     }
 
+    // 要显示的卡由商店通过 SceneFlowService 传进来，没请求时用 1001 德克萨斯
     private void Start()
     {
-        if (!SceneFlowService.TryConsumeCardPreviewRequest(out var cardId)) cardId = 1001;
-        var cardData = CampaignCatalog.GetCardData(cardId);
+        if (!SceneFlowService.TryConsumeCardPreviewRequest(out int cardId)) cardId = 1001;
+        CardData cardData = CampaignCatalog.GetCardData(cardId);
         previewController.SetPreviewCamera(previewCamera);
         previewController.SetCard(cardData);
         CreateHoloTuner(cardData);
     }
 
+    // Esc 返回商店
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape)) ReturnToShop();
     }
 
+    // 把主摄像机调成拍卡牌用的参数
     private void ConfigureCamera()
     {
         previewCamera.clearFlags = CameraClearFlags.SolidColor;
@@ -69,9 +75,11 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         previewCamera.allowHDR = true;
     }
 
+    // 用场景自带的平行光当主光，再补一盏暖色方向光
+    // 只用一盏主光的话卡面背光侧会发死
     private void ConfigureLighting()
     {
-        var keyLight = GameObject.Find("Directional Light")?.GetComponent<Light>();
+        Light keyLight = GameObject.Find("Directional Light")?.GetComponent<Light>();
         if (keyLight != null)
         {
             keyLight.type = LightType.Directional;
@@ -81,13 +89,14 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         }
 
         var fillLightObject = new GameObject("CardPreviewFillLight");
-        var fillLight = fillLightObject.AddComponent<Light>();
+        Light fillLight = fillLightObject.AddComponent<Light>();
         fillLight.type = LightType.Directional;
         fillLight.intensity = 0.35f;
         fillLight.color = new Color(1f, 0.55f, 0.42f, 1f);
         fillLightObject.transform.rotation = Quaternion.Euler(-20f, 145f, 0f);
     }
 
+    // 补一个 EventSystem，否则 UI 按钮点不动
     private void CreateEventSystem()
     {
         if (EventSystem.current != null) return;
@@ -96,19 +105,20 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         eventSystemObject.AddComponent<StandaloneInputModule>();
     }
 
+    // 搭出预览用的 UI 画布和返回按钮
     private void CreateCanvas()
     {
         var canvasObject = new GameObject("CardPreviewCanvas");
-        var canvas = canvasObject.AddComponent<Canvas>();
+        Canvas canvas = canvasObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        var canvasScaler = canvasObject.AddComponent<CanvasScaler>();
+        CanvasScaler canvasScaler = canvasObject.AddComponent<CanvasScaler>();
         canvasScaler.referenceResolution = referenceResolution;
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         canvasObject.AddComponent<GraphicRaycaster>();
         canvasRoot = canvasObject.GetComponent<RectTransform>();
 
-        var returnButton = CreateButton(canvasObject.transform, "返回商店Button", "返回商店");
-        var returnRect = returnButton.GetComponent<RectTransform>();
+        Button returnButton = CreateButton(canvasObject.transform, "返回商店Button", "返回商店");
+        RectTransform returnRect = returnButton.GetComponent<RectTransform>();
         returnRect.anchorMin = new Vector2(0f, 1f);
         returnRect.anchorMax = new Vector2(0f, 1f);
         returnRect.pivot = new Vector2(0f, 1f);
@@ -116,8 +126,8 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         returnRect.sizeDelta = new Vector2(190f, 58f);
         returnButton.onClick.AddListener(ReturnToShop);
 
-        var hintText = CreateText(canvasObject.transform, "操作提示Text", "左键拖拽旋转 · 滚轮缩放 · 右侧面板调节光影 · Esc 返回商店");
-        var hintRect = hintText.GetComponent<RectTransform>();
+        TMP_Text hintText = CreateText(canvasObject.transform, "操作提示Text", "左键拖拽旋转 · 滚轮缩放 · 右侧面板调节光影 · Esc 返回商店");
+        RectTransform hintRect = hintText.GetComponent<RectTransform>();
         hintRect.anchorMin = new Vector2(0.5f, 0f);
         hintRect.anchorMax = new Vector2(0.5f, 0f);
         hintRect.pivot = new Vector2(0.5f, 0f);
@@ -128,16 +138,17 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         hintText.raycastTarget = false;
     }
 
+    // 按钮底和文字分开，文字不吃射线
     private Button CreateButton(Transform targetParent, string objectName, string label)
     {
         var buttonObject = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(Button));
         buttonObject.transform.SetParent(targetParent, false);
-        var background = buttonObject.GetComponent<Image>();
+        Image background = buttonObject.GetComponent<Image>();
         background.color = new Color(0.12f, 0.17f, 0.28f, 0.95f);
-        var button = buttonObject.GetComponent<Button>();
+        Button button = buttonObject.GetComponent<Button>();
         button.targetGraphic = background;
-        var text = CreateText(buttonObject.transform, "Label", label);
-        var textRect = text.GetComponent<RectTransform>();
+        TMP_Text text = CreateText(buttonObject.transform, "Label", label);
+        RectTransform textRect = text.GetComponent<RectTransform>();
         textRect.anchorMin = Vector2.zero;
         textRect.anchorMax = Vector2.one;
         textRect.offsetMin = Vector2.zero;
@@ -148,11 +159,12 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         return button;
     }
 
+    // 创建一个统一样式的提示文字
     private TMP_Text CreateText(Transform targetParent, string objectName, string value)
     {
         var textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
         textObject.transform.SetParent(targetParent, false);
-        var text = textObject.GetComponent<TMP_Text>();
+        TMP_Text text = textObject.GetComponent<TMP_Text>();
         text.text = value;
         text.font = previewFont;
         text.color = Color.white;
@@ -165,10 +177,11 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
     /// <summary>
     /// 创建卡牌光影调参面板。
     /// </summary>
+    // 面板铺满整块画布，内部自己按右侧固定宽度排版；
     private void CreateHoloTuner(CardData cardData)
     {
         var tunerObject = new GameObject("CardHoloTunerPanel", typeof(RectTransform));
-        var tunerRect = tunerObject.GetComponent<RectTransform>();
+        RectTransform tunerRect = tunerObject.GetComponent<RectTransform>();
         tunerRect.SetParent(canvasRoot, false);
         tunerRect.anchorMin = Vector2.zero;
         tunerRect.anchorMax = Vector2.one;
@@ -177,6 +190,7 @@ public sealed class CardPreviewSceneGM : MonoBehaviour
         tunerObject.AddComponent<CardHoloTunerPanel>().Initialize(previewController, previewFont, CardHoloTierMapper.FromRarity(cardData.rarity));
     }
 
+    // 返回商店并带上当前的页签和滚动位置
     private void ReturnToShop()
     {
         SceneFlowService.ReturnFromCardPreview();

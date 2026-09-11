@@ -1,18 +1,19 @@
- using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
+// 一张卡牌的静态数据
 public class CardData
 {
     public int index;// 卡牌编号
     public CardType cardType;// 卡牌类型
     public string name;// 卡牌名字
     public int cost; // 部署费用
-    public CardRarity rarity = CardRarity.Common;
-    public string archetype;
-    public int shopPrice;
-    public int unlockPoints;
+    public CardRarity rarity = CardRarity.Common; // 稀有度
+    public string archetype; // 职业 / 阵营
+    public int shopPrice; // 商店售价
+    public int unlockPoints; // 解锁需要的积分门槛
     public int attack;// 攻击力
     public int health;              // 生命值
     public Sprite image;             // 图片

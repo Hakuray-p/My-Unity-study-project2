@@ -1,20 +1,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// 城市场景里玩家和 NPC 的统一管理器，负责生成玩家、恢复位置和创建世界交互点
 public sealed class CharacterGM : MonoBehaviour
 {
-    private CampaignSession session;
-    private Camera gameplayCamera;
-    private Transform player;
-    private Vector3 playerInitialPosition;
-    private bool playerInitialPositionReady;
-    private readonly List<WorldInteractionActor> actors = new List<WorldInteractionActor>();
+    private CampaignSession session; // 当前存档会话
+    private Camera gameplayCamera; // 场景主相机
+    private Transform player; // 玩家角色
+    private Vector3 playerInitialPosition; // 玩家进场景时的初始位置
+    private bool playerInitialPositionReady; // 初始位置是否已经记录过
+    private readonly List<WorldInteractionActor> actors = new List<WorldInteractionActor>(); // 场景里的世界交互点
 
     public Transform Player => player;
     public Vector3 PlayerInitialPosition => playerInitialPosition;
     public IReadOnlyList<WorldInteractionActor> Actors => actors;
     public bool IsReady => player != null;
 
+    // 接手存档和相机，玩家还没生成时补上
     public void Initialize(CampaignSession campaignSession, Camera camera)
     {
         session = campaignSession;
@@ -22,6 +24,7 @@ public sealed class CharacterGM : MonoBehaviour
         if (player == null) SetupPlayer();
     }
 
+    // 把玩家放回存档记录的位置，存档位置接近原点时不动
     public void RestorePlayer()
     {
         if (session.State.playerPosition.sqrMagnitude <= 0.25f) return;
@@ -32,6 +35,7 @@ public sealed class CharacterGM : MonoBehaviour
         player.GetComponent<AmiyaCharacter>()?.SetSafePosition();
     }
 
+    // 按 NPC 名字绑定交互点，场景里没找到就近生成几个默认的
     public void CreateWorldActors()
     {
         if (actors.Count > 0) return;
@@ -40,7 +44,6 @@ public sealed class CharacterGM : MonoBehaviour
         for (int i = 0; i < sceneNpcs.Length; i++)
         {
             HDNpcCharacter npc = sceneNpcs[i];
-            if (npc == null) continue;
             string npcName = npc.name;
             bool isMatchNpc = npcName.Contains("猫姬");
             bool isShopNpc = npcName.Contains("Mrs商人") || npcName.Contains("商人");
@@ -69,6 +72,7 @@ public sealed class CharacterGM : MonoBehaviour
         CreateActor("卡牌商店", WorldInteractionType.Shop, "first_light_shop", null, player.position + new Vector3(3f, 0f, 2f));
     }
 
+    // 把主角摆进场景并配好移动参数
     private void SetupPlayer()
     {
         AmiyaCharacter character = FindObjectOfType<AmiyaCharacter>(true);
@@ -96,9 +100,10 @@ public sealed class CharacterGM : MonoBehaviour
         }
     }
 
+    // 在场景里造一个可交互的 NPC
     private void CreateActor(string label, WorldInteractionType type, string id, string alternateId, Vector3 position)
     {
-        GameObject actorObject = new GameObject("NPC - " + label);
+        var actorObject = new GameObject("NPC - " + label);
         actorObject.transform.position = position;
         SphereCollider trigger = actorObject.AddComponent<SphereCollider>();
         trigger.isTrigger = true;

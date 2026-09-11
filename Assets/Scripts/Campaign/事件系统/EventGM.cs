@@ -7,13 +7,13 @@ using UnityEngine;
 /// </summary>
 public sealed class EventGM : MonoBehaviour
 {
-    [Min(0.1f)] [SerializeField] private float interactionDistance = 2.2f; // 事件点交互距离
+    [Min(0.1f)][SerializeField] private float interactionDistance = 2.2f; // 事件点交互距离
 
-    private CampaignSession session;
-    private CharacterGM characterGM;
-    private Action<string> showStatusAction;
-    private readonly Dictionary<string, WorldEventPoint> eventPoints = new Dictionary<string, WorldEventPoint>();
-    private bool initialized;
+    private CampaignSession session; // 当前存档会话
+    private CharacterGM characterGM; // 角色管理器，用来取玩家位置
+    private Action<string> showStatusAction; // 显示状态提示的回调，由场景 GM 提供
+    private readonly Dictionary<string, WorldEventPoint> eventPoints = new Dictionary<string, WorldEventPoint>(); // 场景里的事件点，按事件 id 索引
+    private bool initialized; // 是否已经初始化
 
     /// <summary>
     /// 初始化事件管理器并绑定场景中的事件点。
@@ -49,17 +49,20 @@ public sealed class EventGM : MonoBehaviour
         }
     }
 
+    // 按 id 取事件数据
     public CampaignEventData GetEvent(string eventId)
     {
         return CampaignCatalog.GetEvent(eventId);
     }
 
+    // 事件是否已经接取、还没完成
     public bool IsActive(string eventId)
     {
         CampaignEventData eventData = GetEvent(eventId);
         return eventData != null && session != null && session.IsEventActive(eventData.cityId, eventId);
     }
 
+    // 事件是不是已经完成
     public bool IsResolved(string eventId)
     {
         CampaignEventData eventData = GetEvent(eventId);
@@ -101,15 +104,16 @@ public sealed class EventGM : MonoBehaviour
         return true;
     }
 
+    // 只让进行中且没完成的事件点显示出来
     private void RefreshEventPoints()
     {
         foreach (WorldEventPoint point in eventPoints.Values)
         {
-            if (point == null) continue;
             point.SetVisible(IsActive(point.EventId) && !IsResolved(point.EventId));
         }
     }
 
+    // 把提示文字交给外部显示
     private void ShowStatus(string message)
     {
         if (showStatusAction != null) showStatusAction(message);

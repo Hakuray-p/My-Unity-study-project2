@@ -9,7 +9,7 @@ using UnityEngine;
 /// <typeparam name="T">单例类型</typeparam>
 public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-    private static T instance; 
+    private static T instance; // 单例实例
     public static T Ins
     {
         get
@@ -22,6 +22,7 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
+    // 场景里出现重复单例时销毁自己
     private void Awake()
     {
         if (Ins != this)

@@ -3,28 +3,30 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+// 远征模式的存档与进度中心，跨场景常驻，其他脚本通过 CampaignSession.Instance 读写。
 [DefaultExecutionOrder(-10000)]
 public class CampaignSession : MonoBehaviour
 {
-    private const string SaveFileName = "campaign_save.json";
-    private const int CurrentSaveVersion = 7;
-    private static CampaignSession instance;
+    private const string SaveFileName = "campaign_save.json"; // 存档文件名，放在 persistentDataPath 下
+    private const int CurrentSaveVersion = 7; // 当前存档版本号，读档时用它判断要不要升级
+    private static CampaignSession instance; // 全局单例
 
-    public static CampaignSession Instance => EnsureInstance();
-    public CampaignSaveData State { get; private set; }
-    public BattleOutcome LastBattleOutcome { get; private set; }
-    public string LastResolvedMatchId { get; private set; }
-    public bool LastBattleResolved { get; private set; }
-    public event Action ProgressChanged;
+    public static CampaignSession Instance => EnsureInstance(); // 单例入口，场景里没有就自动建
+    public CampaignSaveData State { get; private set; } // 当前存档数据
+    public BattleOutcome LastBattleOutcome { get; private set; } // 上一场战斗的结果
+    public string LastResolvedMatchId { get; private set; } // 上一场结算过的比赛 id
+    public bool LastBattleResolved { get; private set; } // 上一场战斗是否已经结算
+    public event Action ProgressChanged; // 进度变化时广播，界面靠它刷新
 
-    public bool HasLegalDeck => State != null && IsLegalDeck(State.lastValidDeckCardIds);
+    public bool HasLegalDeck => State != null && IsLegalDeck(State.lastValidDeckCardIds); // 手上有没有一套合法卡组
     public bool HasPendingBattle => State != null && State.pendingBattle != null &&
-                                    !string.IsNullOrEmpty(State.pendingBattle.matchId);
+                                    !string.IsNullOrEmpty(State.pendingBattle.matchId); // 有没有没打完的比赛
 
+    // 检查卡组是否合法，返回错误说明
     public string GetDeckValidationError(IList<int> deck)
     {
         if (deck == null || deck.Count != 20) return "卡组必须正好包含 20 张牌";
-        Dictionary<int, int> counts = new Dictionary<int, int>();
+        var counts = new Dictionary<int, int>();
         foreach (int cardId in deck)
         {
             if (!counts.ContainsKey(cardId)) counts[cardId] = 0;
@@ -36,6 +38,7 @@ public class CampaignSession : MonoBehaviour
 
     public bool IsLegalDeck(IList<int> deck) => string.IsNullOrEmpty(GetDeckValidationError(deck));
 
+    // 存一份卡组草稿，草稿合法时同时更新正式卡组
     public bool SaveDeckDraft(IList<int> deck)
     {
         if (State == null) return false;
@@ -49,6 +52,7 @@ public class CampaignSession : MonoBehaviour
         return IsLegalDeck(deck);
     }
 
+    // 取进场战斗要用的卡组，没有合法卡组时退回默认卡组
     public List<int> GetBattleDeck()
     {
         if (State == null) return CampaignCatalog.GetDeck(0);
@@ -59,6 +63,7 @@ public class CampaignSession : MonoBehaviour
 
     public bool HasBadge(string badgeId) => State != null && State.badgeIds != null && State.badgeIds.Contains(badgeId);
 
+    // 判断这张卡能不能买，不能买时用 reason 说明原因
     public bool CanBuyCard(CardShopEntry entry, out string reason)
     {
         reason = string.Empty;
@@ -68,6 +73,7 @@ public class CampaignSession : MonoBehaviour
         return true;
     }
 
+    // 买下一张卡：扣金币、记进已拥有，并给 UR 卡分配光影变体种子
     public bool BuyCard(CardShopEntry entry, out string reason)
     {
         if (!CanBuyCard(entry, out reason)) return false;
@@ -79,6 +85,7 @@ public class CampaignSession : MonoBehaviour
         return true;
     }
 
+    // 取某张 UR 卡的光影变体种子，没记录过就返回 false
     public bool TryGetCardHoloVariantSeed(int cardId, out int colorSeed)
     {
         colorSeed = 0;
@@ -89,16 +96,19 @@ public class CampaignSession : MonoBehaviour
         return true;
     }
 
+    // 某个事件在这座城里是不是已经触发、还没结算
     public bool IsEventActive(string cityId, string eventId)
     {
         return GetCityState(cityId).activeEventIds.Contains(eventId);
     }
 
+    // 事件是不是已经完成
     public bool IsEventResolved(string cityId, string eventId)
     {
         return GetCityState(cityId).resolvedEventIds.Contains(eventId);
     }
 
+    // 触发一个事件，记进这座城市的进行中事件
     public void StartEvent(CampaignEventData eventData)
     {
         CitySaveData cityState = GetCityState(eventData.cityId);
@@ -109,6 +119,7 @@ public class CampaignSession : MonoBehaviour
         ProgressChanged?.Invoke();
     }
 
+    // 结算一个事件，发金币和卡牌奖励
     public bool ResolveEvent(CampaignEventData eventData, out bool cardAdded)
     {
         cardAdded = false;
@@ -129,18 +140,20 @@ public class CampaignSession : MonoBehaviour
         return true;
     }
 
+    // 取单例，场景里没有就新建一个常驻对象
     private static CampaignSession EnsureInstance()
     {
         if (instance != null) return instance;
         instance = FindObjectOfType<CampaignSession>();
         if (instance == null)
         {
-            GameObject root = new GameObject("CampaignSession");
+            var root = new GameObject("CampaignSession");
             instance = root.AddComponent<CampaignSession>();
         }
         return instance;
     }
 
+    // 单例初始化：重复的实例销毁掉，自己常驻，然后读档
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -154,6 +167,7 @@ public class CampaignSession : MonoBehaviour
         LoadOrCreate();
     }
 
+    // 读存档，文件不存在或读坏时按新档生成
     public void LoadOrCreate()
     {
         State = null;
@@ -186,6 +200,7 @@ public class CampaignSession : MonoBehaviour
         }
     }
 
+    // 重置存档，开一局新游戏
     public void BeginNewGame()
     {
         State = CreateDefaultState();
@@ -196,6 +211,7 @@ public class CampaignSession : MonoBehaviour
         ProgressChanged?.Invoke();
     }
 
+    // 把存档写到磁盘
     public void Save()
     {
         if (State == null) return;
@@ -209,6 +225,7 @@ public class CampaignSession : MonoBehaviour
 
     public CityData GetCurrentCity() => State == null ? null : CampaignCatalog.GetCity(State.currentCityId);
 
+    // 取某座城市的存档状态，没有就补一条
     public CitySaveData GetCityState(string cityId)
     {
         if (State == null) State = CreateDefaultState();
@@ -225,12 +242,13 @@ public class CampaignSession : MonoBehaviour
         return cityState;
     }
 
+    // 城市是不是已经解锁
     public bool IsCityUnlocked(string cityId)
     {
         return State != null && State.unlockedCityIds != null && State.unlockedCityIds.Contains(cityId);
     }
 
-
+    // 这场比赛是不是已经通关
     public bool IsMatchComplete(string matchId)
     {
         MatchData match = CampaignCatalog.GetMatch(matchId);
@@ -239,6 +257,7 @@ public class CampaignSession : MonoBehaviour
         return cityState.completedMatchIds != null && cityState.completedMatchIds.Contains(matchId);
     }
 
+    // 判断这场比赛现在能不能打
     public bool CanStartMatch(MatchData match)
     {
         if (match == null || !IsCityUnlocked(match.cityId)) return false;
@@ -253,6 +272,7 @@ public class CampaignSession : MonoBehaviour
         return true;
     }
 
+    // 记下要打的比赛和回城位置，切去战斗场景前调用
     public void BeginMatch(MatchData match, Vector3 returnPosition)
     {
         if (match == null) throw new ArgumentNullException(nameof(match));
@@ -264,6 +284,7 @@ public class CampaignSession : MonoBehaviour
         Save();
     }
 
+    // 存一份战斗快照，中途退出也还能接着打
     public void SaveBattleSnapshot(BattleSnapshot snapshot)
     {
         if (State == null || snapshot == null) return;
@@ -272,6 +293,7 @@ public class CampaignSession : MonoBehaviour
         Save();
     }
 
+    // 按待打赛事组装战斗上下文
     public BattleLaunchContext CreateBattleContext()
     {
         if (State == null || string.IsNullOrEmpty(State.pendingMatchId)) return null;
@@ -290,12 +312,13 @@ public class CampaignSession : MonoBehaviour
         };
     }
 
+    // 结算这场比赛的胜负，发奖励并清掉待打状态
     public BattleResult ResolveMatch(bool won)
     {
         MatchData match = State == null ? null : CampaignCatalog.GetMatch(State.pendingMatchId);
         if (match == null) return null;
 
-        BattleResult result = new BattleResult
+        var result = new BattleResult
         {
             matchId = match.matchId,
             cityId = match.cityId,
@@ -355,6 +378,7 @@ public class CampaignSession : MonoBehaviour
 
     public int GetLeaguePoints(string cityId) => GetCityState(cityId).leaguePoints;
 
+    // 重开上一场失败的比赛
     public bool TryRetryLastMatch(Vector3 returnPosition)
     {
         if (string.IsNullOrEmpty(LastResolvedMatchId)) return false;
@@ -364,13 +388,16 @@ public class CampaignSession : MonoBehaviour
         return true;
     }
 
+    // 保留待打状态，只做一次存盘
     public void KeepPendingBattle() => Save();
 
+    // 记下玩家当前所在的位置
     public void SetPlayerPosition(Vector3 position)
     {
         if (State != null) State.playerPosition = position;
     }
 
+    // 取某张卡的强化等级，没强化过就是 0
     public int GetCardUpgradeLevel(int cardId)
     {
         if (State == null || State.cardUpgrades == null) return 0;
@@ -378,10 +405,10 @@ public class CampaignSession : MonoBehaviour
         return upgrade != null ? upgrade.level : 0;
     }
 
-
+    // 造一份初始存档
     private CampaignSaveData CreateDefaultState()
     {
-        CampaignSaveData state = new CampaignSaveData
+        var state = new CampaignSaveData
         {
             version = CurrentSaveVersion,
             currentCityId = CampaignCatalog.Cities.Count > 0 ? CampaignCatalog.Cities[0].cityId : string.Empty,
@@ -400,6 +427,7 @@ public class CampaignSession : MonoBehaviour
         return state;
     }
 
+    // 补齐旧存档缺的字段，清掉失效引用
     private void EnsureStateShape()
     {
         if (State.unlockedCityIds == null) State.unlockedCityIds = new List<string>();
@@ -433,6 +461,7 @@ public class CampaignSession : MonoBehaviour
         State.version = CurrentSaveVersion;
     }
 
+    // 补齐单座城市存档里缺的列表字段
     private void EnsureCityStateShape(CitySaveData cityState)
     {
         if (cityState.completedMatchIds == null) cityState.completedMatchIds = new List<string>();
@@ -443,6 +472,7 @@ public class CampaignSession : MonoBehaviour
         if (cityState.collectedObjectIds == null) cityState.collectedObjectIds = new List<string>();
     }
 
+    // 给刚买到的 UR 卡分配一个随机的光影变体种子
     private void SaveCardHoloVariant(CardShopEntry entry)
     {
         if (entry.rarity != CardRarity.Limited) return;
@@ -455,6 +485,7 @@ public class CampaignSession : MonoBehaviour
         });
     }
 
+    // 把任意字符串压成一个稳定的整数，用作随机种子
     private static int StableSeed(string value)
     {
         unchecked

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 
+// 战斗流程管理，负责开局、出牌、攻击、回合切换和快照续战
 public class BattleManager : MonoBehaviour
 {
     public EffectManager EM;
@@ -18,7 +19,7 @@ public class BattleManager : MonoBehaviour
     public PlayerController GetMainPlayer => _mainPlayer;
     [SerializeField]
     private PlayerController _mainPlayer;
-    
+
     public Transform spellPos;
     public BattleLaunchContext LaunchContext { get; private set; }
     private bool battleResolved;
@@ -28,7 +29,8 @@ public class BattleManager : MonoBehaviour
 
     public bool CanSafelyExit => !battleResolved && !turnChangePending &&
         (EM == null || !EM.IsProcessingEffect) && (TM == null || !TM.IsSelecting);
-    
+
+    // 读取战斗上下文并开战
     public void Init()
     {
         LaunchContext = CampaignSession.Instance.CreateBattleContext();
@@ -37,6 +39,7 @@ public class BattleManager : MonoBehaviour
         StartBattle();
     }
 
+    // Esc 在安全点暂停 / 继续
     private void Update()
     {
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
@@ -57,9 +60,9 @@ public class BattleManager : MonoBehaviour
     // 开始战斗
     public void StartBattle()
     {
-        if (players == null || players.Count == 0) return;
+        if (players.Count == 0) return;
         battleResolved = false;
-        if (_mainPlayer == null) _mainPlayer = players.Find(player => player != null && player.isMainPlayer);
+        if (_mainPlayer == null) _mainPlayer = players.Find(player => player.isMainPlayer);
 
         if (LaunchContext != null && LaunchContext.snapshot != null)
         {
@@ -71,12 +74,11 @@ public class BattleManager : MonoBehaviour
 
         PlayerController firstPlayer = UnityEngine.Random.Range(0, 2) == 0
             ? _mainPlayer
-            : players.Find(player => player != null && player != _mainPlayer);
+            : players.Find(player => player != _mainPlayer);
 
         // 初始化玩家状态
         foreach (var player in players)
         {
-            if (player == null) continue;
             List<int> deck = player.isMainPlayer
                 ? CampaignSession.Instance.GetBattleDeck()
                 : CampaignCatalog.GetDeck(LaunchContext != null ? LaunchContext.enemyDeckId : player.deckId);
@@ -92,9 +94,10 @@ public class BattleManager : MonoBehaviour
         SaveCurrentSnapshot();
     }
 
+    // 把当前战况打包成快照
     public BattleSnapshot ExportSnapshot()
     {
-        BattleSnapshot snapshot = new BattleSnapshot
+        var snapshot = new BattleSnapshot
         {
             matchId = LaunchContext != null ? LaunchContext.matchId : CampaignSession.Instance.State.pendingMatchId,
             randomSeed = LaunchContext != null ? LaunchContext.randomSeed : 0,
@@ -105,8 +108,7 @@ public class BattleManager : MonoBehaviour
 
         foreach (PlayerController player in players)
         {
-            if (player == null) continue;
-            BattlePlayerSnapshot playerSnapshot = new BattlePlayerSnapshot
+            var playerSnapshot = new BattlePlayerSnapshot
             {
                 playerId = player.playerId,
                 health = player.playerHealth,
@@ -127,6 +129,7 @@ public class BattleManager : MonoBehaviour
         return snapshot;
     }
 
+    // 把一批卡牌追加进玩家快照
     private void AddCardSnapshots(BattlePlayerSnapshot playerSnapshot, IEnumerable<CardController> cards)
     {
         if (cards == null) return;
@@ -146,6 +149,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    // 用快照还原战况
     public void ApplySnapshot(BattleSnapshot snapshot)
     {
         if (snapshot == null) return;
@@ -157,7 +161,6 @@ public class BattleManager : MonoBehaviour
         }
         foreach (PlayerController player in players)
         {
-            if (player == null) continue;
             player.Init(null, false);
             BattlePlayerSnapshot playerSnapshot = snapshot.players.Find(item => item.playerId == player.playerId);
             if (playerSnapshot == null) continue;
@@ -190,12 +193,14 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    // 把当前战况写进战役存档
     private void SaveCurrentSnapshot()
     {
         if (battleResolved || LaunchContext == null) return;
         CampaignSession.Instance.SaveBattleSnapshot(ExportSnapshot());
     }
 
+    // 判断能不能召唤：场上不满 7 张且费用够
     public bool CheckSummonCondition(CardController card)
     {
         if (card == null || card.player == null || card.player.field == null || card.cardData == null) return false;
@@ -207,6 +212,7 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
+    // 出牌：扣费、上场并触发登场效果
     public void SummonCard(CardController card)
     {
         if (card == null || card.player == null || card.player.hands == null || card.player.field == null) return;
@@ -232,18 +238,19 @@ public class BattleManager : MonoBehaviour
         SaveCurrentSnapshot();
     }
 
+    // 判断这张牌能不能被攻击，对方有守护时只能打守护
     public bool IsAttackableTarget(CardController target)
     {
         if (target == null || target.player == null || target.player.field == null || target.cardData == null) return false;
         if (target.cardState != CardState.Field) return false;
         // 攻击目标判定逻辑
         // 如果目标有守护则可以攻击
-        if (target.cardData.passiveType == PassiveType.Guard && 
+        if (target.cardData.passiveType == PassiveType.Guard &&
             !target.isSlience) return true;
         if (target.player.field.cards == null) return true;
         foreach (var enemyCard in target.player.field.cards)
         {
-            if(enemyCard != null && enemyCard.cardData != null && enemyCard.cardData.passiveType == PassiveType.Guard &&
+            if (enemyCard != null && enemyCard.cardData != null && enemyCard.cardData.passiveType == PassiveType.Guard &&
                !enemyCard.isSlience)
             {
                 return false; // 如果有其他守护则不能攻击
@@ -252,6 +259,7 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
+    // 判断能不能直接打玩家，对方有守护就不行
     public bool IsAttackablePlayer(PlayerController player)
     {
         if (player == null || player.field == null) return false;
@@ -260,7 +268,7 @@ public class BattleManager : MonoBehaviour
         if (player.field.cards == null) return true;
         foreach (var enemyCard in player.field.cards)
         {
-            if(enemyCard != null && enemyCard.cardData != null && enemyCard.cardData.passiveType == PassiveType.Guard &&
+            if (enemyCard != null && enemyCard.cardData != null && enemyCard.cardData.passiveType == PassiveType.Guard &&
                !enemyCard.isSlience)
             {
                 return false; // 如果有其他守护则不能攻击
@@ -269,6 +277,7 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
+    // 卡牌互相攻击，结算伤害和击杀时点
     public void AttackCard(CardController attacker, CardController target)
     {
         if (attacker == null || target == null || attacker.cardData == null || target.cardData == null) return;
@@ -290,7 +299,7 @@ public class BattleManager : MonoBehaviour
                 }
                 target.TakeDamage(atkValue);
                 attacker.TakeDamage(backAtkValue);
-                
+
 
                 if (target.cardState == CardState.Graveyard)
                 {
@@ -300,7 +309,7 @@ public class BattleManager : MonoBehaviour
                         EM.TriggerCardEffect(TriggerType.BeatDown, attacker);
                     }
                 }
-                else if(target.cardState == CardState.Field)
+                else if (target.cardState == CardState.Field)
                 {
                     // 触发受击者受伤时点
                     if (attacker.cardState == CardState.Graveyard)
@@ -313,6 +322,7 @@ public class BattleManager : MonoBehaviour
             });
     }
 
+    // 干员直接攻击玩家
     public void AttackPlayer(CardController attacker, PlayerController player)
     {
         if (attacker == null || player == null || attacker.cardData == null) return;
@@ -336,6 +346,7 @@ public class BattleManager : MonoBehaviour
             });
     }
 
+    // 干员阵亡，送进墓地并触发退场效果
     public void MumberDied(CardController mumber)
     {
         // 送入墓地，并触发退场效果
@@ -358,6 +369,7 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     /// <param name="spell"></param>
     /// <returns></returns>
+    // 判断法术能不能发动：费用够且满足发动条件
     public bool CheckSpellCastCondition(CardController spell)
     {
         if (spell == null || spell.player == null || spell.cardData == null || EM == null) return false;
@@ -367,6 +379,7 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
+    // 打出法术：扣费、飞到法术位并交给效果管理器
     public void CastSpell(CardController spell)
     {
         if (spell == null || spell.player == null || spell.player.hands == null || spell.cardData == null || spellPos == null) return;
@@ -385,6 +398,7 @@ public class BattleManager : MonoBehaviour
         SaveCurrentSnapshot();
     }
 
+    // 抽牌，牌堆空了就吃疲劳伤害
     public void DrawCard(PlayerController player, int num)
     {
         if (player == null || player.hands == null || player.deckCards == null) return;
@@ -407,6 +421,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    // 结算胜负并显示结果
     private void CheckWin()
     {
         if (battleResolved) return;
@@ -420,6 +435,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    // 按玩家编号取玩家
     public PlayerController GetPlayer(int playerId)
     {
         foreach (var player in players)
@@ -433,8 +449,9 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
-    
 
+
+    // 取对手玩家
     public PlayerController GetEnemyPlayer(int playerId)
     {
         foreach (var player in players)
@@ -452,7 +469,7 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     private void TurnChange()
     {
-        if (curPlayer == null || players == null || players.Count < 2) return;
+        if (curPlayer == null || players.Count < 2) return;
         if (GM.Ins == null || GM.Ins.BM == null) return;
         turnChangePending = true;
         GM.Ins.BM.EM.TriggerStartEnd(TriggerType.End, curPlayer.playerId);
@@ -482,6 +499,7 @@ public class BattleManager : MonoBehaviour
         });
     }
 
+    // 点结束回合按钮时切回合
     public void OnClickTurnEnd(int playerId)
     {
         PlayerController player = GetPlayer(playerId);
@@ -492,16 +510,19 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    // 切到后台时存一次快照
     private void OnApplicationPause(bool paused)
     {
         if (paused) SaveCurrentSnapshot();
     }
 
+    // 退出游戏时存一次快照
     private void OnApplicationQuit()
     {
         SaveCurrentSnapshot();
     }
 
+    // 暂停时画一个简易暂停框
     private void OnGUI()
     {
         if (!pauseOpen) return;

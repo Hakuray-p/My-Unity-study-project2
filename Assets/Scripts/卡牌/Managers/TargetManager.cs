@@ -1,32 +1,32 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 
 
+// 效果选目标时的交互，支持玩家点选和 AI 随机选
 public class TargetManager : MonoBehaviour
 {
     private bool _isSelecting; // 正在选择目标中
     public bool IsSelecting => _isSelecting;
-    private List<CardController> _targetCards = new();
-    private UnityAction<TargetPack> _finishCallBack;
-    public GameObject selectIcon;
-    public SelectContainer selectContainer;
+    private List<CardController> _targetCards = new(); // 候选目标
+    private UnityAction<TargetPack> _finishCallBack; // 选完后的回调
+    public GameObject selectIcon; // 选择时跟随鼠标的图标
+    public SelectContainer selectContainer; // 选牌界面
 
-    private Transform _origionParent;
-    private bool _finishShowBack = true;
+    private Transform _origionParent; // 选择前卡牌所在的父节点
+    private bool _finishShowBack = true; // 选完后要不要把牌面翻回去
 
     // 选择状态
-    private int selectNum;
+    private int selectNum; // 需要选择的数量
 
 
-    private TargetPack _targetPack;
-    private bool _callbackInvoked;
+    private TargetPack _targetPack; // 已选中的目标
+    private bool _callbackInvoked; // 回调是否已经触发过
 
     // 筛选条件 
     //private Func<CardController, bool> filterCondition;
-    //
     private void Update()
     {
         if (_isSelecting)
@@ -48,7 +48,7 @@ public class TargetManager : MonoBehaviour
         }
     }
 
-    //
+    // 开始选目标，亮出瞄准图标
     private void SelectStart()
     {
         _isSelecting = true;
@@ -56,7 +56,7 @@ public class TargetManager : MonoBehaviour
         _targetPack = new TargetPack();
     }
 
-    //
+    // 结束选目标，把候选卡放回原位
     private void SelectFinish(bool showBack = true)
     {
         _isSelecting = false;
@@ -75,7 +75,7 @@ public class TargetManager : MonoBehaviour
         _origionParent = null;
     }
 
-    //
+    // 射线选中一张候选卡，选够就收尾
     public void CheckCard()
     {
         if (_callbackInvoked) return;
@@ -100,7 +100,7 @@ public class TargetManager : MonoBehaviour
         }
     }
 
-    
+
     /// <summary>
     /// 从卡组或墓地里选择
     /// </summary>
@@ -190,10 +190,12 @@ public class TargetManager : MonoBehaviour
 }
 
 [System.Serializable]
+// 一次目标选择的结果
 public class TargetPack
 {
-    public List<CardController> cards = new();
+    public List<CardController> cards = new(); // 选中的卡牌
 
+    // 构造时初始化选中列表
     public TargetPack()
     {
         cards = new List<CardController>();

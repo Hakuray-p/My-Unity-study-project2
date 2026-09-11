@@ -3,31 +3,33 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 猫姬对话框的独立挑战按钮绑定。
-/// 只负责把猫姬的“挑战Button”（也兼容旧的 ChallengeButton）连接到第一城练习赛。
+/// 只负责把猫姬的“挑战Button”连接到第一城练习赛。
 /// </summary>
 public sealed class CatDialogueBattleButton : MonoBehaviour
 {
-    private Button challengeButton;
-    private bool bound;
+    private Button challengeButton; // 猫姬对话框里的挑战按钮
+    private bool bound; // 是否已经绑定过
 
+    // 还没绑定时先尝试绑定
     private void Update()
     {
         if (!bound) Bind();
     }
 
+    // 在猫姬画布里找到挑战按钮并接上点击
     public void Bind()
     {
         if (bound) return;
         Canvas[] canvases = FindObjectsOfType<Canvas>(true);
         foreach (Canvas canvas in canvases)
         {
-            if (canvas == null || !canvas.gameObject.name.Contains("猫姬")) continue;
+            if (!canvas.gameObject.name.Contains("猫姬")) continue;
             Button[] buttons = canvas.GetComponentsInChildren<Button>(true);
 
-            // 优先匹配当前使用的中文名称；同时兼容之前的英文名称。
+            // 在猫姬的对话画布里找挑战按钮
             foreach (Button button in buttons)
             {
-                if (button == null || !IsChallengeButtonName(button.gameObject.name)) continue;
+                if (!IsChallengeButtonName(button.gameObject.name)) continue;
                 challengeButton = button;
                 break;
             }
@@ -36,29 +38,29 @@ public sealed class CatDialogueBattleButton : MonoBehaviour
 
         if (challengeButton == null)
         {
-            Debug.LogWarning("没有找到猫姬 Canvas 下的“挑战Button”（或旧名称 ChallengeButton）。");
+            Debug.LogWarning("没有找到猫姬 Canvas 下的“挑战Button”。");
             return;
         }
 
         Graphic[] graphics = challengeButton.GetComponentsInChildren<Graphic>(true);
         foreach (Graphic graphic in graphics)
-            if (graphic != null && graphic.gameObject != challengeButton.gameObject)
+            if (graphic.gameObject != challengeButton.gameObject)
                 graphic.raycastTarget = false;
 
-        challengeButton.onClick.RemoveListener(StartPracticeMatch);
         challengeButton.onClick.AddListener(StartPracticeMatch);
         bound = true;
         Debug.Log("猫姬 挑战Button 已绑定 first_light_practice。");
     }
 
+    // 按名字判断是不是挑战按钮
     private static bool IsChallengeButtonName(string objectName)
     {
         if (string.IsNullOrEmpty(objectName)) return false;
 
-        return objectName.IndexOf("挑战Button", System.StringComparison.OrdinalIgnoreCase) >= 0
-            || objectName.IndexOf("ChallengeButton", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        return objectName.IndexOf("挑战Button", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
+    // 开练习赛，已经有没打完的战斗时改为继续那场
     private void StartPracticeMatch()
     {
         CampaignSession session = CampaignSession.Instance;
@@ -98,6 +100,7 @@ public sealed class CatDialogueBattleButton : MonoBehaviour
         SceneFlowService.StartMatch(match.matchId, returnPosition);
     }
 
+    // 拼出无法开赛的具体原因
     private static string GetStartBlockReason(CampaignSession session, MatchData match)
     {
         if (session == null || session.State == null) return "CampaignSession 尚未初始化";

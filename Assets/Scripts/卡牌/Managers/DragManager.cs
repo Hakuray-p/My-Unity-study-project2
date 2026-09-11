@@ -1,14 +1,15 @@
-﻿using UnityEngine;
+using UnityEngine;
 
+// 鼠标拖拽：手牌拖到场上是召唤 / 施法，场上卡牌拖到目标上是攻击
 public class DragManager : MonoBehaviour
 {
-    private CardController draggingCard;
-    private Vector3 offset;
-    private bool isDragging = false;
+    private CardController draggingCard; // 正在拖拽的卡牌
+    private Vector3 offset; // 卡牌和鼠标之间的偏移
+    private bool isDragging = false; // 是否正在拖拽
 
-    public GameObject attackAimIcon;
+    public GameObject attackAimIcon; // 攻击矄准图标
 
-    public int mainPlayerId;
+    public int mainPlayerId; // 主玩家编号
 
 
     void Update()
@@ -27,6 +28,7 @@ public class DragManager : MonoBehaviour
         }
     }
 
+    // 按下时判断抓到的是手牌还是可攻击的场上卡牌
     void MouseDown()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -80,6 +82,7 @@ public class DragManager : MonoBehaviour
         }
     }
 
+    // 松开时判定落点：手牌落场做召唤 / 施法，场上卡牌落到目标上做攻击
     void MouseUp()
     {
         CardController releasedCard = draggingCard;
@@ -141,8 +144,8 @@ public class DragManager : MonoBehaviour
                 if (target != null)
                 {
                     // 攻击判定
-                    if (target != releasedCard && 
-                        releasedCard.player != target.player  &&
+                    if (target != releasedCard &&
+                        releasedCard.player != target.player &&
                         GM.Ins.BM.IsAttackableTarget(target))
                     {
                         GM.Ins.BM.AttackCard(releasedCard, target);
@@ -151,9 +154,9 @@ public class DragManager : MonoBehaviour
                 }
                 else
                 {
-                    
+
                     PlayerController player = hit.collider.GetComponentInParent<PlayerController>();
-                    if (player !=null && player!=releasedCard.player &&
+                    if (player != null && player != releasedCard.player &&
                         GM.Ins.BM.IsAttackablePlayer(player))
                     {
                         GM.Ins.BM.AttackPlayer(releasedCard, player);

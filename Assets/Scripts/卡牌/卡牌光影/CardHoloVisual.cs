@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// 卡牌光影叠加，给卡图和卡框各加一层珠光材质并按档位套参数
 public sealed class CardHoloVisual : MonoBehaviour
 {
     private static readonly int MainTexId = Shader.PropertyToID("_MainTex"); // 卡图纹理属性
@@ -94,6 +95,7 @@ public sealed class CardHoloVisual : MonoBehaviour
         SetRotation(borderRuntimeMaterial, normalizedRotation, active);
     }
 
+    // 给一张卡图复制出一层光影叠加对象和材质
     private void EnsureOverlay(SpriteRenderer sourceRenderer, ref GameObject overlayObject, ref SpriteRenderer overlayRenderer, ref Material runtimeMaterial, string objectName, float layerMode)
     {
         if (sourceRenderer == null || overlayRenderer != null) return;
@@ -102,7 +104,7 @@ public sealed class CardHoloVisual : MonoBehaviour
         overlayObject.transform.SetParent(sourceRenderer.transform, false);
         overlayRenderer = overlayObject.AddComponent<SpriteRenderer>();
 
-        var holoShader = Shader.Find("New Gamer Card/Card Pearlescent Surface");
+        Shader holoShader = Shader.Find("New Gamer Card/Card Pearlescent Surface");
         runtimeMaterial = new Material(holoShader)
         {
             name = $"{objectName} Runtime ({gameObject.name})",
@@ -112,6 +114,7 @@ public sealed class CardHoloVisual : MonoBehaviour
         overlayRenderer.material = runtimeMaterial;
     }
 
+    // 让叠加层跟随原渲染器的贴图和大小
     private void SyncOverlay(SpriteRenderer sourceRenderer, SpriteRenderer overlayRenderer, Material runtimeMaterial)
     {
         if (sourceRenderer == null || overlayRenderer == null) return;
@@ -129,9 +132,10 @@ public sealed class CardHoloVisual : MonoBehaviour
         overlayRenderer.enabled = sourceRenderer.enabled && holoTier != CardHoloTier.None;
     }
 
+    // 用当前档位的配置给卡图和卡框各套一遍光影
     private void ApplyProfile()
     {
-        var settings = holoProfile != null
+        CardHoloProfile.TierSettings settings = holoProfile != null
             ? holoProfile.GetSettings(holoTier)
             : GetDefaultSettings(holoTier);
 
@@ -141,6 +145,7 @@ public sealed class CardHoloVisual : MonoBehaviour
         SyncOverlay(borderSourceRenderer, borderOverlayRenderer, borderRuntimeMaterial);
     }
 
+    // 把一档参数写进某层材质，并区分卡图层和卡框层
     private void ApplyProfile(Material runtimeMaterial, CardHoloProfile.TierSettings settings, float layerMode)
     {
         if (runtimeMaterial == null) return;
@@ -159,14 +164,15 @@ public sealed class CardHoloVisual : MonoBehaviour
         ApplyColorVariant(runtimeMaterial, settings);
     }
 
+    // UR 卡按种子换一个色相，其他档位用配置里的虹彩色
     private void ApplyColorVariant(Material runtimeMaterial, CardHoloProfile.TierSettings settings)
     {
-        var hueOffset = 0f;
-        var rainbowTint = settings.rainbowTint;
+        float hueOffset = 0f;
+        Color rainbowTint = settings.rainbowTint;
         if (holoTier == CardHoloTier.UR && colorVariantSeed != 0)
         {
             hueOffset = GetVariantHue(colorVariantSeed);
-            var variantColor = Color.HSVToRGB(hueOffset, 0.62f, 1f);
+            Color variantColor = Color.HSVToRGB(hueOffset, 0.62f, 1f);
             variantColor.a = settings.rainbowTint.a;
             rainbowTint = Color.Lerp(settings.rainbowTint, variantColor, 0.82f);
         }
@@ -176,6 +182,7 @@ public sealed class CardHoloVisual : MonoBehaviour
         runtimeMaterial.SetColor(RainbowTintId, rainbowTint);
     }
 
+    // 把视角旋转量写进材质，控制反光和光带方向
     private static void SetRotation(Material runtimeMaterial, Vector2 normalizedRotation, bool active)
     {
         if (runtimeMaterial == null) return;
@@ -188,9 +195,10 @@ public sealed class CardHoloVisual : MonoBehaviour
                 0f));
     }
 
+    // 把种子散列成一个 0~1 的色相
     private static float GetVariantHue(int seed)
     {
-        var hash = seed;
+        int hash = seed;
         hash = (hash ^ 61) ^ (hash >> 16);
         hash *= 9;
         hash ^= hash >> 4;
@@ -199,6 +207,7 @@ public sealed class CardHoloVisual : MonoBehaviour
         return (hash & int.MaxValue) / (float)int.MaxValue;
     }
 
+    // 没有配置文件时退回各档的脚本默认值
     private static CardHoloProfile.TierSettings GetDefaultSettings(CardHoloTier tier)
     {
         return tier switch
@@ -210,6 +219,7 @@ public sealed class CardHoloVisual : MonoBehaviour
         };
     }
 
+    // 销毁运行时生成的材质和叠加对象
     private void OnDestroy()
     {
         if (cardRuntimeMaterial != null) Destroy(cardRuntimeMaterial);

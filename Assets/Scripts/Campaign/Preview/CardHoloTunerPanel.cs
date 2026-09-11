@@ -57,7 +57,7 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
         editingSettings = holoProfile.GetSettings(tier);
         previewController.HoloVisual.SetTier(tier);
         previewController.RefreshTextTint();
-        for (var index = 0; index < tierButtonImages.Count; index++)
+        for (int index = 0; index < tierButtonImages.Count; index++)
         {
             if (tierButtonImages[index] != null)
                 tierButtonImages[index].color = TierOrder[index] == tier ? SelectedColor : ButtonColor;
@@ -102,25 +102,25 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     /// </summary>
     private void AddFloatRow(string label, float minValue, float maxValue, float currentValue, UnityAction<float> onValueChanged)
     {
-        var row = CreateLayoutObject(rowRoot, label + "Row", RowHeight);
-        var rowLayout = row.AddComponent<HorizontalLayoutGroup>();
+        GameObject row = CreateLayoutObject(rowRoot, label + "Row", RowHeight);
+        HorizontalLayoutGroup rowLayout = row.AddComponent<HorizontalLayoutGroup>();
         rowLayout.spacing = 6f;
         rowLayout.childControlWidth = true;
         rowLayout.childControlHeight = true;
         rowLayout.childForceExpandWidth = false;
         rowLayout.childForceExpandHeight = true;
 
-        var labelText = CreateText(row.transform, "名称Text", label);
+        TMP_Text labelText = CreateText(row.transform, "名称Text", label);
         labelText.alignment = TextAlignmentOptions.Left;
         labelText.GetComponent<LayoutElement>().preferredWidth = LabelWidth;
         labelText.GetComponent<LayoutElement>().minWidth = LabelWidth;
 
-        var valueText = CreateText(row.transform, "数值Text", currentValue.ToString("F3"));
+        TMP_Text valueText = CreateText(row.transform, "数值Text", currentValue.ToString("F3"));
         valueText.alignment = TextAlignmentOptions.Right;
         valueText.GetComponent<LayoutElement>().preferredWidth = ValueWidth;
         valueText.GetComponent<LayoutElement>().minWidth = ValueWidth;
 
-        var slider = CreateSlider(row.transform, minValue, maxValue, currentValue, value =>
+        Slider slider = CreateSlider(row.transform, minValue, maxValue, currentValue, value =>
         {
             valueText.text = value.ToString("F3");
             onValueChanged(value);
@@ -180,9 +180,9 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     /// </summary>
     private void BuildCollapseButton()
     {
-        var button = CreateButton(transform, "收起Button", "收起面板");
+        Button button = CreateButton(transform, "收起Button", "收起面板");
         collapseLabel = button.GetComponentInChildren<TMP_Text>();
-        var buttonRect = button.GetComponent<RectTransform>();
+        RectTransform buttonRect = button.GetComponent<RectTransform>();
         buttonRect.anchorMin = new Vector2(1f, 1f);
         buttonRect.anchorMax = new Vector2(1f, 1f);
         buttonRect.pivot = new Vector2(1f, 1f);
@@ -197,14 +197,14 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     private void BuildPanelBody()
     {
         panelBody = CreateImageObject(transform, "光影调参面板", PanelColor);
-        var bodyRect = panelBody.GetComponent<RectTransform>();
+        RectTransform bodyRect = panelBody.GetComponent<RectTransform>();
         bodyRect.anchorMin = new Vector2(1f, 0f);
         bodyRect.anchorMax = new Vector2(1f, 0f);
         bodyRect.pivot = new Vector2(1f, 0f);
         bodyRect.anchoredPosition = new Vector2(-PanelMargin, PanelMargin);
         bodyRect.sizeDelta = new Vector2(PanelWidth, PanelHeight);
 
-        var bodyLayout = panelBody.AddComponent<VerticalLayoutGroup>();
+        VerticalLayoutGroup bodyLayout = panelBody.AddComponent<VerticalLayoutGroup>();
         bodyLayout.padding = new RectOffset(12, 12, 12, 12);
         bodyLayout.spacing = 8f;
         bodyLayout.childControlWidth = true;
@@ -212,7 +212,7 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
         bodyLayout.childForceExpandWidth = true;
         bodyLayout.childForceExpandHeight = false;
 
-        var title = CreateText(panelBody.transform, "标题Text", "卡牌光影调节");
+        TMP_Text title = CreateText(panelBody.transform, "标题Text", "卡牌光影调节");
         title.alignment = TextAlignmentOptions.Center;
         title.fontSize = 24f;
         title.GetComponent<LayoutElement>().preferredHeight = 34f;
@@ -227,19 +227,19 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     /// </summary>
     private void BuildTierButtons()
     {
-        var row = CreateLayoutObject(panelBody.transform, "档位行", 44f);
-        var rowLayout = row.AddComponent<HorizontalLayoutGroup>();
+        GameObject row = CreateLayoutObject(panelBody.transform, "档位行", 44f);
+        HorizontalLayoutGroup rowLayout = row.AddComponent<HorizontalLayoutGroup>();
         rowLayout.spacing = 6f;
         rowLayout.childControlWidth = true;
         rowLayout.childControlHeight = true;
         rowLayout.childForceExpandWidth = true;
         rowLayout.childForceExpandHeight = true;
 
-        foreach (var tier in TierOrder)
+        foreach (CardHoloTier tier in TierOrder)
         {
-            var button = CreateButton(row.transform, tier + "页签Button", tier.ToString());
+            Button button = CreateButton(row.transform, tier + "页签Button", tier.ToString());
             tierButtonImages.Add(button.targetGraphic as Image);
-            var capturedTier = tier;
+            CardHoloTier capturedTier = tier;
             button.onClick.AddListener(() => SelectTier(capturedTier));
         }
     }
@@ -251,12 +251,12 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     {
         var scrollObject = new GameObject("参数ScrollView", typeof(RectTransform), typeof(ScrollRect));
         scrollObject.transform.SetParent(panelBody.transform, false);
-        var scrollElement = scrollObject.AddComponent<LayoutElement>();
+        LayoutElement scrollElement = scrollObject.AddComponent<LayoutElement>();
         scrollElement.flexibleHeight = 1f;
         scrollElement.minHeight = 200f;
 
-        var viewport = CreateImageObject(scrollObject.transform, "Viewport", new Color(0f, 0f, 0f, 0.18f));
-        var viewportRect = viewport.GetComponent<RectTransform>();
+        GameObject viewport = CreateImageObject(scrollObject.transform, "Viewport", new Color(0f, 0f, 0f, 0.18f));
+        RectTransform viewportRect = viewport.GetComponent<RectTransform>();
         viewportRect.anchorMin = Vector2.zero;
         viewportRect.anchorMax = Vector2.one;
         viewportRect.offsetMin = Vector2.zero;
@@ -272,7 +272,7 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
         rowRoot.anchoredPosition = Vector2.zero;
         rowRoot.sizeDelta = Vector2.zero;
 
-        var contentLayout = content.AddComponent<VerticalLayoutGroup>();
+        VerticalLayoutGroup contentLayout = content.AddComponent<VerticalLayoutGroup>();
         contentLayout.padding = new RectOffset(8, 8, 8, 8);
         contentLayout.spacing = 4f;
         contentLayout.childControlWidth = true;
@@ -280,10 +280,10 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
         contentLayout.childForceExpandWidth = true;
         contentLayout.childForceExpandHeight = false;
 
-        var fitter = content.AddComponent<ContentSizeFitter>();
+        ContentSizeFitter fitter = content.AddComponent<ContentSizeFitter>();
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        var scrollRect = scrollObject.GetComponent<ScrollRect>();
+        ScrollRect scrollRect = scrollObject.GetComponent<ScrollRect>();
         scrollRect.viewport = viewportRect;
         scrollRect.content = rowRoot;
         scrollRect.horizontal = false;
@@ -297,8 +297,8 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     /// </summary>
     private void BuildFooterButtons()
     {
-        var row = CreateLayoutObject(panelBody.transform, "操作行", 46f);
-        var rowLayout = row.AddComponent<HorizontalLayoutGroup>();
+        GameObject row = CreateLayoutObject(panelBody.transform, "操作行", 46f);
+        HorizontalLayoutGroup rowLayout = row.AddComponent<HorizontalLayoutGroup>();
         rowLayout.spacing = 6f;
         rowLayout.childControlWidth = true;
         rowLayout.childControlHeight = true;
@@ -316,7 +316,7 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     {
         var layoutObject = new GameObject(objectName, typeof(RectTransform), typeof(LayoutElement));
         layoutObject.transform.SetParent(targetParent, false);
-        var element = layoutObject.GetComponent<LayoutElement>();
+        LayoutElement element = layoutObject.GetComponent<LayoutElement>();
         element.minHeight = height;
         element.preferredHeight = height;
         return layoutObject;
@@ -340,12 +340,12 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     {
         var buttonObject = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(Button));
         buttonObject.transform.SetParent(targetParent, false);
-        var background = buttonObject.GetComponent<Image>();
+        Image background = buttonObject.GetComponent<Image>();
         background.color = ButtonColor;
-        var button = buttonObject.GetComponent<Button>();
+        Button button = buttonObject.GetComponent<Button>();
         button.targetGraphic = background;
-        var text = CreateText(buttonObject.transform, "Label", label);
-        var textRect = text.GetComponent<RectTransform>();
+        TMP_Text text = CreateText(buttonObject.transform, "Label", label);
+        RectTransform textRect = text.GetComponent<RectTransform>();
         textRect.anchorMin = Vector2.zero;
         textRect.anchorMax = Vector2.one;
         textRect.offsetMin = Vector2.zero;
@@ -362,7 +362,7 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     {
         var textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI), typeof(LayoutElement));
         textObject.transform.SetParent(targetParent, false);
-        var text = textObject.GetComponent<TMP_Text>();
+        TMP_Text text = textObject.GetComponent<TMP_Text>();
         text.text = value;
         text.font = panelFont;
         text.color = Color.white;
@@ -380,13 +380,13 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
     {
         var sliderObject = new GameObject("Slider", typeof(RectTransform), typeof(Slider), typeof(LayoutElement));
         sliderObject.transform.SetParent(targetParent, false);
-        var slider = sliderObject.GetComponent<Slider>();
+        Slider slider = sliderObject.GetComponent<Slider>();
         slider.minValue = minValue;
         slider.maxValue = maxValue;
         slider.value = currentValue;
 
-        var background = CreateImageObject(sliderObject.transform, "Background", TrackColor);
-        var backgroundRect = background.GetComponent<RectTransform>();
+        GameObject background = CreateImageObject(sliderObject.transform, "Background", TrackColor);
+        RectTransform backgroundRect = background.GetComponent<RectTransform>();
         backgroundRect.anchorMin = new Vector2(0f, 0.5f);
         backgroundRect.anchorMax = new Vector2(1f, 0.5f);
         backgroundRect.anchoredPosition = Vector2.zero;
@@ -394,14 +394,14 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
 
         var fillArea = new GameObject("Fill Area", typeof(RectTransform));
         fillArea.transform.SetParent(sliderObject.transform, false);
-        var fillAreaRect = fillArea.GetComponent<RectTransform>();
+        RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
         fillAreaRect.anchorMin = new Vector2(0f, 0.5f);
         fillAreaRect.anchorMax = new Vector2(1f, 0.5f);
         fillAreaRect.anchoredPosition = Vector2.zero;
         fillAreaRect.sizeDelta = new Vector2(-16f, 8f);
 
-        var fill = CreateImageObject(fillArea.transform, "Fill", FillColor);
-        var fillRect = fill.GetComponent<RectTransform>();
+        GameObject fill = CreateImageObject(fillArea.transform, "Fill", FillColor);
+        RectTransform fillRect = fill.GetComponent<RectTransform>();
         fillRect.anchorMin = Vector2.zero;
         fillRect.anchorMax = Vector2.one;
         fillRect.anchoredPosition = Vector2.zero;
@@ -410,14 +410,14 @@ public sealed class CardHoloTunerPanel : MonoBehaviour
 
         var handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
         handleArea.transform.SetParent(sliderObject.transform, false);
-        var handleAreaRect = handleArea.GetComponent<RectTransform>();
+        RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
         handleAreaRect.anchorMin = Vector2.zero;
         handleAreaRect.anchorMax = Vector2.one;
         handleAreaRect.offsetMin = new Vector2(8f, 0f);
         handleAreaRect.offsetMax = new Vector2(-8f, 0f);
 
-        var handle = CreateImageObject(handleArea.transform, "Handle", HandleColor);
-        var handleRect = handle.GetComponent<RectTransform>();
+        GameObject handle = CreateImageObject(handleArea.transform, "Handle", HandleColor);
+        RectTransform handleRect = handle.GetComponent<RectTransform>();
         handleRect.sizeDelta = new Vector2(14f, 0f);
         slider.handleRect = handleRect;
         slider.targetGraphic = handle.GetComponent<Image>();

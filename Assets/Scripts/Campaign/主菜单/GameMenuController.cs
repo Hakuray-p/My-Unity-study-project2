@@ -1,12 +1,15 @@
 using UnityEngine;
 
+// 主菜单界面，用 OnGUI 画出开始新游戏与继续游戏两个按钮。
 public class GameMenuController : MonoBehaviour
 {
+    // 提前创建存档会话，保证进菜单时单例已就绪
     private void Start()
     {
         CampaignSession.Instance.ToString();
     }
 
+    // 用 IMGUI 画出主菜单
     private void OnGUI()
     {
         const float width = 420f;

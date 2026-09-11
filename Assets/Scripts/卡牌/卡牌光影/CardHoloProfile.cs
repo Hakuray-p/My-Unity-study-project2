@@ -1,9 +1,11 @@
 using System;
 using UnityEngine;
 
+// 卡牌光影配置：一个资源文件里存放 R / SR / UR 三档参数，由 CardHoloVisual 和调参面板共用。
 [CreateAssetMenu(fileName = "CardHoloProfile", menuName = "ArkCard/Card Holo Profile")]
 public sealed class CardHoloProfile : ScriptableObject
 {
+    // 单档的光影参数
     [Serializable]
     public struct TierSettings
     {
@@ -21,6 +23,7 @@ public sealed class CardHoloProfile : ScriptableObject
         [Range(0f, 1f)] public float textIntensity; // 名称与效果文字变色强度
         public Color textTint; // 名称与效果文字颜色
 
+        // 按顺序接收一档的全部参数
         public TierSettings(
             float frame,
             float surface,
@@ -61,6 +64,7 @@ public sealed class CardHoloProfile : ScriptableObject
     [Header("UR 光影参数")]
     [SerializeField] private TierSettings ur = CreateUrDefault(); // UR 光影配置
 
+    // 按档位取参数，未知档位时返回默认值
     public TierSettings GetSettings(CardHoloTier tier)
     {
         return tier switch
@@ -75,6 +79,7 @@ public sealed class CardHoloProfile : ScriptableObject
     /// <summary>
     /// 写回指定档位的光影参数。
     /// </summary>
+    // 只改内存里的资源，落盘由调参面板负责
     public void SetSettings(CardHoloTier tier, TierSettings settings)
     {
         switch (tier)
@@ -97,6 +102,7 @@ public sealed class CardHoloProfile : ScriptableObject
         return CreateSrDefault();
     }
 
+    // SR 默认值，同时作为 R 档的默认值
     public static TierSettings CreateSrDefault()
     {
         return new TierSettings(
@@ -115,6 +121,7 @@ public sealed class CardHoloProfile : ScriptableObject
             Color.white);
     }
 
+    // UR 默认值：彩谱更亮、光带更宽，文字用金色
     public static TierSettings CreateUrDefault()
     {
         return new TierSettings(

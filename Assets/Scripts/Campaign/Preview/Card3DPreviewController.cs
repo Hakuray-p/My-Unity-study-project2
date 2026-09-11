@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+// 3D 卡牌预览的控制器，负责拖拽旋转、滚轮缩放、正反面切换和光影接入
 public sealed class Card3DPreviewController : MonoBehaviour
 {
     [Header("资源")]
@@ -40,10 +41,11 @@ public sealed class Card3DPreviewController : MonoBehaviour
     private Quaternion baseRotation;
     private float observationDistance;
     private bool isDragging;
-    private Material cardBodyMaterial;
-    private CardHoloVisual holoVisual;
+    private Material cardBodyMaterial; // 运行时创建的卡牌主体材质
+    private CardHoloVisual holoVisual; // 卡牌光影叠加控制器
     private CardDisplay previewDisplay; // 当前预览卡牌的显示组件
 
+    // 缓存初始旋转、解析预制体引用并复位视角
     private void Awake()
     {
         baseRotation = transform.localRotation;
@@ -52,11 +54,13 @@ public sealed class Card3DPreviewController : MonoBehaviour
         ResetView();
     }
 
+    // 销毁运行时生成的卡身材质
     private void OnDestroy()
     {
         if (cardBodyMaterial != null) Destroy(cardBodyMaterial);
     }
 
+    // 每帧处理输入、旋转和正反面显示
     private void Update()
     {
         HandleInput();
@@ -66,6 +70,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
         UpdateCameraDistance();
     }
 
+    // 编辑器里改参数时重新解析引用
     private void OnValidate()
     {
         if (Application.isPlaying) return;
@@ -97,8 +102,8 @@ public sealed class Card3DPreviewController : MonoBehaviour
         frontCardVisual.SetActive(true);
         backCardVisual.SetActive(true);
 
-        var cardController = frontCardObject.GetComponent<CardController>();
-        var cardDisplay = cardController != null ? cardController.cardDisplay : frontCardObject.GetComponentInChildren<CardDisplay>(true);
+        CardController cardController = frontCardObject.GetComponent<CardController>();
+        CardDisplay cardDisplay = cardController != null ? cardController.cardDisplay : frontCardObject.GetComponentInChildren<CardDisplay>(true);
         if (cardController != null)
         {
             cardController.Init(cardData, null);
@@ -114,8 +119,8 @@ public sealed class Card3DPreviewController : MonoBehaviour
 
         ApplyPreviewFont();
         DisableGameplayComponents(frontCardObject);
-        var holoTier = CardHoloTierMapper.FromRarity(cardData.rarity);
-        var colorSeed = GetHoloColorSeed(cardData, holoTier);
+        CardHoloTier holoTier = CardHoloTierMapper.FromRarity(cardData.rarity);
+        int colorSeed = GetHoloColorSeed(cardData, holoTier);
         ConfigureHoloVisual(cardDisplay != null ? cardDisplay.cardImage : null, holoTier, colorSeed);
         previewDisplay = cardDisplay;
         RefreshTextTint();
@@ -129,7 +134,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
     public void RefreshTextTint()
     {
         if (previewDisplay == null || holoVisual == null) return;
-        var tint = Color.Lerp(Color.white, holoVisual.TextTint, holoProfile.GetSettings(holoVisual.Tier).textIntensity);
+        Color tint = Color.Lerp(Color.white, holoVisual.TextTint, holoProfile.GetSettings(holoVisual.Tier).textIntensity);
         tint.a = 1f;
         if (previewDisplay.nameText != null) previewDisplay.nameText.color = tint;
         if (previewDisplay.effectText != null) previewDisplay.effectText.color = tint;
@@ -158,13 +163,14 @@ public sealed class Card3DPreviewController : MonoBehaviour
         UpdateVisibleSide();
     }
 
+    // 从子节点里找回正反面和卡框的渲染器引用
     private void ResolvePrefabReferences()
     {
         if (frontCardVisual == null) frontCardVisual = transform.Find("FrontCardVisual")?.gameObject;
         if (backCardVisual == null) backCardVisual = transform.Find("BackCardVisual")?.gameObject;
         if (frontCardObject == null && frontCardVisual != null)
         {
-            var cardController = frontCardVisual.GetComponentInChildren<CardController>(true);
+            CardController cardController = frontCardVisual.GetComponentInChildren<CardController>(true);
             if (cardController != null) frontCardObject = cardController.gameObject;
         }
 
@@ -173,7 +179,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
 
         if (borderRenderer == null && frontCardVisual != null)
         {
-            foreach (var renderer in frontCardVisual.GetComponentsInChildren<SpriteRenderer>(true))
+            foreach (SpriteRenderer renderer in frontCardVisual.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 if (renderer.gameObject.name == "Outline")
                 {
@@ -185,15 +191,16 @@ public sealed class Card3DPreviewController : MonoBehaviour
 
         if (cardBodyRenderer == null)
         {
-            var cardBody = transform.Find("CardBody");
+            Transform cardBody = transform.Find("CardBody");
             if (cardBody != null) cardBodyRenderer = cardBody.GetComponent<MeshRenderer>();
         }
     }
 
+    // 给卡身换一个可调色和光滑度的运行时材质
     private void ConfigureCardBodyMaterial()
     {
         if (cardBodyRenderer == null) return;
-        var shader = Shader.Find("Universal Render Pipeline/Lit");
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null) shader = Shader.Find("Standard");
         if (shader == null) return;
 
@@ -206,16 +213,18 @@ public sealed class Card3DPreviewController : MonoBehaviour
         cardBodyRenderer.material = cardBodyMaterial;
     }
 
+    // 把预览字体套到卡面所有文字上
     private void ApplyPreviewFont()
     {
         if (previewFont == null || frontCardObject == null) return;
-        foreach (var text in frontCardObject.GetComponentsInChildren<TMP_Text>(true))
+        foreach (TMP_Text text in frontCardObject.GetComponentsInChildren<TMP_Text>(true))
         {
             text.font = previewFont;
             text.raycastTarget = false;
         }
     }
 
+    // 把卡牌数据填进卡面显示
     private static void ApplyCardDisplayData(CardDisplay cardDisplay, CardData cardData)
     {
         if (cardDisplay.nameText != null) cardDisplay.nameText.text = cardData.name;
@@ -240,12 +249,13 @@ public sealed class Card3DPreviewController : MonoBehaviour
         if (cardDisplay.back != null) cardDisplay.back.SetActive(false);
     }
 
+    // 关掉卡面上的碰撞和战斗逻辑，只留显示
     private static void DisableGameplayComponents(GameObject cardObject)
     {
-        foreach (var collider in cardObject.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
-        foreach (var collider in cardObject.GetComponentsInChildren<Collider2D>(true)) collider.enabled = false;
-        foreach (var display in cardObject.GetComponentsInChildren<CardDisplay>(true)) display.enabled = false;
-        var controller = cardObject.GetComponent<CardController>();
+        foreach (Collider collider in cardObject.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+        foreach (Collider2D collider in cardObject.GetComponentsInChildren<Collider2D>(true)) collider.enabled = false;
+        foreach (CardDisplay display in cardObject.GetComponentsInChildren<CardDisplay>(true)) display.enabled = false;
+        CardController controller = cardObject.GetComponent<CardController>();
         if (controller != null) controller.enabled = false;
     }
 
@@ -271,13 +281,15 @@ public sealed class Card3DPreviewController : MonoBehaviour
         holoVisual.Configure(cardRenderer, borderRenderer, holoProfile, tier, colorSeed);
     }
 
+    // 取 UR 卡的色相种子，没记录过就用卡牌 id 兜底
     private static int GetHoloColorSeed(CardData cardData, CardHoloTier tier)
     {
         if (tier != CardHoloTier.UR) return 0;
-        if (CampaignSession.Instance.TryGetCardHoloVariantSeed(cardData.index, out var savedSeed)) return savedSeed;
+        if (CampaignSession.Instance.TryGetCardHoloVariantSeed(cardData.index, out int savedSeed)) return savedSeed;
         return cardData.index;
     }
 
+    // 把旋转角度压成 -1~1 的方向值，供光影跟随视角变化
     private void UpdateHoloRotation()
     {
         if (holoVisual == null)
@@ -285,16 +297,17 @@ public sealed class Card3DPreviewController : MonoBehaviour
             return;
         }
 
-        var frontYaw = Mathf.DeltaAngle(0f, rotationAngles.y);
+        float frontYaw = Mathf.DeltaAngle(0f, rotationAngles.y);
         var normalizedRotation = new Vector2(
             Mathf.Clamp(rotationAngles.x / 55f, -1f, 1f),
             Mathf.Clamp(frontYaw / 70f, -1f, 1f));
         holoVisual.SetRotation(normalizedRotation, isDragging);
     }
 
+    // 处理拖拽旋转和滚轮缩放
     private void HandleInput()
     {
-        var pointerOverUi = IsPointerOverUi();
+        bool pointerOverUi = IsPointerOverUi();
         if (Input.GetMouseButtonDown(0) && !pointerOverUi)
         {
             isDragging = true;
@@ -304,9 +317,9 @@ public sealed class Card3DPreviewController : MonoBehaviour
         if (!Input.GetMouseButton(0)) isDragging = false;
         if (isDragging && !pointerOverUi)
         {
-            var mouseDelta = Input.mousePosition - lastMousePosition;
-            var horizontalDirection = horizontalRotationReversed ? -1f : 1f;
-            var verticalDirection = verticalRotationReversed ? -1f : 1f;
+            Vector3 mouseDelta = Input.mousePosition - lastMousePosition;
+            float horizontalDirection = horizontalRotationReversed ? -1f : 1f;
+            float verticalDirection = verticalRotationReversed ? -1f : 1f;
             rotationAngles.y += mouseDelta.x * rotationSpeed * horizontalDirection;
             rotationAngles.x += mouseDelta.y * rotationSpeed * verticalDirection;
             rotationAngles.x = Mathf.Clamp(rotationAngles.x, -verticalRotationLimit, verticalRotationLimit);
@@ -317,26 +330,30 @@ public sealed class Card3DPreviewController : MonoBehaviour
             observationDistance = Mathf.Clamp(observationDistance - Input.mouseScrollDelta.y * zoomSpeed, minObservationDistance, maxObservationDistance);
     }
 
+    // 指针是不是停在 UI 上
     private bool IsPointerOverUi()
     {
         return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 
+    // 把当前旋转角度写到 Transform 上
     private void ApplyRotation()
     {
         transform.localRotation = baseRotation * Quaternion.Euler(rotationAngles.x, rotationAngles.y, 0f);
     }
 
+    // 按视角朝向切换显示正面还是背面
     private void UpdateVisibleSide()
     {
         if (previewCamera == null || frontCardObject == null || backCardVisual == null) return;
-        var cameraDirection = (previewCamera.transform.position - transform.position).normalized;
-        var frontNormal = -transform.forward;
-        var showFront = Vector3.Dot(frontNormal, cameraDirection) >= 0f;
+        Vector3 cameraDirection = (previewCamera.transform.position - transform.position).normalized;
+        Vector3 frontNormal = -transform.forward;
+        bool showFront = Vector3.Dot(frontNormal, cameraDirection) >= 0f;
         frontCardVisual.SetActive(showFront);
         backCardVisual.SetActive(!showFront);
     }
 
+    // 让摄像机保持在设定的观察距离上
     private void UpdateCameraDistance()
     {
         if (previewCamera == null) return;

@@ -3,21 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 战斗音效播放，按类型播对应的音效
 public class AudioManager : MonoBehaviour
 {
-    public AudioClip draw;
-    public AudioClip shuffle;
-    public AudioClip destroy;
-    public AudioClip damage;
-    public AudioClip heal;
-    public AudioClip nextTurn;
-    public AudioClip effect;
-    public AudioClip summon;
+    public AudioClip draw; // 抽卡音效
+    public AudioClip shuffle; // 洗牌音效
+    public AudioClip destroy; // 卡牌被消灭音效
+    public AudioClip damage; // 受伤音效
+    public AudioClip heal; // 治疗音效
+    public AudioClip nextTurn; // 回合切换音效
+    public AudioClip effect; // 效果触发音效
+    public AudioClip summon; // 召唤音效
+    // 预留的初始化入口
     public void Init()
     {
-        
+
     }
 
+    // 在相机位置播一段音效
     public void PlayAudio(AudioClip audioClip)
     {
         if (audioClip == null)
@@ -28,6 +31,7 @@ public class AudioManager : MonoBehaviour
         AudioSource.PlayClipAtPoint(audioClip, Camera.main.transform.position);
     }
 
+    // 按音效类型播对应的音效
     public void PlayAudio(AudioType audioType)
     {
         switch (audioType)

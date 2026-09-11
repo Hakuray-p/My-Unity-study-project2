@@ -9,18 +9,20 @@ public sealed class WorldEventPoint : MonoBehaviour
     [SerializeField] private float markerRadius = 0.65f; // 裂痕标记半径
     [SerializeField] private Color markerColor = new Color(0.75f, 0.1f, 1f, 1f); // 裂痕标记颜色
 
-    private Transform markerVisual;
-    private Material markerMaterial;
-    private bool markerVisible;
+    private Transform markerVisual; // 裂痕标记节点
+    private Material markerMaterial; // 裂痕标记材质
+    private bool markerVisible; // 标记当前是否显示
 
     public string EventId => eventId;
 
+    // 建出裂痕标记并先藏起来
     private void Awake()
     {
         CreateMarker();
         SetVisible(false);
     }
 
+    // 让标记做呼吸缩放
     private void Update()
     {
         if (!markerVisible || markerVisual == null) return;
@@ -37,6 +39,7 @@ public sealed class WorldEventPoint : MonoBehaviour
         if (markerVisual != null) markerVisual.gameObject.SetActive(visible);
     }
 
+    // 用 LineRenderer 拼出地面光圈和裂缝
     private void CreateMarker()
     {
         markerVisual = new GameObject("RiftVisual").transform;
@@ -45,7 +48,7 @@ public sealed class WorldEventPoint : MonoBehaviour
 
         var groundRingObject = new GameObject("GroundRing");
         groundRingObject.transform.SetParent(markerVisual, false);
-        var groundRing = groundRingObject.AddComponent<LineRenderer>();
+        LineRenderer groundRing = groundRingObject.AddComponent<LineRenderer>();
         ConfigureLine(groundRing, 0.06f, true);
         groundRing.positionCount = 32;
         for (int index = 0; index < groundRing.positionCount; index++)
@@ -57,7 +60,7 @@ public sealed class WorldEventPoint : MonoBehaviour
 
         var crackLineObject = new GameObject("CrackLine");
         crackLineObject.transform.SetParent(markerVisual, false);
-        var crackLine = crackLineObject.AddComponent<LineRenderer>();
+        LineRenderer crackLine = crackLineObject.AddComponent<LineRenderer>();
         ConfigureLine(crackLine, 0.1f, false);
         crackLine.positionCount = 7;
         crackLine.SetPosition(0, new Vector3(-0.32f, 0.08f, 0.12f));
@@ -69,6 +72,7 @@ public sealed class WorldEventPoint : MonoBehaviour
         crackLine.SetPosition(6, new Vector3(0.4f, 0.08f, 0.12f));
     }
 
+    // 设置线条渲染器的宽度和颜色
     private void ConfigureLine(LineRenderer lineRenderer, float width, bool loop)
     {
         lineRenderer.useWorldSpace = false;
@@ -80,6 +84,7 @@ public sealed class WorldEventPoint : MonoBehaviour
         lineRenderer.endColor = markerColor;
     }
 
+    // 销毁标记用的运行时材质
     private void OnDestroy()
     {
         if (markerMaterial != null) Destroy(markerMaterial);

@@ -1,114 +1,119 @@
-﻿
-    using System;
-    using System.Collections.Generic;
-    using DG.Tweening;
-    using UnityEngine;
 
-    public class AIController: PlayerController
+using System;
+using System.Collections.Generic;
+using DG.Tweening;
+using UnityEngine;
+
+// 电脑玩家，每 1.5 秒做一个动作：召唤 / 施法 / 攻击 / 结束回合
+public class AIController : PlayerController
+{
+    private bool isStarted = false; // 本回合是否已经开始行动
+    private float timer; // 行动间隔计时
+    // 回合开始后延迟 1 秒才允许 AI 行动
+    public override void TurnStart()
     {
-        private bool isStarted = false;
-        private float timer;
-        public override void TurnStart()
+        base.TurnStart();
+        DOVirtual.DelayedCall(1f, () =>
         {
-            base.TurnStart();
-            DOVirtual.DelayedCall(1f, () =>
-            {
-                isStarted = true;
-            });
-        }
+            isStarted = true;
+        });
+    }
 
-        private void Update()
+    // 每隔 1.5 秒推进一步 AI 行动
+    private void Update()
+    {
+        if (isStarted)
         {
-            if (isStarted)
+            timer += Time.deltaTime;
+            if (timer >= 1.5f)
             {
-                timer += Time.deltaTime;
-                if (timer >= 1.5f)
-                {
-                    timer = 0f;
-                    TickOneStep();
-                }
+                timer = 0f;
+                TickOneStep();
             }
-        }
-
-        private void TickOneStep()
-        {
-            if(GM.Ins.BM.EM.IsProcessingEffect) return;
-            foreach (var handCard in hands.handCards)
-            {
-                if (handCard.cardData.cardType == CardType.MUMBER)
-                {
-                    if (GM.Ins.BM.CheckSummonCondition(handCard))
-                    {
-                        GM.Ins.BM.SummonCard(handCard);
-                        return;
-                    }
-                }
-                else if (handCard.cardData.cardType == CardType.SPELL)
-                {
-                    // 施放法术
-                    if (GM.Ins.BM.CheckSpellCastCondition(handCard))
-                    {
-                        GM.Ins.BM.CastSpell(handCard);
-                        return;
-                    }
-                }
-            }
-
-            foreach (var fieldCard in field.cards)
-            {
-                if (fieldCard.ableAttack)
-                {
-                    // 随机攻击一个可攻击的目标
-                    PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(playerId);
-                    List<CardController> attackableTargets = new List<CardController>();
-                    foreach (var enemyCard in enemyPlayer.field.cards)
-                    {
-                        if (GM.Ins.BM.IsAttackableTarget(enemyCard))
-                        {
-                            attackableTargets.Add(enemyCard);
-                        }
-                    }
-                    CardController targetCard = null;
-                    if (attackableTargets.Count > 0)
-                    {
-                        int randIndex = UnityEngine.Random.Range(0, attackableTargets.Count);
-                        targetCard = attackableTargets[randIndex];
-                    }
-
-                    if (targetCard != null)
-                    {
-                        GM.Ins.BM.AttackCard(fieldCard, targetCard);
-                        return;
-                    }
-                    else
-                    {
-                        if (GM.Ins.BM.IsAttackablePlayer(enemyPlayer))
-                        {
-                            // 攻击对方玩家
-                            GM.Ins.BM.AttackPlayer(fieldCard, enemyPlayer);
-                            return;
-                        }
-                    }
-                }
-            }
-            
-            // 结束回合
-            GM.Ins.BM.OnClickTurnEnd(playerId);
-            isStarted = false;
-        }
-
-        public TargetPack RandomSelect(List<CardController> targetCards, int num)
-        {
-            // AI自动选择（随机且不重复）
-            TargetPack autoTargetPack = new TargetPack();
-            int selectCount = Math.Min(num, targetCards.Count);
-            List<CardController> tempList = new List<CardController>(targetCards);
-            for (int i = 0; i < selectCount; i++)
-            {
-                int randIndex = UnityEngine.Random.Range(0, tempList.Count);
-                autoTargetPack.cards.Add(tempList[randIndex]);
-                tempList.RemoveAt(randIndex);
-            }
-            return autoTargetPack;
         }
     }
+
+    // 按优先级走一步：能召唤就召唤，能施法就施法，能攻击就攻击，都不行就结束回合
+    private void TickOneStep()
+    {
+        if (GM.Ins.BM.EM.IsProcessingEffect) return;
+        foreach (var handCard in hands.handCards)
+        {
+            if (handCard.cardData.cardType == CardType.MUMBER)
+            {
+                if (GM.Ins.BM.CheckSummonCondition(handCard))
+                {
+                    GM.Ins.BM.SummonCard(handCard);
+                    return;
+                }
+            }
+            else if (handCard.cardData.cardType == CardType.SPELL)
+            {
+                // 施放法术
+                if (GM.Ins.BM.CheckSpellCastCondition(handCard))
+                {
+                    GM.Ins.BM.CastSpell(handCard);
+                    return;
+                }
+            }
+        }
+
+        foreach (var fieldCard in field.cards)
+        {
+            if (fieldCard.ableAttack)
+            {
+                // 随机攻击一个可攻击的目标
+                PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(playerId);
+                var attackableTargets = new List<CardController>();
+                foreach (var enemyCard in enemyPlayer.field.cards)
+                {
+                    if (GM.Ins.BM.IsAttackableTarget(enemyCard))
+                    {
+                        attackableTargets.Add(enemyCard);
+                    }
+                }
+                CardController targetCard = null;
+                if (attackableTargets.Count > 0)
+                {
+                    int randIndex = UnityEngine.Random.Range(0, attackableTargets.Count);
+                    targetCard = attackableTargets[randIndex];
+                }
+
+                if (targetCard != null)
+                {
+                    GM.Ins.BM.AttackCard(fieldCard, targetCard);
+                    return;
+                }
+                else
+                {
+                    if (GM.Ins.BM.IsAttackablePlayer(enemyPlayer))
+                    {
+                        // 攻击对方玩家
+                        GM.Ins.BM.AttackPlayer(fieldCard, enemyPlayer);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // 结束回合
+        GM.Ins.BM.OnClickTurnEnd(playerId);
+        isStarted = false;
+    }
+
+    // 从候选目标里随机挑不重复的若干个
+    public TargetPack RandomSelect(List<CardController> targetCards, int num)
+    {
+        // AI自动选择（随机且不重复）
+        var autoTargetPack = new TargetPack();
+        int selectCount = Math.Min(num, targetCards.Count);
+        var tempList = new List<CardController>(targetCards);
+        for (int i = 0; i < selectCount; i++)
+        {
+            int randIndex = UnityEngine.Random.Range(0, tempList.Count);
+            autoTargetPack.cards.Add(tempList[randIndex]);
+            tempList.RemoveAt(randIndex);
+        }
+        return autoTargetPack;
+    }
+}

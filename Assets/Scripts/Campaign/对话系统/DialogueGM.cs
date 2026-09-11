@@ -4,29 +4,31 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// 所有 NPC 对话的统一管理器，负责对话框显示、按钮行为和事件分支
 public sealed class DialogueGM : MonoBehaviour
 {
-    [SerializeField] private float dialogueCloseDistance = 3.5f;
+    [SerializeField] private float dialogueCloseDistance = 3.5f; // 走开多远自动关掉对话
 
-    private CharacterGM characterGM;
-    private CampaignSession session;
-    private EventGM eventGM;
-    private Action<string> startMatchAction;
-    private Action openShopAction;
-    private Action<string> showStatusAction;
-    private Action closePanelsAction;
-    private readonly Dictionary<string, Canvas> dialogueCanvases = new Dictionary<string, Canvas>();
-    private readonly HashSet<Button> dialogueButtonsBound = new HashSet<Button>();
-    private WorldInteractionActor dialogueActor;
-    private bool dialogueOpen;
-    private DialogueState dialogueState;
+    private CharacterGM characterGM; // 角色管理器
+    private CampaignSession session; // 当前存档会话
+    private EventGM eventGM; // 事件管理器
+    private Action<string> startMatchAction; // 开比赛的入口，由场景 GM 提供
+    private Action openShopAction; // 打开商店的入口，由场景 GM 提供
+    private Action<string> showStatusAction; // 显示状态提示的回调
+    private Action closePanelsAction; // 关闭其它面板的回调
+    private readonly Dictionary<string, Canvas> dialogueCanvases = new Dictionary<string, Canvas>(); // 每个 NPC 的对话框，按角色名索引
+    private readonly HashSet<Button> dialogueButtonsBound = new HashSet<Button>(); // 已经挂过点击的按钮，避免重复绑定
+    private WorldInteractionActor dialogueActor; // 当前正在对话的角色
+    private bool dialogueOpen; // 对话框是否打开
+    private DialogueState dialogueState; // 当前事件对话处在哪个阶段
 
+    // 事件对话当前处在哪个阶段
     private enum DialogueState
     {
-        Normal,
-        EventPrompt,
-        EventActive,
-        EventResolved
+        Normal, // 普通对话
+        EventPrompt, // 事件待接取
+        EventActive, // 事件进行中
+        EventResolved // 事件已完成
     }
 
     public bool IsOpen => dialogueOpen;
@@ -44,6 +46,7 @@ public sealed class DialogueGM : MonoBehaviour
         BindDialogueCanvases();
     }
 
+    // 每帧找最近的可对话角色，按 E 开对话，走远或按 E / Esc 关对话
     public void Tick()
     {
         if (characterGM == null || characterGM.Player == null) return;
@@ -60,22 +63,23 @@ public sealed class DialogueGM : MonoBehaviour
         if (nearestActor != null && Input.GetKeyDown(KeyCode.E)) OpenDialogue(nearestActor);
     }
 
+    // 关闭对话并复位状态
     public void Close()
     {
         dialogueActor = null;
         dialogueOpen = false;
         dialogueState = DialogueState.Normal;
         foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
-            if (dialogueCanvas != null) dialogueCanvas.gameObject.SetActive(false);
+            dialogueCanvas.gameObject.SetActive(false);
     }
 
+    // 找玩家附近 2.2 米内最近的交互角色
     private WorldInteractionActor FindNearestActor()
     {
         WorldInteractionActor nearestActor = null;
         float bestDistance = 2.2f;
         foreach (WorldInteractionActor actor in characterGM.Actors)
         {
-            if (actor == null) continue;
             float distance = Vector3.Distance(characterGM.Player.position, actor.transform.position);
             if (distance < bestDistance)
             {
@@ -86,13 +90,13 @@ public sealed class DialogueGM : MonoBehaviour
         return nearestActor;
     }
 
+    // 按名字收集各个 NPC 的对话框，补齐射线组件并先隐藏
     private void BindDialogueCanvases()
     {
         dialogueCanvases.Clear();
         Canvas[] canvases = FindObjectsOfType<Canvas>(true);
         foreach (Canvas dialogueCanvas in canvases)
         {
-            if (dialogueCanvas == null) continue;
             string canvasName = dialogueCanvas.gameObject.name;
             if (canvasName.Contains("猫姬")) dialogueCanvases["猫姬"] = dialogueCanvas;
             else if (canvasName.Contains("企鹅")) dialogueCanvases["企鹅"] = dialogueCanvas;
@@ -104,7 +108,6 @@ public sealed class DialogueGM : MonoBehaviour
 
         foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
         {
-            if (dialogueCanvas == null) continue;
             if (dialogueCanvas.GetComponent<GraphicRaycaster>() == null)
                 dialogueCanvas.gameObject.AddComponent<GraphicRaycaster>();
             dialogueCanvas.sortingOrder = Mathf.Max(dialogueCanvas.sortingOrder, 200);
@@ -113,12 +116,12 @@ public sealed class DialogueGM : MonoBehaviour
         }
     }
 
+    // 给对话框里的功能按钮挂上统一的点击处理
     private void BindDialogueButtons(Canvas dialogueCanvas)
     {
         Button[] buttons = dialogueCanvas.GetComponentsInChildren<Button>(true);
         foreach (Button button in buttons)
         {
-            if (button == null) continue;
             string buttonName = button.gameObject.name;
             if (!IsChallengeButtonName(buttonName) && !IsShopButtonName(buttonName) &&
                 !IsEventButtonName(buttonName) && !IsLeaveButtonName(buttonName) && !IsChatButtonName(buttonName)) continue;
@@ -132,6 +135,7 @@ public sealed class DialogueGM : MonoBehaviour
         }
     }
 
+    // 按按钮种类分派：离开 / 闲聊 / 事件 / 挑战 / 购买
     private void HandleDialogueButton(Button button)
     {
         if (button == null) return;
@@ -184,6 +188,7 @@ public sealed class DialogueGM : MonoBehaviour
         }
     }
 
+    // 打开这个角色对应的对话框
     private void OpenDialogue(WorldInteractionActor actor)
     {
         Canvas activeCanvas = GetDialogueCanvas(actor);
@@ -195,7 +200,7 @@ public sealed class DialogueGM : MonoBehaviour
 
         dialogueActor = actor;
         foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
-            if (dialogueCanvas != null) dialogueCanvas.gameObject.SetActive(false);
+            dialogueCanvas.gameObject.SetActive(false);
         activeCanvas.gameObject.SetActive(true);
         SetDialogueText(activeCanvas, "SpeakerName", actor.displayName);
         SetDialogueText(activeCanvas, "DialogueText", GetChatText(actor.displayName));
@@ -203,6 +208,7 @@ public sealed class DialogueGM : MonoBehaviour
         dialogueOpen = true;
     }
 
+    // 事件按钮，按待接取 / 进行中 / 已完成三种状态切换文案和按钮
     private void HandleEventButton(Canvas activeCanvas)
     {
         if (eventGM == null || dialogueActor == null) return;
@@ -242,6 +248,7 @@ public sealed class DialogueGM : MonoBehaviour
         ConfigureEventPrompt(activeCanvas);
     }
 
+    // 普通对话下按角色类型显示挑战、购买、事件等按钮
     private void ConfigureNormalButtons(Canvas dialogueCanvas, WorldInteractionActor actor)
     {
         dialogueState = DialogueState.Normal;
@@ -263,6 +270,7 @@ public sealed class DialogueGM : MonoBehaviour
         SetButtonInteractable(eventButton, true);
     }
 
+    // 事件待接取时的按钮布局
     private void ConfigureEventPrompt(Canvas dialogueCanvas)
     {
         SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
@@ -277,6 +285,7 @@ public sealed class DialogueGM : MonoBehaviour
         SetButtonInteractable(eventButton, true);
     }
 
+    // 事件进行中时的按钮布局
     private void ConfigureEventActive(Canvas dialogueCanvas)
     {
         SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
@@ -291,6 +300,7 @@ public sealed class DialogueGM : MonoBehaviour
         SetButtonInteractable(eventButton, true);
     }
 
+    // 事件完成后的按钮布局
     private void ConfigureEventResolved(Canvas dialogueCanvas)
     {
         SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
@@ -305,24 +315,28 @@ public sealed class DialogueGM : MonoBehaviour
         SetButtonInteractable(eventButton, false);
     }
 
+    // 按名字条件在对话画布里找按钮
     private static Button FindButton(Canvas dialogueCanvas, Func<string, bool> namePredicate)
     {
         if (dialogueCanvas == null) return null;
         foreach (Button button in dialogueCanvas.GetComponentsInChildren<Button>(true))
-            if (button != null && namePredicate(button.gameObject.name)) return button;
+            if (namePredicate(button.gameObject.name)) return button;
         return null;
     }
 
+    // 显示 / 隐藏按钮
     private static void SetButtonVisible(Button button, bool visible)
     {
         if (button != null) button.gameObject.SetActive(visible);
     }
 
+    // 设置按钮可不可点
     private static void SetButtonInteractable(Button button, bool interactable)
     {
         if (button != null) button.interactable = interactable;
     }
 
+    // 改按钮上的文字
     private static void SetButtonText(Button button, string value)
     {
         if (button == null) return;
@@ -337,6 +351,7 @@ public sealed class DialogueGM : MonoBehaviour
         if (legacyText != null) legacyText.text = value;
     }
 
+    // 按角色显示名匹配对应的对话框
     private Canvas GetDialogueCanvas(WorldInteractionActor actor)
     {
         string actorName = actor != null ? actor.displayName ?? string.Empty : string.Empty;
@@ -345,49 +360,48 @@ public sealed class DialogueGM : MonoBehaviour
         return null;
     }
 
-    private static bool ContainsName(string objectName, string value)
-    {
-        return !string.IsNullOrEmpty(objectName) && objectName.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
+    // 下面几个按钮名都要和场景里的对象名一致，改名要同步这里
     private static bool IsChallengeButtonName(string objectName)
     {
-        return ContainsName(objectName, "挑战Button") || ContainsName(objectName, "ChallengeButton");
+        return objectName.Contains("挑战Button");
     }
 
+    // 按名字判断是不是商店按钮
     private static bool IsShopButtonName(string objectName)
     {
-        return ContainsName(objectName, "商店Button") || ContainsName(objectName, "购买类Buttom") ||
-            ContainsName(objectName, "购买类Button") || ContainsName(objectName, "购买Button") ||
-            ContainsName(objectName, "ShopButton");
+        return objectName.Contains("购买类Buttom");
     }
 
+    // 按名字判断是不是事件按钮
     private static bool IsEventButtonName(string objectName)
     {
-        return ContainsName(objectName, "事件类Button") || ContainsName(objectName, "事件类Buttom") ||
-            ContainsName(objectName, "事件Button") || ContainsName(objectName, "事件Buttom") || ContainsName(objectName, "EventButton");
+        return objectName.Contains("事件类Buttom");
     }
 
+    // 按名字判断是不是闲聊按钮
     private static bool IsChatButtonName(string objectName)
     {
-        return ContainsName(objectName, "闲聊Button") || ContainsName(objectName, "闲聊Buttom") || ContainsName(objectName, "ChatButton");
+        return objectName.Contains("闲聊Buttom");
     }
 
+    // 按名字判断是不是离开按钮
     private static bool IsLeaveButtonName(string objectName)
     {
-        return ContainsName(objectName, "离开Button") || ContainsName(objectName, "离开Buttom") || ContainsName(objectName, "LeaveButton");
+        return objectName.Contains("离开Buttom");
     }
 
+    // 每个 NPC 的闲聊文本
     private static string GetChatText(string npcName)
     {
-        if (ContainsName(npcName, "猫姬")) return "先熟悉一下规则吧。真正的比赛开始后，每一步都要谨慎选择。";
-        if (ContainsName(npcName, "企鹅")) return "河岸边的赛事马上就要开始了，记得先准备好你的卡组。";
-        if (ContainsName(npcName, "黑猫少女")) return "夜灯亮起之前，还有时间再检查一次你的战术。";
-        if (ContainsName(npcName, "神秘弓兵")) return "冠军之路不会因为一次胜利就结束，继续保持专注。";
-        if (ContainsName(npcName, "阿米娅")) return "我们一起探索这座城市吧。";
+        if (npcName.Contains("猫姬")) return "先熟悉一下规则吧。真正的比赛开始后，每一步都要谨慎选择。";
+        if (npcName.Contains("企鹅")) return "河岸边的赛事马上就要开始了，记得先准备好你的卡组。";
+        if (npcName.Contains("黑猫少女")) return "夜灯亮起之前，还有时间再检查一次你的战术。";
+        if (npcName.Contains("神秘弓兵")) return "冠军之路不会因为一次胜利就结束，继续保持专注。";
+        if (npcName.Contains("阿米娅")) return "我们一起探索这座城市吧。";
         return "今天也要加油。";
     }
 
+    // 按对象名找文字组件写入内容，TMP 和旧版 Text 都试一次
     private static void SetDialogueText(Canvas dialogueCanvas, string objectName, string value)
     {
         TMP_Text[] tmpTexts = dialogueCanvas.GetComponentsInChildren<TMP_Text>(true);
@@ -411,6 +425,7 @@ public sealed class DialogueGM : MonoBehaviour
         }
     }
 
+    // 把闲聊内容写进对话框
     private static void ShowChatDialogue(Canvas dialogueCanvas, WorldInteractionActor actor)
     {
         SetDialogueText(dialogueCanvas, "SpeakerName", actor.displayName);

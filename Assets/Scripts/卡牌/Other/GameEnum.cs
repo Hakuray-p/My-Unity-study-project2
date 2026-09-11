@@ -64,15 +64,17 @@ public enum PassiveType
     Swingle = 3,      // 旋风斩
 }
 
+// 卡牌类型
 public enum CardType
 {
     MUMBER = 1,   // 干员卡
     SPELL = 2,    // 法术卡
 }
 
+// 效果发动条件
 public enum ConditionType
 {
-    None=0,
+    None = 0,
     TwoMumber = 1,
     ThreeMoreHand = 2, // 手牌数大于等于3
     HasAmiya = 3, // 有阿米娅存在
@@ -81,14 +83,16 @@ public enum ConditionType
     HasDiedMumber = 6, // 墓地有干员
 }
 
+// 卡牌当前所在区域
 public enum CardState
 {
-    Deck=0,     // 在牌堆中
-    Hand=1,     // 在手牌中
-    Field=2,    // 在场上
-    Graveyard=3,// 在墓地中
+    Deck = 0,     // 在牌堆中
+    Hand = 1,     // 在手牌中
+    Field = 2,    // 在场上
+    Graveyard = 3,// 在墓地中
 }
 
+// 战斗音效类型
 public enum AudioType
 {
     DrawCard = 1,

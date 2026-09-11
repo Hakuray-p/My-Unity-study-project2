@@ -1,18 +1,20 @@
 using UnityEngine;
 
+// 世界里可以互动的 NPC，负责朝向相机和播放待机动画
 public sealed class WorldInteractionActor : MonoBehaviour
 {
-    private CharacterGM characterGM;
-    internal string id;
-    internal string displayName;
-    internal WorldInteractionType type;
-    internal string alternateId;
-    public Sprite[] idleFrames;
-    public float animationFPS = 8f;
-    private SpriteRenderer spriteRenderer;
-    private int frame;
-    private float timer;
+    private CharacterGM characterGM; // 所属的角色管理器
+    internal string id; // 绑定的比赛 / 商店 / 事件 ID
+    internal string displayName; // 显示名
+    internal WorldInteractionType type; // 交互类型
+    internal string alternateId; // 备用的交互 ID，比如打完练习赛后的正式赛
+    public Sprite[] idleFrames; // 待机动画帧
+    public float animationFPS = 8f; // 待机动画帧率
+    private SpriteRenderer spriteRenderer; // 角色渲染器
+    private int frame; // 当前动画帧
+    private float timer; // 帧计时
 
+    // 记下所属管理器和自己的身份
     internal void Bind(CharacterGM characterManager, string actorId, string label, WorldInteractionType actorType)
     {
         characterGM = characterManager;
@@ -22,6 +24,7 @@ public sealed class WorldInteractionActor : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
+    // 设置待机动画帧
     internal void SetIdleFrames(Sprite[] frames, float fps)
     {
         idleFrames = frames;
@@ -32,6 +35,7 @@ public sealed class WorldInteractionActor : MonoBehaviour
             spriteRenderer.sprite = idleFrames[0];
     }
 
+    // 每帧面向相机并播放待机动画
     private void Update()
     {
         Camera camera = HD2DSceneGM.GameplayCamera;

@@ -7,26 +7,28 @@ using UnityEngine;
 /// </summary>
 public class CityArtDirector : MonoBehaviour
 {
-    [SerializeField] private bool harbor;
-    [SerializeField] private Color groundColor = new Color(0.18f, 0.34f, 0.32f);
-    [SerializeField] private GameObject[] landmarkPrefabs = new GameObject[0];
-    [SerializeField] private Vector3[] landmarkPositions = new Vector3[0];
-    [SerializeField] private Vector3[] landmarkRotations = new Vector3[0];
-    [SerializeField] private Vector3[] landmarkScales = new Vector3[0];
+    [SerializeField] private bool harbor; // 是否生成港口区域
+    [SerializeField] private Color groundColor = new Color(0.18f, 0.34f, 0.32f); // 地面颜色
+    [SerializeField] private GameObject[] landmarkPrefabs = new GameObject[0]; // 地标预制体
+    [SerializeField] private Vector3[] landmarkPositions = new Vector3[0]; // 地标位置
+    [SerializeField] private Vector3[] landmarkRotations = new Vector3[0]; // 地标旋转
+    [SerializeField] private Vector3[] landmarkScales = new Vector3[0]; // 地标缩放
 
-    private bool built;
+    private bool built; // 是否已经生成过
 
+    // 场景起来时搭出城市布景
     private void Awake()
     {
         Build();
     }
 
+    // 用基础几何体和地标预制体搭出整座城市
     public void Build()
     {
         if (built) return;
         built = true;
 
-        Transform artRoot = new GameObject("Authored City Art").transform;
+        var artRoot = new GameObject("Authored City Art").transform;
         CreatePrimitive("City Ground", PrimitiveType.Plane, new Vector3(0f, -0.1f, 4f), new Vector3(4.8f, 1f, 4.8f), groundColor, artRoot);
         CreatePrimitive("Main Avenue", PrimitiveType.Cube, new Vector3(0f, 0.06f, 4f), new Vector3(5f, 0.12f, 26f), new Color(0.25f, 0.22f, 0.19f), artRoot);
         CreatePrimitive("Cross Street", PrimitiveType.Cube, new Vector3(0f, 0.08f, 4f), new Vector3(24f, 0.14f, 4.4f), new Color(0.29f, 0.25f, 0.20f), artRoot);
@@ -59,6 +61,7 @@ public class CityArtDirector : MonoBehaviour
         CreateBoundary(new Vector3(22f, 1f, 5f), new Vector3(1f, 2f, 46f), artRoot);
     }
 
+    // 造一个带颜色的基础几何体当布景
     private static GameObject CreatePrimitive(string name, PrimitiveType type, Vector3 position, Vector3 scale, Color color, Transform parent)
     {
         GameObject instance = GameObject.CreatePrimitive(type);
@@ -71,6 +74,7 @@ public class CityArtDirector : MonoBehaviour
         return instance;
     }
 
+    // 放四面透明墙挡住玩家，别让走出场地
     private static void CreateBoundary(Vector3 position, Vector3 scale, Transform parent)
     {
         GameObject wall = CreatePrimitive("City Boundary", PrimitiveType.Cube, position, scale, Color.clear, parent);
