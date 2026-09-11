@@ -42,6 +42,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
     private Button shopRarityURButton;
     private Button shopBuyButton;
     private Button shopPreviewButton;
+    private Button shopExitButton; // 退出商店按钮
     private TMP_Text shopGoldText;
     private TMP_FontAsset shopFontAsset;
     private TMP_Text shopNameText;
@@ -488,6 +489,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         shopRaritySRButton = FindButtonByName(shopCanvasObject, "SR卡牌Button");
         shopRarityURButton = FindButtonByName(shopCanvasObject, "UR卡牌Button");
         shopBuyButton = FindButtonByName(shopCanvasObject, "商店购买Buttom");
+        shopExitButton = FindButtonByName(shopCanvasObject, "退出商店购买Buttom");
         shopGoldText = FindTextByName(shopCanvasObject, "金币数量Text (TMP)");
         shopNameText = FindTextByName(shopCanvasObject, "此处为卡片物品的名字预览");
         shopEffectText = FindTextByName(shopCanvasObject, "此处为卡片效果描述Text");
@@ -508,6 +510,11 @@ public sealed class HD2DSceneGM : MonoBehaviour
         if (shopScrollRect == null || shopContent == null || shopRarityRButton == null ||
             shopRaritySRButton == null || shopRarityURButton == null || shopBuyButton == null)
             return;
+
+        Vector4 tabRaycastPadding = new Vector4(-16f, -22f, -16f, -26f); // 标签按钮热区向外扩一圈，覆盖美术标签的整个可见范围
+        shopRarityRButton.image.raycastPadding = tabRaycastPadding;
+        shopRaritySRButton.image.raycastPadding = tabRaycastPadding;
+        shopRarityURButton.image.raycastPadding = tabRaycastPadding;
 
         shopScrollRect.horizontal = false;
         shopScrollRect.vertical = true;
@@ -533,6 +540,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         shopRarityURButton.onClick.AddListener(() => SelectShopRarity(CardRarity.Limited));
         shopBuyButton.onClick.AddListener(BuySelectedShopCard);
         if (shopPreviewButton != null) shopPreviewButton.onClick.AddListener(OpenSelectedCardPreview);
+        if (shopExitButton != null) shopExitButton.onClick.AddListener(ClosePanels);
         shopUiInitialized = true;
         shopCanvasObject.SetActive(false);
         UpdateShopGold();
