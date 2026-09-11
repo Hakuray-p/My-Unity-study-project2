@@ -259,60 +259,60 @@ public sealed class DialogueGM : MonoBehaviour
         Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
         bool hasEvent = actor.type == WorldInteractionType.Event && eventGM != null && eventGM.GetEvent(actor.id) != null;
 
-        SetButtonVisible(challengeButton, actor.type == WorldInteractionType.Match);
-        SetButtonVisible(shopButton, actor.type == WorldInteractionType.Shop);
-        SetButtonVisible(eventButton, hasEvent);
-        SetButtonVisible(chatButton, true);
-        SetButtonVisible(leaveButton, true);
-        SetButtonText(eventButton, hasEvent && eventGM.IsResolved(actor.id) ? "事件回顾" :
+        UiTool.SetButtonVisible(challengeButton, actor.type == WorldInteractionType.Match);
+        UiTool.SetButtonVisible(shopButton, actor.type == WorldInteractionType.Shop);
+        UiTool.SetButtonVisible(eventButton, hasEvent);
+        UiTool.SetButtonVisible(chatButton, true);
+        UiTool.SetButtonVisible(leaveButton, true);
+        UiTool.SetButtonText(eventButton, hasEvent && eventGM.IsResolved(actor.id) ? "事件回顾" :
             hasEvent && eventGM.IsActive(actor.id) ? "查看位置" : "事件");
-        SetButtonText(leaveButton, "离开");
-        SetButtonInteractable(eventButton, true);
+        UiTool.SetButtonText(leaveButton, "离开");
+        UiTool.SetButtonInteractable(eventButton, true);
     }
 
     // 事件待接取时的按钮布局
     private void ConfigureEventPrompt(Canvas dialogueCanvas)
     {
-        SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
-        SetButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
-        SetButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
         Button eventButton = FindButton(dialogueCanvas, IsEventButtonName);
         Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
-        SetButtonVisible(eventButton, true);
-        SetButtonVisible(leaveButton, true);
-        SetButtonText(eventButton, "一起调查");
-        SetButtonText(leaveButton, "暂时离开");
-        SetButtonInteractable(eventButton, true);
+        UiTool.SetButtonVisible(eventButton, true);
+        UiTool.SetButtonVisible(leaveButton, true);
+        UiTool.SetButtonText(eventButton, "一起调查");
+        UiTool.SetButtonText(leaveButton, "暂时离开");
+        UiTool.SetButtonInteractable(eventButton, true);
     }
 
     // 事件进行中时的按钮布局
     private void ConfigureEventActive(Canvas dialogueCanvas)
     {
-        SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
-        SetButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
-        SetButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
         Button eventButton = FindButton(dialogueCanvas, IsEventButtonName);
         Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
-        SetButtonVisible(eventButton, true);
-        SetButtonVisible(leaveButton, true);
-        SetButtonText(eventButton, "查看位置");
-        SetButtonText(leaveButton, "返回");
-        SetButtonInteractable(eventButton, true);
+        UiTool.SetButtonVisible(eventButton, true);
+        UiTool.SetButtonVisible(leaveButton, true);
+        UiTool.SetButtonText(eventButton, "查看位置");
+        UiTool.SetButtonText(leaveButton, "返回");
+        UiTool.SetButtonInteractable(eventButton, true);
     }
 
     // 事件完成后的按钮布局
     private void ConfigureEventResolved(Canvas dialogueCanvas)
     {
-        SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
-        SetButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
-        SetButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
+        UiTool.SetButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
         Button eventButton = FindButton(dialogueCanvas, IsEventButtonName);
         Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
-        SetButtonVisible(eventButton, true);
-        SetButtonVisible(leaveButton, true);
-        SetButtonText(eventButton, "事件已完成");
-        SetButtonText(leaveButton, "返回");
-        SetButtonInteractable(eventButton, false);
+        UiTool.SetButtonVisible(eventButton, true);
+        UiTool.SetButtonVisible(leaveButton, true);
+        UiTool.SetButtonText(eventButton, "事件已完成");
+        UiTool.SetButtonText(leaveButton, "返回");
+        UiTool.SetButtonInteractable(eventButton, false);
     }
 
     // 按名字条件在对话画布里找按钮
@@ -322,33 +322,6 @@ public sealed class DialogueGM : MonoBehaviour
         foreach (Button button in dialogueCanvas.GetComponentsInChildren<Button>(true))
             if (namePredicate(button.gameObject.name)) return button;
         return null;
-    }
-
-    // 显示 / 隐藏按钮
-    private static void SetButtonVisible(Button button, bool visible)
-    {
-        if (button != null) button.gameObject.SetActive(visible);
-    }
-
-    // 设置按钮可不可点
-    private static void SetButtonInteractable(Button button, bool interactable)
-    {
-        if (button != null) button.interactable = interactable;
-    }
-
-    // 改按钮上的文字
-    private static void SetButtonText(Button button, string value)
-    {
-        if (button == null) return;
-        TMP_Text tmpText = button.GetComponentInChildren<TMP_Text>(true);
-        if (tmpText != null)
-        {
-            tmpText.text = value;
-            return;
-        }
-
-        Text legacyText = button.GetComponentInChildren<Text>(true);
-        if (legacyText != null) legacyText.text = value;
     }
 
     // 按角色显示名匹配对应的对话框

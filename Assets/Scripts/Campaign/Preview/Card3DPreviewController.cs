@@ -41,6 +41,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
     private Quaternion baseRotation;
     private float observationDistance;
     private bool isDragging;
+    private bool showingFront = true; // 当前朝向镜头的是不是正面
     private Material cardBodyMaterial; // 运行时创建的卡牌主体材质
     private CardHoloVisual holoVisual; // 卡牌光影叠加控制器
     private CardDisplay previewDisplay; // 当前预览卡牌的显示组件
@@ -320,6 +321,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
             Vector3 mouseDelta = Input.mousePosition - lastMousePosition;
             float horizontalDirection = horizontalRotationReversed ? -1f : 1f;
             float verticalDirection = verticalRotationReversed ? -1f : 1f;
+            if (!showingFront) verticalDirection = -verticalDirection; // 背面朝前时上下会反过来，这里补回来
             rotationAngles.y += mouseDelta.x * rotationSpeed * horizontalDirection;
             rotationAngles.x += mouseDelta.y * rotationSpeed * verticalDirection;
             rotationAngles.x = Mathf.Clamp(rotationAngles.x, -verticalRotationLimit, verticalRotationLimit);
@@ -349,6 +351,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
         Vector3 cameraDirection = (previewCamera.transform.position - transform.position).normalized;
         Vector3 frontNormal = -transform.forward;
         bool showFront = Vector3.Dot(frontNormal, cameraDirection) >= 0f;
+        showingFront = showFront;
         frontCardVisual.SetActive(showFront);
         backCardVisual.SetActive(!showFront);
     }

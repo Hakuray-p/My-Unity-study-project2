@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
@@ -31,35 +29,10 @@ public sealed class HD2DSceneGM : MonoBehaviour
     private Text hudText; // HUD 文字
     private string statusMessage = string.Empty; // 当前提示文字
     private float statusUntil; // 提示显示到什么时候
-    private bool shopOpen; // 商店是否打开
     private bool deckOpen; // 卡组编辑器是否打开
     private List<int> deckDraft = new List<int>(); // 卡组编辑器的草稿
     [SerializeField] private CardListSO cardListSO; // 卡牌数据库
-    private GameObject shopCanvasObject; // 商店画布
-    private ScrollRect shopScrollRect; // 商店列表的滚动区
-    private RectTransform shopContent; // 商店列表的内容节点
-    private Button shopRarityRButton; // R 页签按钮
-    private Button shopRaritySRButton; // SR 页签按钮
-    private Button shopRarityURButton; // UR 页签按钮
-    private Button shopBuyButton; // 购买按钮
-    private Button shopPreviewButton; // 卡牌预览按钮
-    private Button shopExitButton; // 退出商店按钮
-    private TMP_Text shopGoldText; // 金币显示
-    private TMP_FontAsset shopFontAsset; // 商店统一字体
-    private TMP_Text shopNameText; // 卡名显示
-    private TMP_Text shopEffectText; // 效果描述显示
-    private TMP_Text shopPreviewText; // 预览提示文字
-    private RawImage shopPreviewRawImage; // 3D 预览画面
-    private Camera shopPreviewCamera; // 商店里的 3D 预览相机
-    private GameObject shopPreviewModel; // 商店里的 3D 卡牌模型
-    private CardDisplay shopPreviewCardDisplay; // 预览模型的显示组件
-    private CardController shopPreviewCardController; // 预览模型的卡牌组件
-    private CardShopEntry selectedShopEntry; // 当前选中的商品
-    private CardRarity selectedShopRarity = CardRarity.Common; // 当前选中的稀有度页签
-    private bool restoringShopState; // 是否正在还原进预览前的商店状态
-    private Vector2 restoreShopScrollPosition; // 进预览前列表的滚动位置
-    private readonly List<GameObject> shopItems = new List<GameObject>(); // 生成出来的商品行
-    private bool shopUiInitialized; // 商店 UI 是否已经初始化
+    private ShopPanel shopPanel; // 商店面板
 
     // 占住单例并初始化城市场景
     private void Awake()
@@ -74,6 +47,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         Time.timeScale = 1f;
         CampaignCatalog.SetCardDatabase(cardListSO);
         session = CampaignSession.Instance;
+        shopPanel = new ShopPanel(session, ShowStatus, ClosePanels);
         ConfigureCamera();
         DisableDepthOfField();
         EnsureManagers();
@@ -102,7 +76,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
     // 商店打开时按 Esc 关掉，返回 true 表示这一帧被商店吃掉了
     private bool TryCloseShop()
     {
-        if (!shopOpen || !Input.GetKeyDown(KeyCode.Escape)) return false;
+        if (!shopPanel.IsOpen || !Input.GetKeyDown(KeyCode.Escape)) return false;
         ClosePanels();
         return true;
     }
@@ -110,7 +84,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
     // 把面板打开状态交给暂停系统，返回 true 表示暂停菜单开着
     private bool TickPause()
     {
-        bool panelOpen = (dialogueGM != null && dialogueGM.IsOpen) || shopOpen || deckOpen;
+        bool panelOpen = (dialogueGM != null && dialogueGM.IsOpen) || shopPanel.IsOpen || deckOpen;
         if (pauseGM != null) pauseGM.Tick(panelOpen);
         return pauseGM != null && pauseGM.IsOpen;
     }
@@ -124,7 +98,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
     // 商店或卡组编辑开着时不响应世界交互
     private void TickWorldInteractions()
     {
-        if (shopOpen || deckOpen) return;
+        if (shopPanel.IsOpen || deckOpen) return;
         if (eventGM != null) eventGM.Tick();
         if (dialogueGM != null) dialogueGM.Tick();
     }
@@ -179,8 +153,8 @@ public sealed class HD2DSceneGM : MonoBehaviour
             eventGM.Initialize(session, characterGM, ShowStatus);
             dialogueGM.Initialize(characterGM, session, eventGM, StartMatch, OpenShopPanel, ShowStatus, ClosePanels);
             pauseGM.Initialize(characterGM, session, SavePlayer, ClosePanels);
-            InitializeShopUi();
-            TryRestoreShopState();
+            shopPanel.Initialize();
+            if (shopPanel.TryRestore()) OpenShopPanel();
             worldInitialized = true;
         }
     }
@@ -338,33 +312,9 @@ public sealed class HD2DSceneGM : MonoBehaviour
     // 打开商店并暂停世界
     private void OpenShopPanel()
     {
-        shopOpen = true;
         deckOpen = false;
         Time.timeScale = 0f;
-        InitializeShopUi();
-        if (shopCanvasObject != null) shopCanvasObject.SetActive(true);
-        SelectShopRarity(selectedShopRarity);
-    }
-
-    // 从卡牌预览返回时还原商店的页签、选中项和滚动位置
-    private void TryRestoreShopState()
-    {
-        if (!SceneFlowService.TryConsumeShopRestoreState(out int cardId, out CardRarity rarity, out Vector2 scrollPosition)) return;
-        restoringShopState = true;
-        restoreShopScrollPosition = scrollPosition;
-        selectedShopRarity = rarity;
-        selectedShopEntry = new CardShopEntry { cardId = cardId, rarity = rarity };
-        OpenShopPanel();
-    }
-
-    // 带着当前选中的卡进入 3D 预览
-    private void OpenSelectedCardPreview()
-    {
-        if (selectedShopEntry == null) return;
-        Vector2 scrollPosition = shopScrollRect == null ? Vector2.one : shopScrollRect.normalizedPosition;
-        shopOpen = false;
-        Time.timeScale = 1f;
-        SceneFlowService.OpenCardPreview(selectedShopEntry.cardId, selectedShopRarity, scrollPosition);
+        shopPanel.Open();
     }
 
     // 玩家碰到交互点后按类型分派：比赛 / 商店 / 事件
@@ -441,17 +391,15 @@ public sealed class HD2DSceneGM : MonoBehaviour
     // 没有别的面板打开时才允许开卡组编辑器
     public void OpenDeckEditor()
     {
-        if ((dialogueGM == null || !dialogueGM.IsOpen) && !shopOpen) OpenDeck();
+        if ((dialogueGM == null || !dialogueGM.IsOpen) && !shopPanel.IsOpen) OpenDeck();
     }
 
     // 关掉所有面板并把时间恢复过来
     private void ClosePanels()
     {
         if (dialogueGM != null) dialogueGM.Close();
-        shopOpen = false;
+        shopPanel.Close();
         deckOpen = false;
-        if (shopCanvasObject != null) shopCanvasObject.SetActive(false);
-        if (shopPreviewModel != null) shopPreviewModel.SetActive(false);
         Time.timeScale = 1f;
     }
 
@@ -502,397 +450,6 @@ public sealed class HD2DSceneGM : MonoBehaviour
         }
         if (GUI.Button(new Rect(470f, Screen.height - 155f, 180f, 42f), "恢复最近合法卡组")) deckDraft = session.GetBattleDeck();
         if (GUI.Button(new Rect(Screen.width - 470f, Screen.height - 155f, 150f, 42f), "关闭")) ClosePanels();
-    }
-
-    // 第一次开商店时按对象名找到画布上的控件并接好事件
-    private void InitializeShopUi()
-    {
-        if (shopUiInitialized)
-        {
-            UpdateShopGold();
-            return;
-        }
-
-        shopCanvasObject = FindSceneObject("商店Canvas") ?? FindSceneObject("商点Canvas");
-        if (shopCanvasObject == null) return;
-
-        shopScrollRect = shopCanvasObject.GetComponentInChildren<ScrollRect>(true);
-        if (shopScrollRect != null) shopContent = shopScrollRect.content;
-        shopRarityRButton = FindButtonByName(shopCanvasObject, "R卡牌Button");
-        shopRaritySRButton = FindButtonByName(shopCanvasObject, "SR卡牌Button");
-        shopRarityURButton = FindButtonByName(shopCanvasObject, "UR卡牌Button");
-        shopBuyButton = FindButtonByName(shopCanvasObject, "商店购买Buttom");
-        shopExitButton = FindButtonByName(shopCanvasObject, "退出商店购买Buttom");
-        shopGoldText = FindTextByName(shopCanvasObject, "金币数量Text (TMP)");
-        shopNameText = FindTextByName(shopCanvasObject, "此处为卡片物品的名字预览");
-        shopEffectText = FindTextByName(shopCanvasObject, "此处为卡片效果描述Text");
-        shopPreviewText = FindTextContainsName(shopCanvasObject, "此处为预览整张3D卡详");
-        shopPreviewButton = FindButtonByName(shopCanvasObject, "卡牌预览Buttom");
-        shopPreviewRawImage = FindRawImageByName(shopCanvasObject, "CardPreviewRawImage");
-        shopPreviewCamera = FindSceneObject("ShopCardPreviewCamera")?.GetComponent<Camera>();
-        shopPreviewModel = FindSceneObject("CarShopCardPreviewModel");
-        shopPreviewCardDisplay = shopPreviewModel == null ? null : shopPreviewModel.GetComponentInChildren<CardDisplay>(true);
-        shopPreviewCardController = shopPreviewModel == null ? null : shopPreviewModel.GetComponentInChildren<CardController>(true);
-        ConfigureShopEffectText();
-        ConfigureShopCardPreview();
-        shopFontAsset = shopCanvasObject.GetComponentInChildren<TMP_Text>(true)?.font;
-        HideShopPreviewTexts();
-        ApplyShopFont();
-
-        if (shopScrollRect == null || shopContent == null || shopRarityRButton == null ||
-            shopRaritySRButton == null || shopRarityURButton == null || shopBuyButton == null)
-            return;
-
-        var tabRaycastPadding = new Vector4(-16f, -22f, -16f, -26f); // 标签按钮热区向外扩一圈，覆盖美术标签的整个可见范围
-        shopRarityRButton.image.raycastPadding = tabRaycastPadding;
-        shopRaritySRButton.image.raycastPadding = tabRaycastPadding;
-        shopRarityURButton.image.raycastPadding = tabRaycastPadding;
-
-        shopScrollRect.horizontal = false;
-        shopScrollRect.vertical = true;
-        shopContent.anchorMin = new Vector2(0f, 1f);
-        shopContent.anchorMax = new Vector2(1f, 1f);
-        shopContent.pivot = new Vector2(0.5f, 1f);
-
-        VerticalLayoutGroup layoutGroup = shopContent.GetComponent<VerticalLayoutGroup>();
-        if (layoutGroup == null) layoutGroup = shopContent.gameObject.AddComponent<VerticalLayoutGroup>();
-        layoutGroup.childControlWidth = true;
-        layoutGroup.childControlHeight = false;
-        layoutGroup.childForceExpandWidth = true;
-        layoutGroup.childForceExpandHeight = false;
-        layoutGroup.spacing = 8f;
-
-        ContentSizeFitter sizeFitter = shopContent.GetComponent<ContentSizeFitter>();
-        if (sizeFitter == null) sizeFitter = shopContent.gameObject.AddComponent<ContentSizeFitter>();
-        sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-        sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        shopRarityRButton.onClick.AddListener(() => SelectShopRarity(CardRarity.Common));
-        shopRaritySRButton.onClick.AddListener(() => SelectShopRarity(CardRarity.Rare));
-        shopRarityURButton.onClick.AddListener(() => SelectShopRarity(CardRarity.Limited));
-        shopBuyButton.onClick.AddListener(BuySelectedShopCard);
-        if (shopPreviewButton != null) shopPreviewButton.onClick.AddListener(OpenSelectedCardPreview);
-        if (shopExitButton != null) shopExitButton.onClick.AddListener(ClosePanels);
-        shopUiInitialized = true;
-        shopCanvasObject.SetActive(false);
-        UpdateShopGold();
-    }
-
-    // 切商店页签并重建列表
-    private void SelectShopRarity(CardRarity rarity)
-    {
-        selectedShopRarity = rarity;
-        RebuildShopItems();
-    }
-
-    // 按当前页签重建商品列表，并尽量选中原来那张卡
-    private void RebuildShopItems()
-    {
-        if (!shopUiInitialized) return;
-
-        int selectedCardId = selectedShopEntry == null ? 0 : selectedShopEntry.cardId;
-        foreach (GameObject item in shopItems)
-        {
-            if (item != null) Destroy(item);
-        }
-        shopItems.Clear();
-
-        IReadOnlyList<CardShopEntry> entries = CampaignCatalog.GetFirstCityShop();
-        CardShopEntry firstEntry = null;
-        CardShopEntry restoredEntry = null;
-        foreach (CardShopEntry entry in entries)
-        {
-            if (entry.rarity != selectedShopRarity) continue;
-            if (firstEntry == null) firstEntry = entry;
-            if (entry.cardId == selectedCardId) restoredEntry = entry;
-            CreateShopItem(entry);
-        }
-
-        selectedShopEntry = restoredEntry ?? firstEntry;
-        if (selectedShopEntry != null) UpdateShopPreview();
-        else ClearShopPreview();
-        if (restoringShopState && shopScrollRect != null)
-        {
-            Canvas.ForceUpdateCanvases();
-            shopScrollRect.normalizedPosition = restoreShopScrollPosition;
-            restoringShopState = false;
-        }
-        else if (shopContent != null)
-        {
-            shopContent.anchoredPosition = Vector2.zero;
-        }
-    }
-
-    // 在商店列表里创建一条商品
-    private void CreateShopItem(CardShopEntry entry)
-    {
-        var itemObject = new GameObject("CardShopItem_" + entry.cardId,
-            typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
-        itemObject.transform.SetParent(shopContent, false);
-        shopItems.Add(itemObject);
-
-        RectTransform itemRect = itemObject.GetComponent<RectTransform>();
-        itemRect.sizeDelta = new Vector2(0f, 58f);
-        Image background = itemObject.GetComponent<Image>();
-        background.color = new Color(0.2f, 0.1f, 0.1f, 0.78f);
-        Button button = itemObject.GetComponent<Button>();
-        button.targetGraphic = background;
-        LayoutElement layoutElement = itemObject.GetComponent<LayoutElement>();
-        layoutElement.preferredHeight = 58f;
-
-        var textObject = new GameObject("CardIdText", typeof(RectTransform), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(itemObject.transform, false);
-        RectTransform textRect = textObject.GetComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = new Vector2(18f, 0f);
-        textRect.offsetMax = new Vector2(-18f, 0f);
-        TMP_Text text = textObject.GetComponent<TMP_Text>();
-        if (shopFontAsset != null) text.font = shopFontAsset;
-        CardData cardData = CampaignCatalog.GetCardData(entry.cardId);
-        text.text = entry.cardId + "  " + (cardData == null ? "未命名卡牌" : cardData.name) +
-            "  " + entry.price + "金币";
-        text.fontSize = 24f;
-        text.color = Color.white;
-        text.alignment = TextAlignmentOptions.MidlineLeft;
-        text.raycastTarget = false;
-
-        CardShopEntry clickedEntry = entry;
-        button.onClick.AddListener(() => SelectShopCard(clickedEntry));
-    }
-
-    // 选中商品并刷新右侧预览
-    private void SelectShopCard(CardShopEntry entry)
-    {
-        selectedShopEntry = entry;
-        UpdateShopPreview();
-    }
-
-    // 刷新商店右侧的卡牌预览和购买按钮
-    private void UpdateShopPreview()
-    {
-        UpdateShopGold();
-        if (selectedShopEntry == null)
-        {
-            ClearShopPreview();
-            return;
-        }
-
-        CardData cardData = CampaignCatalog.GetCardData(selectedShopEntry.cardId);
-        UpdateShopCardPreview(cardData);
-        if (shopPreviewButton != null) shopPreviewButton.interactable = cardData != null;
-
-        string reason;
-        bool canBuy = session.CanBuyCard(selectedShopEntry, out reason);
-        shopBuyButton.interactable = canBuy;
-        SetButtonText(shopBuyButton, canBuy ? "购买" : reason);
-    }
-
-    // 买下选中的卡，失败就把原因显示出来
-    private void BuySelectedShopCard()
-    {
-        if (selectedShopEntry == null) return;
-        string reason;
-        if (!session.BuyCard(selectedShopEntry, out reason))
-        {
-            ShowStatus(reason);
-            UpdateShopPreview();
-            return;
-        }
-
-        ShowStatus("已购买卡牌《" + GetShopCardName(selectedShopEntry.cardId) + "》");
-        UpdateShopPreview();
-    }
-
-    // 刷新商店里的金币显示
-    private void UpdateShopGold()
-    {
-        if (shopGoldText != null && session != null && session.State != null)
-            shopGoldText.text = "金币：" + session.State.currency;
-    }
-
-    // 清空商店预览并禁用购买按钮
-    private void ClearShopPreview()
-    {
-        UpdateShopCardPreview(null);
-        if (shopBuyButton != null)
-        {
-            shopBuyButton.interactable = false;
-            SetButtonText(shopBuyButton, "购买");
-        }
-    }
-
-    // 隐藏商店预览里的文字
-    private void HideShopPreviewTexts()
-    {
-        if (shopNameText != null) shopNameText.gameObject.SetActive(false);
-        if (shopEffectText != null) shopEffectText.gameObject.SetActive(false);
-        if (shopPreviewText != null) shopPreviewText.gameObject.SetActive(false);
-    }
-
-    // 关掉预览模型的碰撞和遮罩，让 3D 卡面干净显示
-    private void ConfigureShopCardPreview()
-    {
-        if (shopPreviewCamera != null)
-        {
-            shopPreviewCamera.enabled = true;
-            shopPreviewCamera.clearFlags = CameraClearFlags.SolidColor;
-            shopPreviewCamera.backgroundColor = Color.clear;
-            AudioListener listener = shopPreviewCamera.GetComponent<AudioListener>();
-            if (listener != null) listener.enabled = false;
-            if (shopPreviewRawImage != null) shopPreviewRawImage.texture = shopPreviewCamera.targetTexture;
-        }
-
-        if (shopPreviewModel == null) return;
-        foreach (Collider collider in shopPreviewModel.GetComponentsInChildren<Collider>(true))
-            collider.enabled = false;
-        foreach (SpriteMask mask in shopPreviewModel.GetComponentsInChildren<SpriteMask>(true))
-            mask.enabled = false;
-        GameObject effectPanel = FindChildObjectByName(shopPreviewModel, "EffectIcon");
-        if (effectPanel != null) effectPanel.SetActive(false);
-        if (shopPreviewCardDisplay != null && shopPreviewCardDisplay.cardImage != null)
-            shopPreviewCardDisplay.cardImage.maskInteraction = SpriteMaskInteraction.None;
-        if (shopPreviewCardDisplay != null && shopPreviewCardDisplay.effectText != null)
-            shopPreviewCardDisplay.effectText.gameObject.SetActive(false);
-        if (shopPreviewCardController != null) shopPreviewCardController.enabled = false;
-        shopPreviewModel.SetActive(false);
-    }
-
-    // 设置商店效果文字的换行和溢出方式
-    private void ConfigureShopEffectText()
-    {
-        if (shopEffectText == null) return;
-        shopEffectText.enableWordWrapping = true;
-        shopEffectText.overflowMode = TextOverflowModes.Masking;
-    }
-
-    // 把卡面数据和 3D 模型同步到商店预览
-    private void UpdateShopCardPreview(CardData cardData)
-    {
-        bool hasCard = cardData != null && shopPreviewCardDisplay != null;
-        if (shopPreviewRawImage != null) shopPreviewRawImage.gameObject.SetActive(hasCard);
-        if (shopPreviewModel != null) shopPreviewModel.SetActive(hasCard);
-        if (!hasCard)
-        {
-            if (shopEffectText != null)
-            {
-                shopEffectText.text = string.Empty;
-                shopEffectText.gameObject.SetActive(false);
-            }
-            return;
-        }
-
-        if (shopEffectText != null)
-        {
-            shopEffectText.text = Regex.Unescape(cardData.effectDescription);
-            shopEffectText.gameObject.SetActive(true);
-        }
-
-        if (shopPreviewCardController != null)
-        {
-            shopPreviewCardController.Init(cardData, null);
-            shopPreviewCardController.enabled = false;
-        }
-        else
-        {
-            shopPreviewCardDisplay.cardImage.sprite = cardData.image;
-        }
-        shopPreviewCardDisplay.ShowBack(false);
-    }
-
-    // 给商店里所有文字换字体
-    private void ApplyShopFont()
-    {
-        if (shopFontAsset == null) return;
-        foreach (TMP_Text text in shopCanvasObject.GetComponentsInChildren<TMP_Text>(true))
-            text.font = shopFontAsset;
-    }
-
-    // 取卡名，查不到就用卡牌 id
-    private static string GetShopCardName(int cardId)
-    {
-        CardData cardData = CampaignCatalog.GetCardData(cardId);
-        return cardData == null ? cardId.ToString() : cardData.name;
-    }
-
-    // 把稀有度换成 R / SR / UR 文字
-    private static string GetRarityLabel(CardRarity rarity)
-    {
-        return rarity == CardRarity.Common ? "R" : rarity == CardRarity.Rare ? "SR" : "UR";
-    }
-
-    // 按名字在场景里找物体
-    private static GameObject FindSceneObject(string objectName)
-    {
-        foreach (Transform item in FindObjectsOfType<Transform>(true))
-        {
-            if (item.gameObject.name == objectName) return item.gameObject;
-        }
-
-        return null;
-    }
-
-    // 在节点下按名字找按钮
-    private static Button FindButtonByName(GameObject root, string objectName)
-    {
-        foreach (Button button in root.GetComponentsInChildren<Button>(true))
-        {
-            if (button.gameObject.name == objectName) return button;
-        }
-
-        return null;
-    }
-
-    // 在节点下按名字找文字
-    private static TMP_Text FindTextByName(GameObject root, string objectName)
-    {
-        foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (text.gameObject.name == objectName) return text;
-        }
-
-        return null;
-    }
-
-    // 在节点下按名字片段找文字
-    private static TMP_Text FindTextContainsName(GameObject root, string namePart)
-    {
-        foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (text.gameObject.name.Contains(namePart)) return text;
-        }
-
-        return null;
-    }
-
-    // 在节点下按名字找子物体
-    private static GameObject FindChildObjectByName(GameObject root, string objectName)
-    {
-        foreach (Transform item in root.GetComponentsInChildren<Transform>(true))
-        {
-            if (item.gameObject.name == objectName) return item.gameObject;
-        }
-
-        return null;
-    }
-
-    // 在节点下按名字找 RawImage
-    private static RawImage FindRawImageByName(GameObject root, string objectName)
-    {
-        foreach (RawImage image in root.GetComponentsInChildren<RawImage>(true))
-        {
-            if (image.gameObject.name == objectName) return image;
-        }
-
-        return null;
-    }
-
-    // 改按钮上的文字
-    private static void SetButtonText(Button button, string value)
-    {
-        if (button == null) return;
-        TMP_Text text = button.GetComponentInChildren<TMP_Text>(true);
-        if (text != null) text.text = value;
     }
 
     // 数一下卡组里某张卡有几张
