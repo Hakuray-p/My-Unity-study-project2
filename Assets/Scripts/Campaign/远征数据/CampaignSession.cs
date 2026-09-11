@@ -25,13 +25,13 @@ public class CampaignSession : MonoBehaviour
     // 检查卡组是否合法，返回错误说明
     public string GetDeckValidationError(IList<int> deck)
     {
-        if (deck == null || deck.Count != 20) return "卡组必须正好包含 20 张牌";
+        if (deck == null || deck.Count != 30) return "卡组必须正好包含 30 张牌";
         var counts = new Dictionary<int, int>();
         foreach (int cardId in deck)
         {
             if (!counts.ContainsKey(cardId)) counts[cardId] = 0;
             counts[cardId]++;
-            if (counts[cardId] > 2) return $"卡牌 {cardId} 不能超过 2 张";
+            if (counts[cardId] > 3) return $"卡牌 {cardId} 不能超过 3 张";
         }
         return string.Empty;
     }

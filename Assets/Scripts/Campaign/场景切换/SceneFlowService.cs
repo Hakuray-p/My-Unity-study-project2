@@ -86,6 +86,20 @@ public static class SceneFlowService
         LoadAdventureScene();
     }
 
+    // 进入卡组编辑场景
+    public static void OpenDeckEditor()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("DeckEditorScene");
+    }
+
+    // 从卡组编辑场景回到城市
+    public static void ReturnFromDeckEditor()
+    {
+        Time.timeScale = 1f;
+        LoadAdventureScene();
+    }
+
     // 开一场赛事，校验通过后写入存档并进战斗场景
     public static void StartMatch(string matchId, UnityEngine.Vector3 returnPosition)
     {

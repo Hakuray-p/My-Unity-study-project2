@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
@@ -29,8 +28,6 @@ public sealed class HD2DSceneGM : MonoBehaviour
     private Text hudText; // HUD 文字
     private string statusMessage = string.Empty; // 当前提示文字
     private float statusUntil; // 提示显示到什么时候
-    private bool deckOpen; // 卡组编辑器是否打开
-    private List<int> deckDraft = new List<int>(); // 卡组编辑器的草稿
     [SerializeField] private CardListSO cardListSO; // 卡牌数据库
     private ShopPanel shopPanel; // 商店面板
 
@@ -69,6 +66,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         if (TryCloseShop()) return;
         if (TickPause()) return;
         if (!IsGameplayReady()) return;
+        if (TryOpenDeckEditor()) return;
         UpdateHud();
         TickWorldInteractions();
     }
@@ -84,7 +82,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
     // 把面板打开状态交给暂停系统，返回 true 表示暂停菜单开着
     private bool TickPause()
     {
-        bool panelOpen = (dialogueGM != null && dialogueGM.IsOpen) || shopPanel.IsOpen || deckOpen;
+        bool panelOpen = (dialogueGM != null && dialogueGM.IsOpen) || shopPanel.IsOpen;
         if (pauseGM != null) pauseGM.Tick(panelOpen);
         return pauseGM != null && pauseGM.IsOpen;
     }
@@ -95,12 +93,21 @@ public sealed class HD2DSceneGM : MonoBehaviour
         return session != null && session.State != null && characterGM != null && characterGM.Player != null;
     }
 
-    // 商店或卡组编辑开着时不响应世界交互
+    // 商店开着时不响应世界交互
     private void TickWorldInteractions()
     {
-        if (shopPanel.IsOpen || deckOpen) return;
+        if (shopPanel.IsOpen) return;
         if (eventGM != null) eventGM.Tick();
         if (dialogueGM != null) dialogueGM.Tick();
+    }
+
+    // 按 B 进卡组编辑场景，商店或对话开着时不响应
+    private bool TryOpenDeckEditor()
+    {
+        if (!Input.GetKeyDown(KeyCode.B)) return false;
+        if (shopPanel.IsOpen || (dialogueGM != null && dialogueGM.IsOpen)) return false;
+        SceneFlowService.OpenDeckEditor();
+        return true;
     }
 
     // 每帧补一次场景初始化和相机跟随
@@ -312,7 +319,6 @@ public sealed class HD2DSceneGM : MonoBehaviour
     // 打开商店并暂停世界
     private void OpenShopPanel()
     {
-        deckOpen = false;
         Time.timeScale = 0f;
         shopPanel.Open();
     }
@@ -353,7 +359,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         if (!session.HasLegalDeck)
         {
             ShowStatus("当前卡组不合法，请先完成卡组编辑");
-            OpenDeck();
+            SceneFlowService.OpenDeckEditor();
             return;
         }
         if (!session.CanStartMatch(match))
@@ -380,26 +386,11 @@ public sealed class HD2DSceneGM : MonoBehaviour
         return "当前无法开始赛事";
     }
 
-    // 打开卡组编辑器并暂停世界
-    private void OpenDeck()
-    {
-        deckDraft = new List<int>(session.State.deckDraftCardIds);
-        deckOpen = true;
-        Time.timeScale = 0f;
-    }
-
-    // 没有别的面板打开时才允许开卡组编辑器
-    public void OpenDeckEditor()
-    {
-        if ((dialogueGM == null || !dialogueGM.IsOpen) && !shopPanel.IsOpen) OpenDeck();
-    }
-
     // 关掉所有面板并把时间恢复过来
     private void ClosePanels()
     {
         if (dialogueGM != null) dialogueGM.Close();
         shopPanel.Close();
-        deckOpen = false;
         Time.timeScale = 1f;
     }
 
@@ -416,48 +407,5 @@ public sealed class HD2DSceneGM : MonoBehaviour
     {
         statusMessage = message;
         statusUntil = Time.unscaledTime + 3f;
-    }
-
-    // 卡组编辑器打开时用 IMGUI 画出来
-    private void OnGUI()
-    {
-        if (session == null || session.State == null) return;
-        if (deckOpen) DrawDeckEditor();
-    }
-
-    // 用 IMGUI 画一个临时的卡组编辑器
-    private void DrawDeckEditor()
-    {
-        GUI.Box(new Rect(230f, 100f, Screen.width - 460f, Screen.height - 200f), "卡组编辑器");
-        GUI.Label(new Rect(260f, 140f, 700f, 30f), $"草稿：{deckDraft.Count}/20    {session.GetDeckValidationError(deckDraft)}");
-        IReadOnlyList<CardShopEntry> cards = CampaignCatalog.GetFirstCityShop();
-        for (int i = 0; i < cards.Count; i++)
-        {
-            int cardId = cards[i].cardId;
-            int count = CountCard(deckDraft, cardId);
-            float y = 190f + i * 28f;
-            GUI.Label(new Rect(270f, y, 170f, 24f), $"{cardId}  x{count}");
-            GUI.enabled = session.State.collectedCardIds.Contains(cardId) && count < 2;
-            if (GUI.Button(new Rect(445f, y, 42f, 23f), "+")) deckDraft.Add(cardId);
-            GUI.enabled = count > 0;
-            if (GUI.Button(new Rect(492f, y, 42f, 23f), "-")) deckDraft.Remove(cardId);
-            GUI.enabled = true;
-        }
-        if (GUI.Button(new Rect(270f, Screen.height - 155f, 180f, 42f), "保存草稿"))
-        {
-            session.SaveDeckDraft(deckDraft);
-            ShowStatus("草稿已保存");
-        }
-        if (GUI.Button(new Rect(470f, Screen.height - 155f, 180f, 42f), "恢复最近合法卡组")) deckDraft = session.GetBattleDeck();
-        if (GUI.Button(new Rect(Screen.width - 470f, Screen.height - 155f, 150f, 42f), "关闭")) ClosePanels();
-    }
-
-    // 数一下卡组里某张卡有几张
-    private static int CountCard(IList<int> cards, int cardId)
-    {
-        int count = 0;
-        if (cards == null) return count;
-        foreach (int id in cards) if (id == cardId) count++;
-        return count;
     }
 }

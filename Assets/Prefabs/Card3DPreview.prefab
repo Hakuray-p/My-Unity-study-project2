@@ -1133,6 +1133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   previewCamera: {fileID: 0}
   previewFont: {fileID: 11400000, guid: 51ad3aabb834ca84a8afd8021f75b556, type: 2}
+  cardListSO: {fileID: 11400000, guid: 1aecba6435bf57848a6e09317acb56d7, type: 2}
   holoMask: {fileID: 2800000, guid: a2fbecc271f94376b3670a52a95dd321, type: 3}
   holoProfile: {fileID: 11400000, guid: 6e03cfa9de8241b0a46a0b7700f6d111, type: 2}
   frontCardVisual: {fileID: 3130766213424682788}

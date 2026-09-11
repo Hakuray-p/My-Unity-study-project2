@@ -9,6 +9,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
     [Header("资源")]
     [SerializeField] private Camera previewCamera; // 预览摄像机
     [SerializeField] private TMP_FontAsset previewFont; // 预览卡牌字体
+    [SerializeField] private CardListSO cardListSO; // 预览用到的卡牌数据库
 
     [Header("卡牌光影")]
     [SerializeField] private CardHoloProfile holoProfile; // 卡牌光影分级配置
@@ -46,9 +47,10 @@ public sealed class Card3DPreviewController : MonoBehaviour
     private CardHoloVisual holoVisual; // 卡牌光影叠加控制器
     private CardDisplay previewDisplay; // 当前预览卡牌的显示组件
 
-    // 缓存初始旋转、解析预制体引用并复位视角
+    // 注册卡牌数据库、缓存初始旋转、解析预制体引用并复位视角
     private void Awake()
     {
+        if (cardListSO != null) CampaignCatalog.SetCardDatabase(cardListSO);
         baseRotation = transform.localRotation;
         ResolvePrefabReferences();
         ConfigureCardBodyMaterial();

@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CardPreviewScene.unity
     guid: 4aab96d8e4e441e8af25f2b5f1a8e6a3
+  - enabled: 1
+    path: Assets/Scenes/DeckEditorScene.unity
+    guid: c6979d1a87ef0714bab41e8e35a4e4fd
   m_configObjects: {}
