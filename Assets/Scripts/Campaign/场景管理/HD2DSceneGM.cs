@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// HD 城市探索场景的总管理器，负责相机、UI、商店、卡组编辑和世界交互的协调
+// HD 城市探索场景的总管理器，负责相机、UI、商店、卡组管理和世界交互的协调
 public sealed class HD2DSceneGM : MonoBehaviour
 {
     private static HD2DSceneGM instance; // 全局单例
@@ -66,7 +66,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         if (TryCloseShop()) return;
         if (TickPause()) return;
         if (!IsGameplayReady()) return;
-        if (TryOpenDeckEditor()) return;
+        if (TryOpenDeckManager()) return;
         UpdateHud();
         TickWorldInteractions();
     }
@@ -101,12 +101,12 @@ public sealed class HD2DSceneGM : MonoBehaviour
         if (dialogueGM != null) dialogueGM.Tick();
     }
 
-    // 按 B 进卡组编辑场景，商店或对话开着时不响应
-    private bool TryOpenDeckEditor()
+    // 按 B 进卡组管理场景，商店或对话开着时不响应
+    private bool TryOpenDeckManager()
     {
         if (!Input.GetKeyDown(KeyCode.B)) return false;
         if (shopPanel.IsOpen || (dialogueGM != null && dialogueGM.IsOpen)) return false;
-        SceneFlowService.OpenDeckEditor();
+        SceneFlowService.OpenDeckManager();
         return true;
     }
 
@@ -358,8 +358,8 @@ public sealed class HD2DSceneGM : MonoBehaviour
         }
         if (!session.HasLegalDeck)
         {
-            ShowStatus("当前卡组不合法，请先完成卡组编辑");
-            SceneFlowService.OpenDeckEditor();
+            ShowStatus("当前卡组不合法，请先完成卡组管理");
+            SceneFlowService.OpenDeckManager();
             return;
         }
         if (!session.CanStartMatch(match))

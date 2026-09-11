@@ -246,7 +246,7 @@ public class CampaignSaveData
     public List<int> sharedDeckCardIds = new List<int>(); // 通用卡组
     public int currency; // 金币数量
     public List<string> badgeIds = new List<string>(); // 已经拿到的徽章
-    public List<int> deckDraftCardIds = new List<int>(); // 卡组编辑里还没保存的草稿
+    public List<int> deckDraftCardIds = new List<int>(); // 卡组管理里还没保存的草稿
     public List<int> lastValidDeckCardIds = new List<int>(); // 最近一次合法的卡组，草稿改坏时回退用
     public List<CardUpgradeSaveData> cardUpgrades = new List<CardUpgradeSaveData>(); // 卡牌强化记录
     public List<CardHoloVariantSaveData> cardHoloVariants = new List<CardHoloVariantSaveData>(); // 每张 UR 卡的颜色

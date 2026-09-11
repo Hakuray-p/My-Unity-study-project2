@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 卡组编辑界面的卡牌详情，负责左边的 3D 预览和左下角的卡名、效果文字。
+// 卡组管理界面的卡牌详情，负责左边的 3D 预览和左下角的卡名、效果文字。
 public sealed class DeckCardInspector
 {
     private readonly Card3DPreviewController previewController; // 3D 预览控制器

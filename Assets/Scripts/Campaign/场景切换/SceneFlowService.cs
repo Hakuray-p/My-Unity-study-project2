@@ -86,15 +86,15 @@ public static class SceneFlowService
         LoadAdventureScene();
     }
 
-    // 进入卡组编辑场景
-    public static void OpenDeckEditor()
+    // 进入卡组管理场景
+    public static void OpenDeckManager()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("DeckEditorScene");
+        SceneManager.LoadScene("DeckManagerScene");
     }
 
-    // 从卡组编辑场景回到城市
-    public static void ReturnFromDeckEditor()
+    // 从卡组管理场景回到城市
+    public static void ReturnFromDeckManager()
     {
         Time.timeScale = 1f;
         LoadAdventureScene();

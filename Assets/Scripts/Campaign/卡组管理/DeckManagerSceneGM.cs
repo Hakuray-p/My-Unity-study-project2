@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// 卡组编辑场景的总管理器，负责草稿状态和卡库、构筑区两块网格的协调。
-public sealed class DeckEditorSceneGM : MonoBehaviour
+// 卡组管理场景的总管理器，负责草稿状态和卡库、构筑区两块网格的协调。
+public sealed class DeckManagerSceneGM : MonoBehaviour
 {
     private const int DeckSize = 30; // 卡组要求的张数
 
@@ -16,19 +16,19 @@ public sealed class DeckEditorSceneGM : MonoBehaviour
     private DeckCardInspector inspector; // 左侧卡牌详情
     private TMP_Text hintText; // 底部提示文字
 
-    // 注册场景加载回调，给卡组编辑场景补上管理器
+    // 注册场景加载回调，给卡组管理场景补上管理器
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void RegisterSceneLoaded()
     {
         SceneManager.sceneLoaded += CreateSceneManager;
     }
 
-    // 加载的正是卡组编辑场景、且场景里还没有管理器时建一个
+    // 加载的正是卡组管理场景、且场景里还没有管理器时建一个
     private static void CreateSceneManager(Scene loadedScene, LoadSceneMode loadMode)
     {
-        if (loadedScene.name != "DeckEditorScene") return;
-        if (FindObjectOfType<DeckEditorSceneGM>() == null)
-            new GameObject("DeckEditorSceneGM").AddComponent<DeckEditorSceneGM>();
+        if (loadedScene.name != "DeckManagerScene") return;
+        if (FindObjectOfType<DeckManagerSceneGM>() == null)
+            new GameObject("DeckManagerSceneGM").AddComponent<DeckManagerSceneGM>();
     }
 
     // 读草稿，接上两块网格和保存、退出按钮
@@ -115,13 +115,13 @@ public sealed class DeckEditorSceneGM : MonoBehaviour
     private void ReturnToCity()
     {
         session.SaveDeckDraft(draft);
-        SceneFlowService.ReturnFromDeckEditor();
+        SceneFlowService.ReturnFromDeckManager();
     }
 
     // 在屏幕底部建一条提示文字
     private void CreateHintText(RectTransform anchorRoot)
     {
-        var hintObject = new GameObject("DeckEditorHintText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        var hintObject = new GameObject("DeckManagerHintText", typeof(RectTransform), typeof(TextMeshProUGUI));
         hintObject.transform.SetParent(anchorRoot.GetComponentInParent<Canvas>().transform, false);
         hintText = hintObject.GetComponent<TMP_Text>();
         hintText.font = FindChineseFont();
