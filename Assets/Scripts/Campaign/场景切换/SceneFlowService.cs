@@ -23,7 +23,7 @@ public static class SceneFlowService
     {
         CampaignSession.Instance.LoadOrCreate();
         if (CampaignSession.Instance.HasPendingBattle)
-            SceneManager.LoadScene("BattleScene");
+            LoadScene("BattleScene");
         else
             LoadAdventureScene();
     }
@@ -31,7 +31,13 @@ public static class SceneFlowService
     // 城市场景的统一入口，所有"回城市"的路径都走这里，避免场景名散落在各处
     public static void LoadAdventureScene()
     {
-        SceneManager.LoadScene("HD_2D_Day");
+        LoadScene("One_City_DAY");
+    }
+
+    // 所有场景切换都先播转场动画，转场组件在当前场景里
+    private static void LoadScene(string sceneName)
+    {
+        Object.FindObjectOfType<LevelLoader>().LoadScene(sceneName);
     }
 
     /// <summary>
@@ -79,18 +85,18 @@ public static class SceneFlowService
     /// <summary>
     /// 从卡牌预览场景返回商店所在城市。
     /// </summary>
-    // 从预览返回商店所在城市，返回前先恢复 timeScale
+    // 从预览返回商店所在城市，这条线不播转场
     public static void ReturnFromCardPreview()
     {
         Time.timeScale = 1f;
-        LoadAdventureScene();
+        SceneManager.LoadScene("One_City_DAY");
     }
 
     // 进入卡组管理场景
     public static void OpenDeckManager()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("DeckManagerScene");
+        LoadScene("DeckManagerScene");
     }
 
     // 从卡组管理场景回到城市
@@ -106,7 +112,7 @@ public static class SceneFlowService
         MatchData match = CampaignCatalog.GetMatch(matchId);
         if (!CampaignSession.Instance.CanStartMatch(match)) return;
         CampaignSession.Instance.BeginMatch(match, returnPosition);
-        SceneManager.LoadScene("BattleScene");
+        LoadScene("BattleScene");
     }
 
     // 重打上一场失败的比赛
@@ -115,7 +121,7 @@ public static class SceneFlowService
         CampaignSession session = CampaignSession.Instance;
         if (session.TryRetryLastMatch(session.State.playerPosition))
         {
-            SceneManager.LoadScene("BattleScene");
+            LoadScene("BattleScene");
         }
     }
 
@@ -124,7 +130,7 @@ public static class SceneFlowService
     {
         if (CampaignSession.Instance.CreateBattleContext() != null)
         {
-            SceneManager.LoadScene("BattleScene");
+            LoadScene("BattleScene");
         }
     }
 
@@ -137,6 +143,6 @@ public static class SceneFlowService
     // 回到主菜单
     public static void ReturnToMenu()
     {
-        SceneManager.LoadScene("GameMenu");
+        LoadScene("GameMenu");
     }
 }

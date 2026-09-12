@@ -18,11 +18,29 @@ public class CardData
     public Sprite image;  // 图片
     [TextArea]
     public string effectDescription; // 效果文本
-    public TriggerType triggerType; // 效果触发类型
-    public EffectType effectType;   // 效果种类
-    public int[] effectValue;       // 效果参数 
-    public ConditionType effectCondition;     // 效果发动条件
+    public List<CardEffect> effects = new List<CardEffect>(); // 按列表顺序结算的效果
     public PassiveType passiveType; // 被动效果类型
     public AudioClip attackAudio;// 攻击音效
     public AudioClip enterAudio;// 进场音效
+
+    // 这张卡有没有某个时点的效果
+    public bool HasEffect(TriggerType triggerType)
+    {
+        foreach (CardEffect effect in effects)
+        {
+            if (effect.triggerType == triggerType) return true;
+        }
+
+        return false;
+    }
+}
+
+[System.Serializable]
+// 卡牌上的一个效果，在列表里的先后就是结算顺序
+public class CardEffect
+{
+    public TriggerType triggerType; // 触发时点
+    public EffectType effectType; // 效果种类
+    public int[] effectValue; // 效果参数
+    public ConditionType effectCondition; // 发动条件
 }

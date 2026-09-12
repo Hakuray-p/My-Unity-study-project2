@@ -18,8 +18,10 @@ public sealed class DeckCardInspector
         effectText = SceneTool.Find<TMP_Text>("DeckCardEffectText");
 
         Camera previewCamera = SceneTool.Find<Camera>("DeckPreviewCamera");
-        SceneTool.Find<RawImage>("DeckPreviewRawImage").texture = previewCamera.targetTexture;
+        RawImage previewImage = SceneTool.Find<RawImage>("DeckPreviewRawImage");
+        previewImage.texture = previewCamera.targetTexture;
         previewController.SetPreviewCamera(previewCamera);
+        previewController.SetPreviewArea(previewImage.rectTransform);
     }
 
     // 在左边显示这张卡，两段文字跟着换

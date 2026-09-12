@@ -4,10 +4,10 @@ using UnityEngine;
 public sealed class WorldInteractionActor : MonoBehaviour
 {
     private CharacterGM characterGM; // 所属的角色管理器
-    internal string id; // 绑定的比赛 / 商店 / 事件 ID
+    internal string matchId; // 挑战的比赛 ID
+    internal string eventId; // 事件 ID
     internal string displayName; // 显示名
     internal WorldInteractionType type; // 交互类型
-    internal string alternateId; // 备用的交互 ID，比如打完练习赛后的正式赛
     public Sprite[] idleFrames; // 待机动画帧
     public float animationFPS = 8f; // 待机动画帧率
     private SpriteRenderer spriteRenderer; // 角色渲染器
@@ -15,10 +15,11 @@ public sealed class WorldInteractionActor : MonoBehaviour
     private float timer; // 帧计时
 
     // 记下所属管理器和自己的身份
-    internal void Bind(CharacterGM characterManager, string actorId, string label, WorldInteractionType actorType)
+    internal void Bind(CharacterGM characterManager, string actorMatchId, string actorEventId, string label, WorldInteractionType actorType)
     {
         characterGM = characterManager;
-        id = actorId;
+        matchId = actorMatchId;
+        eventId = actorEventId;
         displayName = label;
         type = actorType;
         spriteRenderer = GetComponent<SpriteRenderer>();

@@ -13,11 +13,11 @@ public partial class EffectManager
     #region 需要选择目标的效果实现
 
     // 选一个敌人造成伤害
-    private void DealDamageToEnemy(CardController effectCard)
+    private void DealDamageToEnemy(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
-        if (!(effectCard.cardData.effectValue.Length > 0)) return;
-        int damage = effectCard.cardData.effectValue[0];
+        if (!(effect.effectValue.Length > 0)) return;
+        int damage = effect.effectValue[0];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(effectCard.player.playerId); // 敌方玩家
         List<CardController> targetCards = new();
@@ -34,18 +34,18 @@ public partial class EffectManager
                 target.TakeDamage(damage);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一个敌人加攻防
-    private void BuffEnemy(CardController effectCard)
+    private void BuffEnemy(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
 
-        if (!(effectCard.cardData.effectValue.Length > 1)) return;
-        int addAtk = effectCard.cardData.effectValue[0];
-        int addHp = effectCard.cardData.effectValue[1];
+        if (!(effect.effectValue.Length > 1)) return;
+        int addAtk = effect.effectValue[0];
+        int addHp = effect.effectValue[1];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(effectCard.player.playerId);
         List<CardController> targetCards = new();
@@ -63,12 +63,12 @@ public partial class EffectManager
                 BuffCard(target, addAtk, addHp);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一个敌人直接消灭
-    private void DestoryEnemy(CardController effectCard)
+    private void DestoryEnemy(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
@@ -88,12 +88,12 @@ public partial class EffectManager
                 GM.Ins.BM.MumberDied(target);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一个敌人沉默
-    private void SlienceEnemy(CardController effectCard)
+    private void SlienceEnemy(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
@@ -112,16 +112,16 @@ public partial class EffectManager
                 target.isSlience = true;
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一个友军治疗
-    private void HealAlly(CardController effectCard)
+    private void HealAlly(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
+        if (effect.effectValue.Length <= 0) return;
         _isProcessingEffect = true;
-        int heal = effectCard.cardData.effectValue[0];
+        int heal = effect.effectValue[0];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         List<CardController> targetCards = new();
         foreach (var target in effectPlayer.field.cards)
@@ -138,12 +138,12 @@ public partial class EffectManager
                 target.Heal(heal);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一个敌人弹回它的手牌
-    private void EnemyBackHand(CardController effectCard)
+    private void EnemyBackHand(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
@@ -166,12 +166,12 @@ public partial class EffectManager
                 target.cardDisplay.ShowBack(!enemyPlayer.isMainPlayer);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一张场上的牌（不含自己）弹回持有者手牌
-    private void OtherBackHand(CardController effectCard)
+    private void OtherBackHand(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
@@ -206,7 +206,7 @@ public partial class EffectManager
                 target.cardDisplay.ShowBack(!targetPlayer.isMainPlayer);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
@@ -214,7 +214,7 @@ public partial class EffectManager
     /// 从墓地选择干员返回手牌
     /// </summary>
     /// <param name="effectPack"></param>
-    private void DigMumber(CardController effectCard)
+    private void DigMumber(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
@@ -241,7 +241,7 @@ public partial class EffectManager
                 target.cardDisplay.ShowBack(!effectPlayer.isMainPlayer);
             }
 
-            EffectFinish();
+            FinishStep();
         }, false);
     }
 
@@ -249,7 +249,7 @@ public partial class EffectManager
     /// 从墓地复活干员
     /// </summary>
     /// <param name="effectPack"></param>
-    private void Revive(CardController effectCard)
+    private void Revive(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
@@ -276,17 +276,17 @@ public partial class EffectManager
                 target.cardDisplay.ShowBack(false);
             }
 
-            EffectFinish();
+            FinishStep();
         }, false);
     }
 
     // 选一个友军加攻防
-    private void BuffAlly(CardController effectCard)
+    private void BuffAlly(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 1) return;
+        if (effect.effectValue.Length <= 1) return;
         _isProcessingEffect = true;
-        int addAtk = effectCard.cardData.effectValue[0];
-        int addHp = effectCard.cardData.effectValue[1];
+        int addAtk = effect.effectValue[0];
+        int addHp = effect.effectValue[1];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         List<CardController> targetCards = new();
         foreach (var target in effectPlayer.field.cards)
@@ -303,16 +303,16 @@ public partial class EffectManager
                 BuffCard(target, addAtk, addHp);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 从牌堆检索一张费用达标的干员加入手牌
-    private void SearchMumberCostUp(CardController effectCard)
+    private void SearchMumberCostUp(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
+        if (effect.effectValue.Length <= 0) return;
         _isProcessingEffect = true;
-        int costUp = effectCard.cardData.effectValue[0];
+        int costUp = effect.effectValue[0];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         List<CardController> targetCards = new();
         foreach (var target in effectPlayer.deckCards)
@@ -335,22 +335,22 @@ public partial class EffectManager
                 target.cardDisplay.ShowBack(!effectPlayer.isMainPlayer);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 从牌堆检索一张指定触发时点的干员加入手牌
-    private void SearchMumberTrigger(CardController effectCard)
+    private void SearchMumberTrigger(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
+        if (effect.effectValue.Length <= 0) return;
         _isProcessingEffect = true;
-        TriggerType triggerType = (TriggerType)effectCard.cardData.effectValue[0];
+        TriggerType triggerType = (TriggerType)effect.effectValue[0];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         List<CardController> targetCards = new();
         foreach (var target in effectPlayer.deckCards)
         {
             // 判定条件
-            if (target.cardData.triggerType == triggerType &&
+            if (target.cardData.HasEffect(triggerType) &&
                 target.cardData.cardType == CardType.MUMBER)
             {
                 targetCards.Add(target);
@@ -368,38 +368,13 @@ public partial class EffectManager
                 target.cardDisplay.ShowBack(!effectPlayer.isMainPlayer);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
-    // 选一个敌人打 5 点，再抽 5 张并给自己回 5 血
-    private void GetAll(CardController effectCard)
-    {
-        _isProcessingEffect = true;
-        PlayerController effectPlayer = effectCard.player; // 效果发动玩家
-        PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(effectCard.player.playerId);
-        List<CardController> targetCards = new();
-        foreach (var target in enemyPlayer.field.cards)
-        {
-            targetCards.Add(target);
-            target.cardDisplay.ShowSpecial(true);
-        }
-
-        GM.Ins.BM.TM.StartSelectFieldCards(effectPlayer, targetCards, 1, (targetPack) =>
-        {
-            foreach (var target in targetPack.cards)
-            {
-                target.TakeDamage(5);
-            }
-
-            GM.Ins.BM.DrawCard(effectPlayer, 5); // 抽5张牌
-            effectPlayer.Heal(5); // 回5点血
-            EffectFinish();
-        });
-    }
 
     // 把场上的阿米娅变身成近卫阿米娅
-    private void Henshin(CardController effectCard)
+    private void Henshin(CardController effectCard, CardEffect effect)
     {
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
@@ -426,15 +401,15 @@ public partial class EffectManager
                 target.cardDisplay.ShowBack(false);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一张场上的牌弹回手牌并加费用
-    private void BackHandAddCost(CardController effectCard)
+    private void BackHandAddCost(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
-        int addCost = effectCard.cardData.effectValue[0];
+        if (effect.effectValue.Length <= 0) return;
+        int addCost = effect.effectValue[0];
         _isProcessingEffect = true;
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         List<CardController> targetCards = new();
@@ -459,17 +434,17 @@ public partial class EffectManager
                 targetPlayer.UpdateCostUI();
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选一个血量不高于 2 的友军加攻防
-    private void BuffLowHpAlly(CardController effectCard)
+    private void BuffLowHpAlly(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 1) return;
+        if (effect.effectValue.Length <= 1) return;
         _isProcessingEffect = true;
-        int addAtk = effectCard.cardData.effectValue[0];
-        int addHp = effectCard.cardData.effectValue[1];
+        int addAtk = effect.effectValue[0];
+        int addHp = effect.effectValue[1];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         List<CardController> targetCards = new();
         foreach (var target in effectPlayer.field.cards)
@@ -489,17 +464,17 @@ public partial class EffectManager
                 BuffCard(target, addAtk, addHp);
             }
 
-            EffectFinish();
+            FinishStep();
         });
     }
 
     // 选若干张手牌弃掉，再抽等量的牌
-    private void DropAndDraw(CardController effectCard)
+    private void DropAndDraw(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 1) return;
+        if (effect.effectValue.Length <= 1) return;
         _isProcessingEffect = true;
-        int dropNum = effectCard.cardData.effectValue[0];
-        int drawNum = effectCard.cardData.effectValue[1];
+        int dropNum = effect.effectValue[0];
+        int drawNum = effect.effectValue[1];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
 
         List<CardController> targetCards = new();
@@ -527,7 +502,7 @@ public partial class EffectManager
 
             GM.Ins.BM.DrawCard(effectPlayer, drawNum);
 
-            EffectFinish();
+            FinishStep();
         });
     }
 

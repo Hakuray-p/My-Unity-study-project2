@@ -11,10 +11,13 @@ public sealed class DeckManagerSceneGM : MonoBehaviour
 
     private CampaignSession session; // 当前存档会话
     private List<int> draft; // 正在编辑的卡组草稿
+    private List<int> library; // 卡库显示的卡，同名只留一张、已经全放进卡组的不显示
+    private List<int?> libraryCounts; // 卡库每张卡还能放进卡组的张数
     private DeckCardGrid deckGrid; // 构筑区网格
     private DeckCardGrid libraryGrid; // 卡库网格
     private DeckCardInspector inspector; // 左侧卡牌详情
     private TMP_Text hintText; // 底部提示文字
+    private string search = string.Empty; // 卡库的搜索词
 
     // 注册场景加载回调，给卡组管理场景补上管理器
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -44,6 +47,7 @@ public sealed class DeckManagerSceneGM : MonoBehaviour
         inspector = new DeckCardInspector();
         SceneTool.Find<Button>("保存").onClick.AddListener(SaveDeck);
         SceneTool.Find<Button>("退出").onClick.AddListener(ReturnToCity);
+        SceneTool.Find<TMP_InputField>("InputField").onValueChanged.AddListener(ApplySearch);
 
         CreateHintText(deckRoot);
         RefreshAll();
@@ -52,14 +56,16 @@ public sealed class DeckManagerSceneGM : MonoBehaviour
     // 左键点卡库的卡就在左边显示它的详情
     private void SelectFromLibrary(int index)
     {
-        inspector.Show(CampaignCatalog.GetCardData(session.State.collectedCardIds[index]));
+        if (index >= library.Count) return;
+        inspector.Show(CampaignCatalog.GetCardData(library[index]));
     }
 
     // 把卡库里的卡拖进构筑区就加进草稿，同名卡最多 3 张
     private void AddToDeck(int index)
     {
+        if (index >= library.Count) return;
         if (draft.Count >= DeckSize) { ShowHint("卡组已经满了"); return; }
-        int cardId = session.State.collectedCardIds[index];
+        int cardId = library[index];
         if (CountInDraft(cardId) >= 3) { ShowHint("同名卡最多 3 张"); return; }
         draft.Add(cardId);
         RefreshAll();
@@ -80,11 +86,54 @@ public sealed class DeckManagerSceneGM : MonoBehaviour
         RefreshAll();
     }
 
+    // 记下搜索词并重刷卡库
+    private void ApplySearch(string value)
+    {
+        search = value;
+        RefreshAll();
+    }
+
+    // 卡名里包含搜索词就显示，没输入搜索词时全部显示
+    private bool IsMatch(int cardId)
+    {
+        if (string.IsNullOrEmpty(search)) return true;
+        return CampaignCatalog.GetCardData(cardId).name.Contains(search, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    // 重新整理卡库：同名只留一张，已经全放进卡组的直接不显示
+    private void BuildLibrary()
+    {
+        var owned = new List<int>();
+        var ownedCounts = new List<int>();
+        foreach (int cardId in session.State.collectedCardIds)
+        {
+            int index = owned.IndexOf(cardId);
+            if (index < 0)
+            {
+                owned.Add(cardId);
+                ownedCounts.Add(1);
+            }
+            else ownedCounts[index]++;
+        }
+
+        library = new List<int>();
+        libraryCounts = new List<int?>();
+        for (int i = 0; i < owned.Count; i++)
+        {
+            if (!IsMatch(owned[i])) continue;
+            int remains = ownedCounts[i] - CountInDraft(owned[i]);
+            if (remains <= 0) continue;
+            library.Add(owned[i]);
+            libraryCounts.Add(remains);
+        }
+    }
+
     // 两块网格一起刷新
     private void RefreshAll()
     {
-        deckGrid.Refresh(BuildSlots());
-        libraryGrid.Refresh(session.State.collectedCardIds);
+        BuildLibrary();
+        deckGrid.Refresh(BuildSlots(), null);
+        libraryGrid.Refresh(library, libraryCounts);
     }
 
     // 把草稿补成固定 30 格

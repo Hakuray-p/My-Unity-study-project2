@@ -25,24 +25,29 @@ public sealed class DeckCardGrid
         AddSlot(slotTemplate);
     }
 
-    // 按卡牌列表刷新格子，写 0 的位置不画卡图
-    public void Refresh(IList<int> cardIds)
+    // 按卡牌列表刷新格子，counts 是每格角标要写的张数，传 null 时不标角标
+    public void Refresh(IList<int> cardIds, IList<int?> counts)
     {
         while (slots.Count < cardIds.Count) AddSlot(Object.Instantiate(slotTemplate, slotTemplate.transform.parent, false));
 
         for (int i = 0; i < cardIds.Count; i++)
         {
             int cardId = cardIds[i];
-            ApplySlot(slots[i], cardId > 0 ? CampaignCatalog.GetCardData(cardId) : null);
+            int? count = counts == null ? null : counts[i];
+            ApplySlot(slots[i], cardId > 0 ? CampaignCatalog.GetCardData(cardId) : null, count);
         }
+
+        for (int i = cardIds.Count; i < slots.Count; i++) ApplySlot(slots[i], null, null);
     }
 
     // 把卡图刷到格子上，空位收起卡图
-    private static void ApplySlot(GameObject slot, CardData card)
+    private static void ApplySlot(GameObject slot, CardData card, int? count)
     {
-        Image cardImage = slot.transform.Find("CardArt").GetComponent<Image>();
+        Transform cardArt = slot.transform.Find("CardArt");
+        Image cardImage = cardArt.GetComponent<Image>();
         cardImage.enabled = card != null;
         cardImage.sprite = card == null ? null : card.image;
+        DeckCardCountBadge.Set(cardArt, count);
     }
 
     // 给一个格子挂上输入组件，并把序号和回调填进去

@@ -12,7 +12,7 @@ public static class CampaignCatalog
         {
             cityId = "first_light",
             displayName = "First Light",
-            sceneName = "HD_2D_Day",
+            sceneName = "One_City_DAY",
             requiredPoints = 10,
             championMatchId = "first_light_champion",
             availableMatchIds = new List<string>
@@ -21,6 +21,7 @@ public static class CampaignCatalog
                 "first_light_public_01",
                 "first_light_public_02",
                 "first_light_public_03",
+                "first_light_public_04",
                 "first_light_champion"
             }
         }
@@ -99,6 +100,18 @@ public static class CampaignCatalog
         },
         new MatchData
         {
+            matchId = "first_light_public_04",
+            cityId = "first_light",
+            displayName = "Merchant's Open",
+            matchType = MatchType.Public,
+            opponentId = "Merchant",
+            pointReward = 5,
+            goldReward = 40,
+            enemyDeckId = 2,
+            rewardCardIds = new List<int> { 1004 }
+        },
+        new MatchData
+        {
             matchId = "first_light_champion",
             cityId = "first_light",
             displayName = "First Light Champion",
@@ -160,7 +173,10 @@ public static class CampaignCatalog
         }
 
         for (int cardId = 1001; cardId <= 1017; cardId++) entries.Add(CreateShopEntry(cardId));
-        for (int cardId = 1101; cardId <= 1112; cardId++) entries.Add(CreateShopEntry(cardId));
+        for (int cardId = 1101; cardId <= 1112; cardId++)
+        {
+            if (cardId != 1103) entries.Add(CreateShopEntry(cardId));
+        }
         return entries;
     }
 
@@ -205,7 +221,7 @@ public static class CampaignCatalog
     // 卡牌数据缺失时按编号区间判断稀有度
     private static CardRarity GetLegacyRarity(int cardId)
     {
-        if (cardId == 1103 || cardId == 1107 || (cardId >= 1006 && cardId <= 1008) || cardId == 1010 ||
+        if (cardId == 1107 || (cardId >= 1006 && cardId <= 1008) || cardId == 1010 ||
             cardId == 1012 || cardId == 1017 || cardId == 1111) return CardRarity.Limited;
         if (cardId == 1005 || cardId == 1102 || cardId == 1106 || cardId == 1108) return CardRarity.Rare;
         return CardRarity.Common;
@@ -224,7 +240,7 @@ public static class CampaignCatalog
         return new List<int>
         {
             1112, 1016, 1001, 1002, 1003, 1004, 1005, 1006,
-            1010, 1011, 1012, 1013, 1101, 1102, 1103, 1104,
+            1010, 1011, 1012, 1013, 1101, 1102, 1104, 1109,
             1105, 1106, 1107, 1108,
             1001, 1002, 1003, 1004, 1011, 1013, 1101, 1104,
             1105, 1112

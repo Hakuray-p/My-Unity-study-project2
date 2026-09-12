@@ -72,7 +72,7 @@ public class CardController : MonoBehaviour
     {
         if (!player.isInTurn) return;
         if (cardState != CardState.Field) return;
-        if (cardData.triggerType == TriggerType.Cast) // 主动释放
+        if (cardData.HasEffect(TriggerType.Cast)) // 主动释放
         {
             GM.Ins.BM.EM.TriggerCardEffect(TriggerType.Cast, this);
         }

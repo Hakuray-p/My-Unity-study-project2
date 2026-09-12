@@ -31,6 +31,7 @@ public sealed class Card3DPreviewController : MonoBehaviour
     [SerializeField] private bool horizontalRotationReversed; // 是否反向水平旋转
     [SerializeField] private bool verticalRotationReversed; // 是否反向垂直旋转
     [SerializeField] private float verticalRotationLimit = 80f; // 垂直旋转限制
+    [SerializeField] private RectTransform previewArea; // 预览显示区域，指针停在这块区域里也允许拖动
 
     [Header("卡牌质感")]
     [SerializeField] private Color cardBodyColor = new Color(0.08f, 0.11f, 0.17f, 1f); // 卡牌主体颜色
@@ -87,6 +88,12 @@ public sealed class Card3DPreviewController : MonoBehaviour
     {
         previewCamera = targetCamera;
         UpdateCameraDistance();
+    }
+
+    // 设置预览显示区域，指针停在它上面时不再当作停在 UI 上
+    public void SetPreviewArea(RectTransform area)
+    {
+        previewArea = area;
     }
 
     /// <summary>
@@ -334,9 +341,10 @@ public sealed class Card3DPreviewController : MonoBehaviour
             observationDistance = Mathf.Clamp(observationDistance - Input.mouseScrollDelta.y * zoomSpeed, minObservationDistance, maxObservationDistance);
     }
 
-    // 指针是不是停在 UI 上
+    // 指针是不是停在 UI 上，停在预览显示区域里不算
     private bool IsPointerOverUi()
     {
+        if (previewArea != null && RectTransformUtility.RectangleContainsScreenPoint(previewArea, Input.mousePosition)) return false;
         return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 

@@ -35,10 +35,10 @@ public static class HDAdventureBootstrap
         EnsureSceneManager(scene);
     }
 
-    // 只对 HD_2D_Day 生效，场景里没有场景 GM 就补一个
+    // 只对 One_City_DAY 生效，场景里没有场景 GM 就补一个
     private static void EnsureSceneManager(Scene scene)
     {
-        if (scene.name != "HD_2D_Day") return;
+        if (scene.name != "One_City_DAY") return;
         if (Object.FindObjectOfType<HD2DSceneGM>() == null)
             new GameObject("HD2D Scene GM").AddComponent<HD2DSceneGM>();
     }

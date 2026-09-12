@@ -323,22 +323,6 @@ public sealed class HD2DSceneGM : MonoBehaviour
         shopPanel.Open();
     }
 
-    // 玩家碰到交互点后按类型分派：比赛 / 商店 / 事件
-    internal void Activate(WorldInteractionActor actor)
-    {
-        if (actor.type == WorldInteractionType.Match)
-        {
-            StartMatch(actor.id);
-            return;
-        }
-        if (actor.type == WorldInteractionType.Shop)
-        {
-            OpenShopPanel();
-            return;
-        }
-        dialogueGM.Close();
-        if (eventGM != null) eventGM.StartEvent(actor.id);
-    }
 
     // 开一场比赛，已经有没打完的战斗时改为继续那场
     private void StartMatch(string matchId)

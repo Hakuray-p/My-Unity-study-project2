@@ -39,7 +39,6 @@ public enum EffectType
     DigMumber = 19,
     DestoryEnemy = 20,
     SearchMumberCostUp = 21,// 检索1名干员，费用x以上
-    GetAll = 22,
     SearchMumberTrigger = 23, // 检索一名带有某触发条件的干员
     Henshin = 24,
     Revive = 25, // 复活
@@ -49,6 +48,7 @@ public enum EffectType
     AttackAgain = 29,// 允许再次攻击
     DropEnemyHand = 30,// 使敌方随机弃牌
     DropAndDraw = 31,// 弃牌后抽牌
+    HealPlayer = 32,// 治疗博士
 }
 
 

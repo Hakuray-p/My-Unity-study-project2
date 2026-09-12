@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 // 卡牌效果管理，把触发时点入队后逐个执行
 public partial class EffectManager : MonoBehaviour
 {
-    private Queue<CardController> _effectQueue = new();
+    private Queue<EffectRequest> _effectQueue = new();
     private float _effectTimer = 0f;
     private float _effectInterval = 1f; // 每秒1个效果
     public bool IsProcessingEffect => _isProcessingEffect || _effectQueue.Count > 0;
@@ -18,8 +18,10 @@ public partial class EffectManager : MonoBehaviour
     private readonly HashSet<CardController> queuedCards = new HashSet<CardController>();
     private readonly HashSet<CardController> processingCards = new HashSet<CardController>();
     private CardController _processingCard;
+    private List<CardEffect> _pendingEffects; // 这次触发要按顺序执行的效果
+    private int _pendingIndex; // 正在跑第几个效果
 
-    private Dictionary<EffectType, UnityAction<CardController>> _effectActionDic = new();
+    private Dictionary<EffectType, UnityAction<CardController, CardEffect>> _effectActionDic = new();
 
     private Vector3 cameraOriginPos = new Vector3(0f, 10f, -2.5f);
 
@@ -44,7 +46,7 @@ public partial class EffectManager : MonoBehaviour
             , { EffectType.HeallRandomAllies, HeallRandomAllies }
             , { EffectType.SlienceEnemy, SlienceEnemy }, { EffectType.OtherBackHand, OtherBackHand }
             , { EffectType.DigMumber, DigMumber }, { EffectType.DestoryEnemy, DestoryEnemy }
-            , { EffectType.SearchMumberCostUp, SearchMumberCostUp }, { EffectType.GetAll, GetAll }
+            , { EffectType.SearchMumberCostUp, SearchMumberCostUp }, { EffectType.HealPlayer, HealPlayer }
             , { EffectType.SearchMumberTrigger, SearchMumberTrigger }
             , { EffectType.Henshin, Henshin }, { EffectType.Revive, Revive }
             , { EffectType.AddCost, AddCost }, { EffectType.BackHandAddCost, BackHandAddCost }
@@ -83,10 +85,10 @@ public partial class EffectManager : MonoBehaviour
         if (player == null || player.field == null || player.field.cards == null) return;
         foreach (var card in player.field.cards)
         {
-            if (card != null && card.cardData != null && card.cardData.triggerType == triggerType)
+            if (card != null && card.cardData != null && card.cardData.HasEffect(triggerType))
             {
                 if (card.isSlience) continue;
-                EnqueueEffect(card);
+                EnqueueEffect(card, triggerType);
             }
         }
     }
@@ -95,32 +97,46 @@ public partial class EffectManager : MonoBehaviour
     public void TriggerCardEffect(TriggerType triggerType, CardController card)
     {
         if (card == null || card.cardData == null) return;
-        if (card.cardData.triggerType != triggerType) return;
+        if (!card.cardData.HasEffect(triggerType)) return;
         if (card.isSlience) return;
-        EnqueueEffect(card);
+        EnqueueEffect(card, triggerType);
     }
 
     // 法术牌发动效果
     public void CastSpell(CardController card)
     {
         if (card == null || card == _castingSpell || queuedCards.Contains(card) || processingCards.Contains(card)) return;
-        EnqueueEffect(card);
+        EnqueueEffect(card, TriggerType.None); // 法术发动时按顺序跑全部效果
         _castingSpell = card;
     }
 
     // 把卡加入效果队列，重复的卡跳过
-    private void EnqueueEffect(CardController card)
+    private void EnqueueEffect(CardController card, TriggerType triggerType)
     {
         if (card == null || queuedCards.Contains(card) || processingCards.Contains(card)) return;
         queuedCards.Add(card);
-        _effectQueue.Enqueue(card);
+        _effectQueue.Enqueue(new EffectRequest { card = card, effects = CollectEffects(card.cardData, triggerType) });
     }
 
-    // 取出队首卡牌，播完抖动动画后执行它的效果
+    // 取出这次触发要执行的效果，时点传 None 表示跑全部效果
+    private static List<CardEffect> CollectEffects(CardData cardData, TriggerType triggerType)
+    {
+        var result = new List<CardEffect>();
+        if (cardData == null || cardData.effects == null) return result;
+        foreach (CardEffect effect in cardData.effects)
+        {
+            if (triggerType == TriggerType.None || effect.triggerType == triggerType) result.Add(effect);
+        }
+
+        return result;
+    }
+
+    // 取出队首请求，播完抖动动画后按顺序执行它的效果
     private void TriggerNextEffect()
     {
         if (_effectQueue.Count == 0) return;
-        CardController effectCard = _effectQueue.Dequeue();
+        EffectRequest request = _effectQueue.Dequeue();
+        CardController effectCard = request.card;
         if (effectCard == null) { _isProcessingEffect = false; return; }
         queuedCards.Remove(effectCard);
         processingCards.Add(effectCard);
@@ -132,53 +148,67 @@ public partial class EffectManager : MonoBehaviour
             EffectFinish();
             return;
         }
+        _pendingEffects = request.effects;
+        _pendingIndex = 0;
         GM.Ins.AM.PlayAudio(AudioType.Effect);
-        Debug.Log($"触发{effectCard.cardData.name}的效果, " +
-                  $"触发时点{effectCard.cardData.triggerType}" +
-                  $"效果类型{effectCard.cardData.effectType}");
+        Debug.Log($"触发{effectCard.cardData.name}的效果, 效果数{_pendingEffects.Count}");
         effectCard.transform.DOLocalRotate(new Vector3(0f, 0f, 20f), 0.3f)
-            .SetLoops(2, LoopType.Yoyo).SetDelay(0.5f).OnComplete(() =>
-            {
-                if (effectCard.cardData == null)
-                {
-                    EffectFinish();
-                    return;
-                }
-                if (!HasRequiredParameters(effectCard))
-                {
-                    EffectFinish();
-                    return;
-                }
-                if (_effectActionDic.ContainsKey(effectCard.cardData.effectType))
-                {
-                    UnityAction<CardController> action = _effectActionDic[effectCard.cardData.effectType];
-                    if (action != null) action.Invoke(effectCard);
-                    else EffectFinish();
-                }
-                else EffectFinish();
-            });
+            .SetLoops(2, LoopType.Yoyo).SetDelay(0.5f).OnComplete(() => RunNextEffect(effectCard));
         //effectCard.transform.DOLocalMoveZ(-1.2f, 0.3f).SetLoops(2, LoopType.Yoyo).SetDelay(0.5f);
         //effectCard.transform.DOScale(1.2f, 0.3f).SetLoops(2, LoopType.Yoyo);
     }
 
-    // 检查这张卡的效果参数个数够不够
-    private bool HasRequiredParameters(CardController effectCard)
+    // 按顺序跑下一个效果，条件不满足就停掉后面的效果
+    private void RunNextEffect(CardController effectCard)
     {
-        if (effectCard == null || effectCard.cardData == null) return false;
-        int count = effectCard.cardData.effectValue == null ? 0 : effectCard.cardData.effectValue.Length;
-        switch (effectCard.cardData.effectType)
+        if (effectCard.cardData == null || _pendingEffects == null || _pendingIndex >= _pendingEffects.Count)
+        {
+            EffectFinish();
+            return;
+        }
+
+        CardEffect effect = _pendingEffects[_pendingIndex];
+        _pendingIndex++;
+        if (!CheckCondition(effectCard, effect))
+        {
+            Debug.Log($"效果{effect.effectType}的发动条件不满足，停止后续效果");
+            EffectFinish();
+            return;
+        }
+
+        if (!HasRequiredParameters(effect))
+        {
+            Debug.Log($"效果{effect.effectType}的参数不够，停止后续效果");
+            EffectFinish();
+            return;
+        }
+
+        if (_effectActionDic.TryGetValue(effect.effectType, out UnityAction<CardController, CardEffect> action) && action != null)
+        {
+            action.Invoke(effectCard, effect);
+            return;
+        }
+
+        EffectFinish();
+    }
+
+    // 检查这个效果的参数个数够不够
+    private bool HasRequiredParameters(CardEffect effect)
+    {
+        int count = effect.effectValue == null ? 0 : effect.effectValue.Length;
+        switch (effect.effectType)
         {
             case EffectType.BuffSelf:
             case EffectType.BuffAlliesAll:
             case EffectType.DealDamageToRandomEnemy:
             case EffectType.HeallRandomAllies:
-            case EffectType.DigMumber:
-            case EffectType.SearchMumberCostUp:
-            case EffectType.SearchMumberTrigger:
-            case EffectType.BackHandAddCost:
+            case EffectType.BuffEnemy:
             case EffectType.BuffLowHpAlly:
             case EffectType.DropAndDraw:
                 return count >= 2;
+            case EffectType.SearchMumberCostUp:
+            case EffectType.SearchMumberTrigger:
+            case EffectType.BackHandAddCost:
             case EffectType.Draw:
             case EffectType.DamageAllEnemy:
             case EffectType.DamageAll:
@@ -186,12 +216,8 @@ public partial class EffectManager : MonoBehaviour
             case EffectType.AddCostMax:
             case EffectType.DropEnemyHand:
             case EffectType.DealDamageToEnemy:
-            case EffectType.BuffEnemy:
             case EffectType.HealAlly:
-            case EffectType.EnemyBackHand:
-            case EffectType.OtherBackHand:
-            case EffectType.DestoryEnemy:
-            case EffectType.SlienceEnemy:
+            case EffectType.HealPlayer:
                 return count >= 1;
             default:
                 return true;
@@ -204,30 +230,37 @@ public partial class EffectManager : MonoBehaviour
     #region 无需选择目标的效果
 
     // 抽牌
-    private void Draw(CardController effectCard)
+    private void Draw(CardController effectCard, CardEffect effect)
     {
         PlayerController player = effectCard.player;
-        GM.Ins.BM.DrawCard(player, effectCard.cardData.effectValue[0]);
-        EffectFinish();
+        GM.Ins.BM.DrawCard(player, effect.effectValue[0]);
+        FinishStep();
+    }
+
+    // 治疗博士
+    private void HealPlayer(CardController effectCard, CardEffect effect)
+    {
+        effectCard.player.Heal(effect.effectValue[0]);
+        FinishStep();
     }
 
     // 给自己加攻防
-    private void BuffSelf(CardController effectCard)
+    private void BuffSelf(CardController effectCard, CardEffect effect)
     {
         if (effectCard == null) return;
-        if (effectCard.cardData.effectValue.Length <= 1) return;
-        int addAtk = effectCard.cardData.effectValue[0];
-        int addHp = effectCard.cardData.effectValue[1];
+        if (effect.effectValue.Length <= 1) return;
+        int addAtk = effect.effectValue[0];
+        int addHp = effect.effectValue[1];
 
         BuffCard(effectCard, addAtk, addHp);
-        EffectFinish();
+        FinishStep();
     }
 
     // 对敌方全场造成伤害
-    private void DamageAllEnemy(CardController effectCard)
+    private void DamageAllEnemy(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
-        int damage = effectCard.cardData.effectValue[0];
+        if (effect.effectValue.Length <= 0) return;
+        int damage = effect.effectValue[0];
         PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(effectCard.player.playerId); // 敌方玩家
         List<CardController> targetCards = new();
         targetCards.AddRange(enemyPlayer.field.cards);
@@ -236,14 +269,14 @@ public partial class EffectManager : MonoBehaviour
             target.TakeDamage(damage);
         }
 
-        EffectFinish();
+        FinishStep();
     }
 
     // 对双方全场造成伤害
-    private void DamageAll(CardController effectCard)
+    private void DamageAll(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
-        int damage = effectCard.cardData.effectValue[0];
+        if (effect.effectValue.Length <= 0) return;
+        int damage = effect.effectValue[0];
         List<CardController> targetCards = new();
         foreach (var player in GM.Ins.BM.players)
         {
@@ -256,39 +289,39 @@ public partial class EffectManager : MonoBehaviour
         }
 
         Debug.Log($"全场伤害{damage}");
-        EffectFinish();
+        FinishStep();
     }
 
 
     // 增加当前费用
-    private void AddCost(CardController effectCard)
+    private void AddCost(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
+        if (effect.effectValue.Length <= 0) return;
         PlayerController player = effectCard.player;
-        player.cost += effectCard.cardData.effectValue[0];
+        player.cost += effect.effectValue[0];
         player.UpdateCostUI();
-        EffectFinish();
+        FinishStep();
     }
 
     // 提高费用上限
-    private void AddCostMax(CardController effectCard)
+    private void AddCostMax(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
+        if (effect.effectValue.Length <= 0) return;
         PlayerController player = effectCard.player;
         if (player.costMax < GameConst.costMax)
         {
-            player.costMax += effectCard.cardData.effectValue[0];
+            player.costMax += effect.effectValue[0];
             player.UpdateCostUI();
         }
-        EffectFinish();
+        FinishStep();
     }
 
     // 给全体友军加攻防
-    private void BuffAlliesAll(CardController effectCard)
+    private void BuffAlliesAll(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 1) return;
-        int addAtk = effectCard.cardData.effectValue[0];
-        int addHp = effectCard.cardData.effectValue[1];
+        if (effect.effectValue.Length <= 1) return;
+        int addAtk = effect.effectValue[0];
+        int addHp = effect.effectValue[1];
         PlayerController player = effectCard.player;
         List<CardController> targetCards = new();
         targetCards.AddRange(player.field.cards);
@@ -297,15 +330,15 @@ public partial class EffectManager : MonoBehaviour
             BuffCard(target, addAtk, addHp);
         }
 
-        EffectFinish();
+        FinishStep();
     }
 
     // 随机打若干个敌人
-    private void DealDamageToRandomEnemy(CardController effectCard)
+    private void DealDamageToRandomEnemy(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 1) return;
-        int num = effectCard.cardData.effectValue[0];
-        int damage = effectCard.cardData.effectValue[1];
+        if (effect.effectValue.Length <= 1) return;
+        int num = effect.effectValue[0];
+        int damage = effect.effectValue[1];
         PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(effectCard.player.playerId); // 敌方玩家
         num = Math.Min(num, enemyPlayer.field.cards.Count);
         var availableIndices = new List<int>();
@@ -330,15 +363,15 @@ public partial class EffectManager : MonoBehaviour
             target.TakeDamage(damage);
         }
 
-        EffectFinish();
+        FinishStep();
     }
 
     // 随机治疗若干个友军
-    private void HeallRandomAllies(CardController effectCard)
+    private void HeallRandomAllies(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 1) return;
-        int num = effectCard.cardData.effectValue[0];
-        int heal = effectCard.cardData.effectValue[1];
+        if (effect.effectValue.Length <= 1) return;
+        int num = effect.effectValue[0];
+        int heal = effect.effectValue[1];
         PlayerController effectPlayer = effectCard.player; // 效果发动玩家
         num = Math.Min(num, effectPlayer.field.cards.Count);
         var availableIndices = new List<int>();
@@ -363,20 +396,20 @@ public partial class EffectManager : MonoBehaviour
             target.Heal(heal);
         }
 
-        EffectFinish();
+        FinishStep();
     }
     // 让这张卡可以再攻击一次
-    private void AttackAgain(CardController effectCard)
+    private void AttackAgain(CardController effectCard, CardEffect effect)
     {
         effectCard.ableAttack = true;
-        EffectFinish();
+        FinishStep();
     }
 
     // 随机弃掉敌方若干张手牌
-    private void DropEnemyHand(CardController effectCard)
+    private void DropEnemyHand(CardController effectCard, CardEffect effect)
     {
-        if (effectCard.cardData.effectValue.Length <= 0) return;
-        int num = effectCard.cardData.effectValue[0];
+        if (effect.effectValue.Length <= 0) return;
+        int num = effect.effectValue[0];
         PlayerController enemyPlayer = GM.Ins.BM.GetEnemyPlayer(effectCard.player.playerId); // 敌方玩家
         // 随机选择一张敌方手牌，置入墓地
         num = Math.Min(num, enemyPlayer.hands.handCards.Count);
@@ -405,11 +438,18 @@ public partial class EffectManager : MonoBehaviour
             target.transform.localRotation = Quaternion.identity;
             target.cardDisplay.ShowBack(false);
         }
-        EffectFinish();
+        FinishStep();
     }
 
     #endregion
 
+
+    // 当前效果处理完，接着跑这张卡的下一个效果
+    private void FinishStep()
+    {
+        _isProcessingEffect = false;
+        RunNextEffect(_processingCard);
+    }
 
     // 效果收尾：清状态、把法术牌送墓地、相机复位
     private void EffectFinish()
@@ -454,4 +494,11 @@ public partial class EffectManager : MonoBehaviour
 
     #endregion
 
+
+    // 一次待执行的效果请求
+    private struct EffectRequest
+    {
+        public CardController card; // 触发效果的卡
+        public List<CardEffect> effects; // 要按顺序执行的效果
+    }
 }

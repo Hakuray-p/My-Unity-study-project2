@@ -126,7 +126,7 @@ public class DragManager : MonoBehaviour
                         }
                         else
                         {
-                            Debug.Log($"不符合发动条件{draggingCard.cardData.effectCondition}");
+                            Debug.Log("不符合发动条件");
                         }
                     }
                 }

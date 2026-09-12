@@ -63,12 +63,20 @@ public class CampaignSession : MonoBehaviour
 
     public bool HasBadge(string badgeId) => State != null && State.badgeIds != null && State.badgeIds.Contains(badgeId);
 
+    // 数一下某张卡已经拥有几张
+    private int CountOwnedCard(int cardId)
+    {
+        int count = 0;
+        foreach (int id in State.collectedCardIds) if (id == cardId) count++;
+        return count;
+    }
+
     // 判断这张卡能不能买，不能买时用 reason 说明原因
     public bool CanBuyCard(CardShopEntry entry, out string reason)
     {
         reason = string.Empty;
         if (entry == null) { reason = "商品不存在"; return false; }
-        if (State.collectedCardIds.Contains(entry.cardId)) { reason = "已经拥有这张卡"; return false; }
+        if (CountOwnedCard(entry.cardId) >= 3) { reason = "同名卡最多 3 张"; return false; }
         if (State.currency < entry.price) { reason = "金币不足"; return false; }
         return true;
     }
@@ -304,7 +312,7 @@ public class CampaignSession : MonoBehaviour
         {
             matchId = match.matchId,
             cityId = match.cityId,
-            returnScene = "HD_2D_Day",
+            returnScene = "One_City_DAY",
             randomSeed = StableSeed(match.matchId),
             enemyDeckId = match.enemyDeckId,
             snapshot = State.pendingBattle

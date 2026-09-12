@@ -12,11 +12,19 @@ public partial class EffectManager
 {
     #region 发动条件
 
-    // 按卡的发动条件判断法术能不能打
+    // 按法术第一个效果的发动条件判断能不能打
     public bool CheckCastCondition(CardController effectCard)
     {
+        if (effectCard == null || effectCard.cardData == null ||
+            effectCard.cardData.effects == null || effectCard.cardData.effects.Count == 0) return true;
+        return CheckCondition(effectCard, effectCard.cardData.effects[0]);
+    }
+
+    // 按效果自己的发动条件判断能不能发动
+    private bool CheckCondition(CardController effectCard, CardEffect effect)
+    {
         PlayerController player;
-        switch (effectCard.cardData.effectCondition)
+        switch (effect.effectCondition)
         {
             case ConditionType.None:
                 break;
