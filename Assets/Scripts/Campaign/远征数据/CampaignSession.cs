@@ -307,7 +307,6 @@ public class CampaignSession : MonoBehaviour
             returnScene = "HD_2D_Day",
             randomSeed = StableSeed(match.matchId),
             enemyDeckId = match.enemyDeckId,
-            fieldRuleId = match.fieldRuleId,
             snapshot = State.pendingBattle
         };
     }
@@ -397,14 +396,6 @@ public class CampaignSession : MonoBehaviour
         if (State != null) State.playerPosition = position;
     }
 
-    // 取某张卡的强化等级，没强化过就是 0
-    public int GetCardUpgradeLevel(int cardId)
-    {
-        if (State == null || State.cardUpgrades == null) return 0;
-        CardUpgradeSaveData upgrade = State.cardUpgrades.Find(item => item != null && item.cardId == cardId);
-        return upgrade != null ? upgrade.level : 0;
-    }
-
     // 造一份初始存档
     private CampaignSaveData CreateDefaultState()
     {
@@ -442,7 +433,6 @@ public class CampaignSession : MonoBehaviour
         if (State.lastValidDeckCardIds.Count == 0) State.lastValidDeckCardIds = CampaignCatalog.GetDeck(0);
         if (State.deckDraftCardIds.Count == 0) State.deckDraftCardIds = new List<int>(State.lastValidDeckCardIds);
         State.sharedDeckCardIds = new List<int>(State.lastValidDeckCardIds);
-        if (State.cardUpgrades == null) State.cardUpgrades = new List<CardUpgradeSaveData>();
         if (State.cardHoloVariants == null) State.cardHoloVariants = new List<CardHoloVariantSaveData>();
 
         State.cityStates.RemoveAll(city => city == null || CampaignCatalog.GetCity(city.cityId) == null);
@@ -465,11 +455,8 @@ public class CampaignSession : MonoBehaviour
     private void EnsureCityStateShape(CitySaveData cityState)
     {
         if (cityState.completedMatchIds == null) cityState.completedMatchIds = new List<string>();
-        if (cityState.claimedRewardIds == null) cityState.claimedRewardIds = new List<string>();
-        if (cityState.completedQuestIds == null) cityState.completedQuestIds = new List<string>();
         if (cityState.activeEventIds == null) cityState.activeEventIds = new List<string>();
         if (cityState.resolvedEventIds == null) cityState.resolvedEventIds = new List<string>();
-        if (cityState.collectedObjectIds == null) cityState.collectedObjectIds = new List<string>();
     }
 
     // 给刚买到的 UR 卡分配一个随机的光影变体种子

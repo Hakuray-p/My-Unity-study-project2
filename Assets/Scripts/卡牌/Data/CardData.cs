@@ -10,13 +10,12 @@ public class CardData
     public CardType cardType;// 卡牌类型
     public string name;// 卡牌名字
     public int cost; // 部署费用
-    public CardRarity rarity = CardRarity.Common; // 稀有度
-    public string archetype; // 职业 / 阵营
+    public CardRarity rarity = CardRarity.Common; //实例化R卡
+    public string archetype; // 阵营
     public int shopPrice; // 商店售价
-    public int unlockPoints; // 解锁需要的积分门槛
     public int attack;// 攻击力
-    public int health;              // 生命值
-    public Sprite image;             // 图片
+    public int health;  // 生命值
+    public Sprite image;  // 图片
     [TextArea]
     public string effectDescription; // 效果文本
     public TriggerType triggerType; // 效果触发类型

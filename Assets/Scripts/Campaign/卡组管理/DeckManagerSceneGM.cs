@@ -1,4 +1,4 @@
-﻿﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -42,8 +42,8 @@ public sealed class DeckManagerSceneGM : MonoBehaviour
         deckGrid = new DeckCardGrid(deckRoot, SelectFromDeck, RemoveFromDeck, null, null);
         libraryGrid = new DeckCardGrid(FindGridRoot("已有卡牌"), SelectFromLibrary, null, deckRoot, AddToDeck);
         inspector = new DeckCardInspector();
-        FindButton("保存").onClick.AddListener(SaveDeck);
-        FindButton("退出").onClick.AddListener(ReturnToCity);
+        SceneTool.Find<Button>("保存").onClick.AddListener(SaveDeck);
+        SceneTool.Find<Button>("退出").onClick.AddListener(ReturnToCity);
 
         CreateHintText(deckRoot);
         RefreshAll();
@@ -87,7 +87,7 @@ public sealed class DeckManagerSceneGM : MonoBehaviour
         libraryGrid.Refresh(session.State.collectedCardIds);
     }
 
-    // 把草稿补成固定 30 格，空位写 0
+    // 把草稿补成固定 30 格
     private List<int> BuildSlots()
     {
         var slots = new List<int>(draft);
@@ -148,28 +148,13 @@ public sealed class DeckManagerSceneGM : MonoBehaviour
     // 更新底部提示
     private void ShowHint(string message)
     {
-        if (hintText != null) hintText.text = message;
-    }
-
-    // 按名字片段找场景里的节点
-    private static GameObject FindSceneObject(string namePart)
-    {
-        foreach (Transform item in FindObjectsOfType<Transform>(true))
-            if (item.gameObject.name.Contains(namePart)) return item.gameObject;
-        return null;
-    }
-
-    // 按名字片段找场景里的按钮
-    private static Button FindButton(string namePart)
-    {
-        foreach (Button button in FindObjectsOfType<Button>(true))
-            if (button.gameObject.name.Contains(namePart)) return button;
-        return null;
+        hintText.text = message;
     }
 
     // 按名字片段找到节点下带网格布局的网格节点
     private static RectTransform FindGridRoot(string namePart)
     {
-        return FindSceneObject(namePart).GetComponentInChildren<GridLayoutGroup>(true).GetComponent<RectTransform>();
+        Transform root = SceneTool.Find<Transform>(namePart);
+        return root.GetComponentInChildren<GridLayoutGroup>(true).GetComponent<RectTransform>();
     }
 }

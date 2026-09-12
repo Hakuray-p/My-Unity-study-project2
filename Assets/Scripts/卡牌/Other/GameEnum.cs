@@ -2,9 +2,8 @@
 
 using UnityEngine;
 
-/// <summary>
-/// 触发类型
-/// </summary>
+
+// 触发类枚举
 public enum TriggerType
 {
     None = 0,
@@ -17,9 +16,8 @@ public enum TriggerType
     Cast = 7, // 施放
 }
 
-/// <summary>
-/// 效果种类
-/// </summary>
+
+// 效果类的枚举
 public enum EffectType
 {
     None = 0,
@@ -53,9 +51,8 @@ public enum EffectType
     DropAndDraw = 31,// 弃牌后抽牌
 }
 
-/// <summary>
-/// 被动效果种类
-/// </summary>
+
+// 被动效果类的枚举
 public enum PassiveType
 {
     None = 0,
@@ -67,7 +64,7 @@ public enum PassiveType
 // 卡牌类型
 public enum CardType
 {
-    MUMBER = 1,   // 干员卡
+    MUMBER = 1,   // 角色卡
     SPELL = 2,    // 法术卡
 }
 
@@ -96,7 +93,7 @@ public enum CardState
 public enum AudioType
 {
     DrawCard = 1,
-    Shuffle = 2,
+    Shuffle = 2, //洗牌
     Destroy = 3,
     Damage = 4,
     Heal = 5,

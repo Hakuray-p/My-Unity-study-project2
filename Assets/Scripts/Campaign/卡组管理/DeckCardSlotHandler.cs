@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -15,7 +15,7 @@ public sealed class DeckCardSlotHandler : MonoBehaviour, IPointerClickHandler, I
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Left) onLeftClick(index);
-        else if (eventData.button == PointerEventData.InputButton.Right && onRightClick != null) onRightClick(index);
+        else if (eventData.button == PointerEventData.InputButton.Right) onRightClick?.Invoke(index);
     }
 
     // 空实现，只为了让 Unity 把这个格子认成拖拽源
@@ -26,7 +26,7 @@ public sealed class DeckCardSlotHandler : MonoBehaviour, IPointerClickHandler, I
     // 松手时落在目标区域内才算拖放成功
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (onDrop == null || dropArea == null) return;
-        if (RectTransformUtility.RectangleContainsScreenPoint(dropArea, eventData.position, eventData.pressEventCamera)) onDrop(index);
+        if (dropArea == null) return;
+        if (RectTransformUtility.RectangleContainsScreenPoint(dropArea, eventData.position, eventData.pressEventCamera)) onDrop?.Invoke(index);
     }
 }

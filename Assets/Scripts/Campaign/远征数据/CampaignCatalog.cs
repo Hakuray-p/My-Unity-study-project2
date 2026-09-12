@@ -22,12 +22,11 @@ public static class CampaignCatalog
                 "first_light_public_02",
                 "first_light_public_03",
                 "first_light_champion"
-            },
-            cardRewardIds = new List<int> { 1001, 1002, 1003 }
+            }
         }
     };
 
-    // 城市里的事件点内容，位置由 WorldInteractionDefinitionAsset 决定
+    // 城市里的事件点内容，位置由场景里的交互点决定
     private static readonly List<CampaignEventData> events = new List<CampaignEventData>
     {
         new CampaignEventData
@@ -57,8 +56,7 @@ public static class CampaignCatalog
             opponentId = "Mira",
             pointReward = 0,
             goldReward = 0,
-            enemyDeckId = 1,
-            fieldRuleId = "standard"
+            enemyDeckId = 1
         },
         new MatchData
         {
@@ -71,7 +69,6 @@ public static class CampaignCatalog
             goldReward = 20,
             prerequisiteMatchId = "first_light_practice",
             enemyDeckId = 1,
-            fieldRuleId = "standard",
             rewardCardIds = new List<int> { 1001 }
         },
         new MatchData
@@ -85,7 +82,6 @@ public static class CampaignCatalog
             goldReward = 30,
             prerequisiteMatchId = "first_light_public_01",
             enemyDeckId = 2,
-            fieldRuleId = "lantern_field",
             rewardCardIds = new List<int> { 1002 }
         },
         new MatchData
@@ -99,7 +95,6 @@ public static class CampaignCatalog
             goldReward = 40,
             prerequisiteMatchId = "first_light_public_02",
             enemyDeckId = 2,
-            fieldRuleId = "standard",
             rewardCardIds = new List<int> { 1003 }
         },
         new MatchData
@@ -114,7 +109,6 @@ public static class CampaignCatalog
             prerequisiteMatchId = "first_light_public_03",
             awardsBadge = true,
             enemyDeckId = 2,
-            fieldRuleId = "champion_arena",
             rewardCardIds = new List<int> { 1107 }
         }
     };
@@ -182,24 +176,20 @@ public static class CampaignCatalog
             cardId = cardId,
             rarity = rarity,
             price = rarity == CardRarity.Common ? 30 : rarity == CardRarity.Rare ? 60 : 100,
-            unlockPoints = rarity == CardRarity.Common ? 5 : rarity == CardRarity.Rare ? 10 : 15,
             archetype = cardId >= 1100 ? "先锋" : "干员"
         };
     }
 
-    // 用卡牌数据生成商品，卡上没填售价和积分门槛时按稀有度补默认值
+    // 用卡牌数据生成商品，卡上没填售价时按稀有度补默认值
     private static CardShopEntry CreateShopEntry(CardData cardData)
     {
         CardRarity rarity = cardData.rarity;
         int price = cardData.shopPrice > 0 ? cardData.shopPrice : GetDefaultPrice(rarity);
-        int unlockPoints = cardData.unlockPoints > 0 ? cardData.unlockPoints : GetDefaultUnlockPoints(rarity);
-
         return new CardShopEntry
         {
             cardId = cardData.index,
             rarity = rarity,
             price = price,
-            unlockPoints = unlockPoints,
             archetype = string.IsNullOrEmpty(cardData.archetype) ?
                 (cardData.index >= 1100 ? "先锋" : "干员") : cardData.archetype
         };
@@ -225,12 +215,6 @@ public static class CampaignCatalog
     private static int GetDefaultPrice(CardRarity rarity)
     {
         return rarity == CardRarity.Common ? 30 : rarity == CardRarity.Rare ? 60 : 100;
-    }
-
-    // 按稀有度给一个默认解锁积分
-    private static int GetDefaultUnlockPoints(CardRarity rarity)
-    {
-        return rarity == CardRarity.Common ? 5 : rarity == CardRarity.Rare ? 10 : 15;
     }
 
     // 取某套预置卡组，目前只有一套

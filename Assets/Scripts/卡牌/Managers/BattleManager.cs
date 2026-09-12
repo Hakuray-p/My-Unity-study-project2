@@ -100,7 +100,6 @@ public class BattleManager : MonoBehaviour
         var snapshot = new BattleSnapshot
         {
             matchId = LaunchContext != null ? LaunchContext.matchId : CampaignSession.Instance.State.pendingMatchId,
-            randomSeed = LaunchContext != null ? LaunchContext.randomSeed : 0,
             turn = turn,
             randomStateJson = JsonUtility.ToJson(UnityEngine.Random.state),
             activePlayerId = curPlayer != null ? curPlayer.playerId : (_mainPlayer != null ? _mainPlayer.playerId : 0)

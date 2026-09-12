@@ -20,7 +20,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 3
     health: 2
     image: {fileID: 21300000, guid: 16ed2831b3a681a45991fbea7abb2916, type: 3}
@@ -39,7 +38,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 2
     health: 3
     image: {fileID: 21300000, guid: d693ca6b8fe054945865a7f13b9567a9, type: 3}
@@ -58,7 +56,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 1
     health: 3
     image: {fileID: 21300000, guid: 4164de16f9bd314458992073fb5bc2f1, type: 3}
@@ -77,7 +74,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 4
     health: 5
     image: {fileID: 21300000, guid: 5015287d22febd949ba88b2185b91cc0, type: 3}
@@ -96,7 +92,6 @@ MonoBehaviour:
     rarity: 1
     archetype: 
     shopPrice: 60
-    unlockPoints: 10
     attack: 5
     health: 3
     image: {fileID: 21300000, guid: 1d95cbcba77f46540ab76d73d9bf9d95, type: 3}
@@ -115,7 +110,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 10
     attack: 8
     health: 5
     image: {fileID: 21300000, guid: 6101c4b445c463240872942fae503d4e, type: 3}
@@ -134,7 +128,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 10
     attack: 8
     health: 6
     image: {fileID: 21300000, guid: 1b95c6e2ad9990b4490945bc13526dfd, type: 3}
@@ -153,7 +146,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 10
     attack: 7
     health: 7
     image: {fileID: 21300000, guid: f2711d4a594c4f545bf55fc8fb115ff6, type: 3}
@@ -172,7 +164,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 3
     health: 4
     image: {fileID: 21300000, guid: 7d42c38eec5f4214aba629e7806792f6, type: 3}
@@ -191,7 +182,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 10
     attack: 6
     health: 8
     image: {fileID: 21300000, guid: 2c9caeddf25bcab4c94537aec32d5288, type: 3}
@@ -210,7 +200,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 5
     health: 4
     image: {fileID: 21300000, guid: 2d80a957a19eb194cbb36b2b650474bb, type: 3}
@@ -229,7 +218,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 10
     attack: 4
     health: 2
     image: {fileID: 21300000, guid: 8e0d39c948a673f42847e25fe1673b24, type: 3}
@@ -248,7 +236,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 1
     health: 1
     image: {fileID: 21300000, guid: 9ae2890cae725594d8b98c084e6eb24a, type: 3}
@@ -267,7 +254,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 1
     health: 1
     image: {fileID: 21300000, guid: 3cdebf3f6f5f43046a8317a4d42a07d0, type: 3}
@@ -286,7 +272,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 0
     health: 2
     image: {fileID: 21300000, guid: 3d31ab72ee0c93b42a1e4f64ff1dc304, type: 3}
@@ -305,7 +290,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 1
     health: 2
     image: {fileID: 21300000, guid: 66affa7238e6f5844818bfa4a0655ada, type: 3}
@@ -324,7 +308,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 718442aec0ac2424e842ec274b942fac, type: 3}
@@ -343,7 +326,6 @@ MonoBehaviour:
     rarity: 1
     archetype: 
     shopPrice: 60
-    unlockPoints: 10
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 838b22dd37f0be6479920f16d5987d4d, type: 3}
@@ -362,7 +344,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 15
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 16ccc4dd689b4374a8ebb2e43877e965, type: 3}
@@ -381,7 +362,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 87d2b7785e91a714d8d4618bd3b91581, type: 3}
@@ -400,7 +380,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 40900c708f35a904c9612f4f77ee4535, type: 3}
@@ -419,7 +398,6 @@ MonoBehaviour:
     rarity: 1
     archetype: 
     shopPrice: 60
-    unlockPoints: 10
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 7360d1b90bf24ea4bb4ec41671296417, type: 3}
@@ -438,7 +416,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 15
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: e5f51f51a1721d74dbe35d3b7376267d, type: 3}
@@ -457,7 +434,6 @@ MonoBehaviour:
     rarity: 1
     archetype: 
     shopPrice: 60
-    unlockPoints: 10
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 5f274785a39976a4dbda667b7a995fea, type: 3}
@@ -476,7 +452,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 505ac2801d909d6499cd302195929b64, type: 3}
@@ -495,7 +470,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 1143294b087c0034d95adf02ec66dfc9, type: 3}
@@ -514,7 +488,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 10
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 836b9514dcd288f4ead1fe45c0ce6144, type: 3}
@@ -533,7 +506,6 @@ MonoBehaviour:
     rarity: 0
     archetype: 
     shopPrice: 30
-    unlockPoints: 5
     attack: 0
     health: 0
     image: {fileID: 21300000, guid: 0863260622d53e14cbd9974e5d2e7c46, type: 3}
@@ -552,7 +524,6 @@ MonoBehaviour:
     rarity: 2
     archetype: 
     shopPrice: 100
-    unlockPoints: 10
     attack: 6
     health: 8
     image: {fileID: 21300000, guid: b204484532e50b546bc56e281592beaa, type: 3}
