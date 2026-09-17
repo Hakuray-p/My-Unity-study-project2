@@ -1,0 +1,157 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2390e1213b911dd4c909de01d273fc9e, type: 3}
+  m_Name: FirstCityCampaign
+  m_EditorClassIdentifier: 
+  cities:
+  - cityId: first_light
+    displayName: First Light
+    sceneName: One_City_DAY
+    requiredPoints: 10
+    championMatchId: first_light_champion
+    availableMatchIds:
+    - first_light_practice
+    - first_light_public_01
+    - first_light_public_02
+    - first_light_public_03
+    - first_light_public_04
+    - first_light_champion
+    - first_light_fei_challenge
+    - first_light_kong_challenge
+    - first_light_rebecca_challenge
+  matches:
+  - matchId: first_light_practice
+    cityId: first_light
+    displayName: Rookie Practice
+    matchType: 0
+    opponentId: Mira
+    opponentPortrait: {fileID: 21300000, guid: 8c0859adc46ca144bb2fbb30e8b8f23d, type: 3}
+    opponentPortraitScale: 0.7549
+    opponentPortraitOffset: {x: 0.0189, y: -0.4303}
+    pointReward: 0
+    goldReward: 0
+    enemyDeckId: 1
+    prerequisiteMatchId: 
+    awardsBadge: 0
+    rewardCardIds: 
+  - matchId: first_light_public_01
+    cityId: first_light
+    displayName: Riverside Open
+    matchType: 1
+    opponentId: Jonah
+    opponentPortrait: {fileID: 21300000, guid: 8c0859adc46ca144bb2fbb30e8b8f23d, type: 3}
+    opponentPortraitScale: 0.7549
+    opponentPortraitOffset: {x: 0.0189, y: -0.4303}
+    pointReward: 2
+    goldReward: 20
+    enemyDeckId: 1
+    prerequisiteMatchId: first_light_practice
+    awardsBadge: 0
+    rewardCardIds: b3040000
+  - matchId: first_light_public_02
+    cityId: first_light
+    displayName: Lantern Open
+    matchType: 1
+    opponentId: Sera
+    opponentPortrait: {fileID: 21300000, guid: 2dbf99b57427e994baa4c78cdcb4cd48, type: 3}
+    opponentPortraitScale: 1
+    opponentPortraitOffset: {x: 0, y: 0}
+    pointReward: 3
+    goldReward: 30
+    enemyDeckId: 2
+    prerequisiteMatchId: first_light_public_01
+    awardsBadge: 0
+    rewardCardIds: b9040000
+  - matchId: first_light_public_03
+    cityId: first_light
+    displayName: Sunset Open
+    matchType: 1
+    opponentId: Talia
+    opponentPortrait: {fileID: 21300000, guid: 20d188849f274c740a7f9a777d5cab72, type: 3}
+    opponentPortraitScale: 0.701
+    opponentPortraitOffset: {x: 0.1682, y: -0.4486}
+    pointReward: 5
+    goldReward: 40
+    enemyDeckId: 2
+    prerequisiteMatchId: first_light_public_02
+    awardsBadge: 0
+    rewardCardIds: b5040000
+  - matchId: first_light_public_04
+    cityId: first_light
+    displayName: Merchant's Open
+    matchType: 1
+    opponentId: Merchant
+    opponentPortrait: {fileID: 21300000, guid: e068cb445b13bfd4c95f48e9ac4d2f1f, type: 3}
+    opponentPortraitScale: 0.2103
+    opponentPortraitOffset: {x: 0.0252, y: -1.1986}
+    pointReward: 5
+    goldReward: 40
+    enemyDeckId: 2
+    prerequisiteMatchId: 
+    awardsBadge: 0
+    rewardCardIds: b4040000
+  - matchId: first_light_champion
+    cityId: first_light
+    displayName: First Light Champion
+    matchType: 2
+    opponentId: Captain Vale
+    opponentPortrait: {fileID: 21300000, guid: 03454359a4ce42e49b54b01b7b6cbfdc, type: 3}
+    opponentPortraitScale: 0.736
+    opponentPortraitOffset: {x: 0.0442, y: -0.7176}
+    pointReward: 0
+    goldReward: 80
+    enemyDeckId: 2
+    prerequisiteMatchId: first_light_public_03
+    awardsBadge: 1
+    rewardCardIds: b8040000
+  - matchId: first_light_fei_challenge
+    cityId: first_light
+    displayName: "\u8857\u89D2\u5207\u78CB"
+    matchType: 1
+    opponentId: fei
+    opponentPortrait: {fileID: 21300000, guid: 7c12dedf06c1d7a49a61854005533621, type: 3}
+    opponentPortraitScale: 0.2538
+    opponentPortraitOffset: {x: 0.1574, y: -1.5481}
+    pointReward: 2
+    goldReward: 20
+    enemyDeckId: 1
+    prerequisiteMatchId: first_light_practice
+    awardsBadge: 0
+    rewardCardIds: 
+  - matchId: first_light_kong_challenge
+    cityId: first_light
+    displayName: "\u9759\u5FC3\u5BF9\u5C40"
+    matchType: 1
+    opponentId: kong
+    opponentPortrait: {fileID: 21300000, guid: b457a4c7cfc58ca438ae507e387e4cae, type: 3}
+    opponentPortraitScale: 0.42810002
+    opponentPortraitOffset: {x: 0.25, y: -2.81}
+    pointReward: 2
+    goldReward: 25
+    enemyDeckId: 2
+    prerequisiteMatchId: first_light_practice
+    awardsBadge: 0
+    rewardCardIds: 
+  - matchId: first_light_rebecca_challenge
+    cityId: first_light
+    displayName: "\u5E7F\u573A\u9080\u8BF7\u8D5B"
+    matchType: 1
+    opponentId: rebecca
+    opponentPortrait: {fileID: 21300000, guid: 91f23dafc9bc7804883b4c35553f58cb, type: 3}
+    opponentPortraitScale: 0.368
+    opponentPortraitOffset: {x: -0.0202, y: -1.5364}
+    pointReward: 2
+    goldReward: 30
+    enemyDeckId: 2
+    prerequisiteMatchId: first_light_practice
+    awardsBadge: 0
+    rewardCardIds: 

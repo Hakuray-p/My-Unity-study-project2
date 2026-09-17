@@ -13,6 +13,17 @@ public class UIManager : MonoBehaviour
     public TMP_Text winText;   // 胜利文字
     public TurnPanel turnPanel;// 回合切换面板
     public TMP_Text resultDetailText; // 结算详情文字
+    public SpriteRenderer opponentPortrait; // 敌方头像框内的立绘
+
+    // 按当前赛事显示对手立绘，保留已有头像框与遮罩。
+    public void ShowOpponentPortrait(MatchData match)
+    {
+        opponentPortrait.sprite = match.opponentPortrait;
+        opponentPortrait.transform.localScale = Vector3.one * match.opponentPortraitScale;
+        var position = new Vector3(match.opponentPortraitOffset.x, match.opponentPortraitOffset.y,
+            opponentPortrait.transform.localPosition.z); // 立绘在头像框内的位置
+        opponentPortrait.transform.localPosition = position;
+    }
 
     // 弹出结算面板并写上标题
     public void ShowWin(string text)
@@ -44,14 +55,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // 退出游戏，编辑器里就是停止运行
+    // 退出战斗结算并返回当前城市。
     public void OnClickQuit()
     {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
+        OnClickReturnToCity();
     }
 
     // 重开当前城市

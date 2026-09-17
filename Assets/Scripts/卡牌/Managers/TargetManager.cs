@@ -12,6 +12,7 @@ public class TargetManager : MonoBehaviour
     public bool IsSelecting => _isSelecting || _isViewing;
     private bool _isViewing; // 正在查看墓地这类只看的列表
     public bool IsViewing => _isViewing;
+    public int ViewClosedFrame { get; private set; } = -1; // 本帧关闭查看时不再响应暂停或拖牌
     private int _viewFrame; // 打开查看的那一帧
     private List<CardController> _targetCards = new(); // 候选目标
     private UnityAction<TargetPack> _finishCallBack; // 选完后的回调
@@ -32,11 +33,12 @@ public class TargetManager : MonoBehaviour
     //private Func<CardController, bool> filterCondition;
     private void Update()
     {
+        if (Time.timeScale == 0f) return;
         if (_isViewing)
         {
             // 打开查看的那一下点击不算收起
             if (Time.frameCount > _viewFrame &&
-                (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Escape)))
+                (Input.GetMouseButtonDown(0) && !GM.Ins.BM.Tutorial.BlocksPointer || Input.GetKeyDown(KeyCode.Escape)))
             {
                 CloseViewList();
             }
@@ -45,7 +47,7 @@ public class TargetManager : MonoBehaviour
 
         if (_isSelecting)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !GM.Ins.BM.Tutorial.BlocksPointer)
             {
                 // 射线检测卡牌
                 CheckCard();
@@ -101,11 +103,14 @@ public class TargetManager : MonoBehaviour
     }
 
     // 收起查看列表，把卡放回原位并让相机回战斗视角
-    private void CloseViewList()
+    public void CloseViewList()
     {
         _isViewing = false;
+        ViewClosedFrame = Time.frameCount;
         SelectFinish(false);
         GM.Ins.BM.EM.ResetCamera();
+        GM.Ins.BM.NoteAction();
+        GM.Ins.BM.Tutorial.GraveClosed();
     }
 
     // 射线选中一张候选卡，选够就收尾
@@ -117,7 +122,8 @@ public class TargetManager : MonoBehaviour
         if (Physics.Raycast(ray, out hit))
         {
             CardController card = hit.collider.GetComponent<CardController>();
-            if (_targetCards.Contains(card) && !_targetPack.cards.Contains(card))
+            if (_targetCards.Contains(card) && !_targetPack.cards.Contains(card) &&
+                GM.Ins.BM.Tutorial.Allows(TutorialAction.SelectTarget, card))
             {
                 _targetPack.cards.Add(card);
                 card.cardDisplay.ShowSpecial(false);
@@ -129,6 +135,7 @@ public class TargetManager : MonoBehaviour
                 SelectFinish(_finishShowBack);
                 _callbackInvoked = true;
                 _finishCallBack.Invoke(_targetPack);
+                GM.Ins.BM.Tutorial.ActionAccepted(TutorialAction.SelectTarget);
             }
         }
     }

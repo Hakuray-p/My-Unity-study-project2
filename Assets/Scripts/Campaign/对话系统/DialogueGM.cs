@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 所有 NPC 对话的统一管理器，负责对话框显示、按钮行为和事件分支
+// 所有 NPC 对话的统一管理器，负责对话框显示、按钮行为和事件分支。
 public sealed class DialogueGM : MonoBehaviour
 {
+    public const float InteractionDistance = 2.2f; // 交谈和指引共用的交互距离
+    [SerializeField] private Button tutorialButton; // 猫姬画布中预置的重学按钮
     [SerializeField] private float dialogueCloseDistance = 3.5f; // 走开多远自动关掉对话
-
     private CharacterGM characterGM; // 角色管理器
     private CampaignSession session; // 当前存档会话
     private EventGM eventGM; // 事件管理器
@@ -16,13 +15,12 @@ public sealed class DialogueGM : MonoBehaviour
     private Action openShopAction; // 打开商店的入口，由场景 GM 提供
     private Action<string> showStatusAction; // 显示状态提示的回调
     private Action closePanelsAction; // 关闭其它面板的回调
-    private readonly Dictionary<string, Canvas> dialogueCanvases = new Dictionary<string, Canvas>(); // 每个 NPC 的对话框，按角色名索引
-    private readonly HashSet<Button> dialogueButtonsBound = new HashSet<Button>(); // 已经挂过点击的按钮，避免重复绑定
-    private WorldInteractionActor dialogueActor; // 当前正在对话的角色
+    private WorldInteractionActor dialogueActor; // 当前交谈对象，不随说话者切换
     private bool dialogueOpen; // 对话框是否打开
     private DialogueState dialogueState; // 当前事件对话处在哪个阶段
+    private DialogueManager dialogueManager; // 当前场景共用的逐句文字播放器
 
-    // 事件对话当前处在哪个阶段
+    // 事件对话当前处在哪个阶段。
     private enum DialogueState
     {
         Normal, // 普通对话
@@ -31,8 +29,9 @@ public sealed class DialogueGM : MonoBehaviour
         EventResolved // 事件已完成
     }
 
-    public bool IsOpen => dialogueOpen;
+    public bool IsOpen => dialogueOpen; // 当前是否正在交谈
 
+    // 接入场景模块并绑定已经制作好的对话界面。
     public void Initialize(CharacterGM characterManager, CampaignSession campaignSession, EventGM eventManager,
         Action<string> startMatch, Action openShop, Action<string> showStatus, Action closePanels)
     {
@@ -43,43 +42,62 @@ public sealed class DialogueGM : MonoBehaviour
         openShopAction = openShop;
         showStatusAction = showStatus;
         closePanelsAction = closePanels;
+        foreach (DialogueManager manager in FindObjectsOfType<DialogueManager>(true))
+        {
+            if (manager.gameObject.scene != gameObject.scene) continue;
+            dialogueManager = manager;
+            break;
+        }
         BindDialogueCanvases();
+        tutorialButton.onClick.AddListener(ReplayTutorial);
+        dialogueManager.gameObject.SetActive(true);
     }
 
-    // 每帧找最近的可对话角色，按 E 开对话，走远或按 E / Esc 关对话
+    // 胜利回城后自动接上刚才对手的回应，不重复播放已消耗的战后对话。
+    public void ResumeVictoryDialogue()
+    {
+        if (!session.HasPendingBattleReaction || session.LastBattleOutcome != BattleOutcome.PlayerWin) return;
+        foreach (WorldInteractionActor actor in characterGM.Actors)
+        {
+            if (!actor.gameObject.activeInHierarchy) continue;
+            if (!Array.Exists(actor.dialogue.matches, challenge => challenge.matchId == session.LastResolvedMatchId)) continue;
+            OpenDialogue(actor);
+            return;
+        }
+    }
+
+    // 每帧找最近的可对话角色，按 E 开对话，走远或按 E / Esc 关对话。
     public void Tick()
     {
-        if (characterGM == null || characterGM.Player == null) return;
-
-        WorldInteractionActor nearestActor = FindNearestActor();
         if (dialogueOpen)
         {
-            bool movedAway = dialogueActor == null ||
-                Vector3.Distance(characterGM.Player.position, dialogueActor.transform.position) > dialogueCloseDistance;
+            bool movedAway = Vector3.Distance(characterGM.Player.position, dialogueActor.transform.position) > dialogueCloseDistance;
             if (movedAway || Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)) Close();
             return;
         }
-
+        WorldInteractionActor nearestActor = FindNearestActor();
         if (nearestActor != null && Input.GetKeyDown(KeyCode.E)) OpenDialogue(nearestActor);
     }
 
-    // 关闭对话并复位状态
+    // 关闭对话并复位状态，取消尚未完成的战前确认。
     public void Close()
     {
+        if (!dialogueOpen) return;
+        HideOptions();
+        dialogueManager.CloseView();
         dialogueActor = null;
         dialogueOpen = false;
         dialogueState = DialogueState.Normal;
-        foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
-            dialogueCanvas.gameObject.SetActive(false);
     }
 
-    // 找玩家附近 2.2 米内最近的交互角色
+    // 找玩家附近 2.2 米内最近的交互角色。
     private WorldInteractionActor FindNearestActor()
     {
         WorldInteractionActor nearestActor = null;
-        float bestDistance = 2.2f;
+        float bestDistance = InteractionDistance;
         foreach (WorldInteractionActor actor in characterGM.Actors)
         {
+            if (!actor.gameObject.activeInHierarchy) continue;
             float distance = Vector3.Distance(characterGM.Player.position, actor.transform.position);
             if (distance < bestDistance)
             {
@@ -90,325 +108,266 @@ public sealed class DialogueGM : MonoBehaviour
         return nearestActor;
     }
 
-    // 按名字收集各个 NPC 的对话框，补齐射线组件并先隐藏
+    // 按明确的角色引用收集对话框并先隐藏。
     private void BindDialogueCanvases()
     {
-        dialogueCanvases.Clear();
-        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
-        foreach (Canvas dialogueCanvas in canvases)
+        foreach (DialogueViewBinding view in dialogueManager.views)
         {
-            string canvasName = dialogueCanvas.gameObject.name;
-            if (canvasName.Contains("猫姬")) dialogueCanvases["猫姬"] = dialogueCanvas;
-            else if (canvasName.Contains("企鹅")) dialogueCanvases["企鹅"] = dialogueCanvas;
-            else if (canvasName.Contains("神秘弓兵")) dialogueCanvases["神秘弓兵"] = dialogueCanvas;
-            else if (canvasName.Contains("黑猫少女")) dialogueCanvases["黑猫少女"] = dialogueCanvas;
-            else if (canvasName.Contains("商人")) dialogueCanvases["商人"] = dialogueCanvas;
-            else if (canvasName.Contains("阿米娅")) dialogueCanvases["阿米娅"] = dialogueCanvas;
-        }
-
-        foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
-        {
-            if (dialogueCanvas.GetComponent<GraphicRaycaster>() == null)
-                dialogueCanvas.gameObject.AddComponent<GraphicRaycaster>();
-            dialogueCanvas.sortingOrder = Mathf.Max(dialogueCanvas.sortingOrder, 200);
-            dialogueCanvas.gameObject.SetActive(false);
-            BindDialogueButtons(dialogueCanvas);
+            view.canvas.gameObject.SetActive(false);
+            BindDialogueButtons(view.canvas);
         }
     }
 
-    // 给对话框里的功能按钮挂上统一的点击处理
-    private void BindDialogueButtons(Canvas dialogueCanvas)
+    // 给对话框里的功能按钮挂上统一的点击处理。
+    private void BindDialogueButtons(Canvas canvas)
     {
-        Button[] buttons = dialogueCanvas.GetComponentsInChildren<Button>(true);
-        foreach (Button button in buttons)
+        foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
         {
-            string buttonName = button.gameObject.name;
-            if (!IsChallengeButtonName(buttonName) && !IsShopButtonName(buttonName) &&
-                !IsEventButtonName(buttonName) && !IsLeaveButtonName(buttonName) && !IsChatButtonName(buttonName)) continue;
-            if (dialogueButtonsBound.Contains(button)) continue;
-            dialogueButtonsBound.Add(button);
+            string name = button.name;
+            if (!IsChallengeButtonName(name) && !IsShopButtonName(name) && !IsEventButtonName(name) &&
+                !IsLeaveButtonName(name) && !IsChatButtonName(name)) continue;
             Button capturedButton = button;
-            Graphic[] graphics = button.GetComponentsInChildren<Graphic>(true);
-            foreach (Graphic graphic in graphics)
-                if (graphic != null && graphic.gameObject != button.gameObject) graphic.raycastTarget = false;
             button.onClick.AddListener(() => HandleDialogueButton(capturedButton));
         }
     }
 
-    // 按按钮种类分派：离开 / 闲聊 / 事件 / 挑战 / 购买
+    // 按按钮种类分派：离开 / 闲聊 / 事件 / 挑战 / 购买。
     private void HandleDialogueButton(Button button)
     {
-        if (button == null) return;
-        string buttonName = button.gameObject.name;
-        if (IsLeaveButtonName(buttonName))
+        if (!dialogueOpen || dialogueManager.IsBusy) return;
+        if (IsLeaveButtonName(button.name))
         {
-            if (closePanelsAction != null) closePanelsAction();
-            else Close();
+            closePanelsAction();
             return;
         }
-        if (dialogueActor == null) return;
-
-        Canvas activeCanvas = button.GetComponentInParent<Canvas>();
-        if (IsChatButtonName(buttonName))
-        {
-            ShowChatDialogue(activeCanvas, dialogueActor);
-            return;
-        }
-        if (IsEventButtonName(buttonName))
-        {
-            HandleEventButton(activeCanvas);
-            return;
-        }
-        if (IsChallengeButtonName(buttonName))
-        {
-            if (string.IsNullOrEmpty(dialogueActor.matchId))
-            {
-                if (showStatusAction != null) showStatusAction("这个挑战暂未配置");
-                return;
-            }
-            if (startMatchAction != null) startMatchAction(dialogueActor.matchId);
-        }
-        else if (IsShopButtonName(buttonName))
+        Canvas canvas = GetDialogueCanvas(dialogueActor);
+        if (IsChatButtonName(button.name)) ShowChatDialogue();
+        else if (IsEventButtonName(button.name)) HandleEventButton(canvas);
+        else if (IsChallengeButtonName(button.name)) StartChallenge();
+        else if (IsShopButtonName(button.name))
         {
             Close();
-            if (openShopAction != null) openShopAction();
+            openShopAction();
         }
     }
 
-    // 打开这个角色对应的对话框
+    // 打开这个角色对应的对话框。
     private void OpenDialogue(WorldInteractionActor actor)
     {
-        Canvas activeCanvas = GetDialogueCanvas(actor);
-        if (activeCanvas == null)
+        dialogueActor = actor;
+        dialogueOpen = true;
+        dialogueState = DialogueState.Normal;
+        NpcChallenge lastMatch = Array.Find(actor.dialogue.matches, challenge => challenge.matchId == session.LastResolvedMatchId);
+        if (lastMatch != null && session.ConsumeBattleReaction(lastMatch.matchId))
         {
-            Debug.LogWarning("没有找到 NPC 对应的 DialogueCanvas：" + actor.displayName);
+            PlayConversation(session.LastBattleOutcome == BattleOutcome.PlayerWin ? lastMatch.victory : lastMatch.defeat, ReturnToOptions);
             return;
         }
-
-        dialogueActor = actor;
-        foreach (Canvas dialogueCanvas in dialogueCanvases.Values)
-            dialogueCanvas.gameObject.SetActive(false);
-        activeCanvas.gameObject.SetActive(true);
-        SetDialogueText(activeCanvas, "SpeakerName", actor.displayName);
-        SetDialogueText(activeCanvas, "DialogueText", GetChatText(actor.displayName));
-        ConfigureNormalButtons(activeCanvas, actor);
-        dialogueOpen = true;
+        ShowChatDialogue();
     }
 
-    // 事件按钮，按待接取 / 进行中 / 已完成三种状态切换文案和按钮
-    private void HandleEventButton(Canvas activeCanvas)
+    // 隐藏所有业务按钮及其装饰，文字播放期间只接受继续或关闭。
+    private void HideOptions()
     {
-        if (eventGM == null || dialogueActor == null) return;
-        CampaignEventData eventData = eventGM.GetEvent(dialogueActor.eventId);
-        if (eventData == null)
+        foreach (DialogueViewBinding view in dialogueManager.views)
+            foreach (Button button in view.canvas.GetComponentsInChildren<Button>(true))
+                if (button.gameObject != view.continueArrow) SetDialogueButtonVisible(button, false);
+    }
+
+    // 将完整段落交给播放器，只有读完才执行后续行为。
+    private void PlayConversation(DialogueLine[] lines, Action finished)
+    {
+        HideOptions();
+        dialogueManager.PlayLines(lines, finished);
+    }
+
+    // 把闲聊内容写进对话框。
+    private void ShowChatDialogue()
+    {
+        PlayConversation(dialogueActor.dialogue.GetConversation(session), ReturnToOptions);
+    }
+
+    // 回到原 NPC 的业务选项并显示当前挑战及解锁条件。
+    private void ReturnToOptions()
+    {
+        NpcChallenge challenge = dialogueActor.dialogue.GetChallenge(session);
+        string message = "还有什么想聊的吗？";
+        if (challenge != null)
         {
-            if (showStatusAction != null) showStatusAction("这个事件暂未配置");
+            MatchData match = CampaignCatalog.GetMatch(challenge.matchId);
+            string reason = session.GetMatchLockReason(match);
+            message = "可挑战：" + match.displayName + "\n" + (reason == "" ? "准备好了就来一场吧。" : reason);
+        }
+        ShowOptions(message, () => ConfigureNormalButtons(GetDialogueCanvas(dialogueActor), dialogueActor));
+    }
+
+    // 显示当前交谈对象的选项，不把雫误当成业务对象。
+    private void ShowOptions(string message, Action shown)
+    {
+        HideOptions();
+        dialogueManager.ShowOptions(dialogueActor.dialogue.speakerId, message, shown);
+    }
+
+    // 播放战前对话，读完且未取消时才进入已有赛事流程。
+    private void StartChallenge()
+    {
+        NpcChallenge challenge = dialogueActor.dialogue.GetChallenge(session);
+        string reason = session.GetMatchLockReason(CampaignCatalog.GetMatch(challenge.matchId));
+        if (reason != "")
+        {
+            showStatusAction(reason);
+            ReturnToOptions();
             return;
         }
+        PlayConversation(challenge.beforeMatch, () =>
+        {
+            string matchId = challenge.matchId;
+            Close();
+            startMatchAction(matchId);
+        });
+    }
 
+    // 重学始终进入猫姬练习赛，不改变普通挑战选择的赛事。
+    private void ReplayTutorial()
+    {
+        if (!dialogueOpen || dialogueManager.IsBusy) return;
+        NpcChallenge practice = Array.Find(dialogueActor.dialogue.matches, challenge => challenge.matchId == "first_light_practice");
+        string reason = session.GetMatchLockReason(CampaignCatalog.GetMatch(practice.matchId));
+        if (reason != "")
+        {
+            showStatusAction(reason);
+            return;
+        }
+        PlayConversation(practice.beforeMatch, () =>
+        {
+            Close();
+            SceneFlowService.StartMatch(practice.matchId, characterGM.Player.position, true);
+        });
+    }
+
+    // 事件按钮，按待接取 / 进行中 / 已完成三种状态切换文案和按钮。
+    private void HandleEventButton(Canvas canvas)
+    {
+        CampaignEventData data = eventGM.GetEvent(dialogueActor.dialogue.eventId);
         if (dialogueState == DialogueState.EventPrompt)
         {
-            eventGM.StartEvent(eventData.eventId);
-            if (closePanelsAction != null) closePanelsAction();
-            else Close();
+            eventGM.StartEvent(data.eventId);
+            closePanelsAction();
             return;
         }
-
-        if (eventGM.IsResolved(eventData.eventId))
+        if (dialogueState == DialogueState.EventActive)
+        {
+            showStatusAction(data.objectiveText);
+            Close();
+            return;
+        }
+        if (eventGM.IsResolved(data.eventId))
         {
             dialogueState = DialogueState.EventResolved;
-            SetDialogueText(activeCanvas, "DialogueText", eventData.reviewText);
-            ConfigureEventResolved(activeCanvas);
-            return;
+            PlayActorText(data.reviewText, () => ConfigureEventResolved(canvas));
         }
-
-        if (eventGM.IsActive(eventData.eventId))
+        else if (eventGM.IsActive(data.eventId))
         {
             dialogueState = DialogueState.EventActive;
-            SetDialogueText(activeCanvas, "DialogueText", eventData.objectiveText);
-            ConfigureEventActive(activeCanvas);
-            return;
+            PlayActorText(data.objectiveText, () => ConfigureEventActive(canvas));
         }
-
-        dialogueState = DialogueState.EventPrompt;
-        SetDialogueText(activeCanvas, "DialogueText", eventData.startText);
-        ConfigureEventPrompt(activeCanvas);
+        else
+        {
+            dialogueState = DialogueState.EventPrompt;
+            PlayActorText(data.startText, () => ConfigureEventPrompt(canvas));
+        }
     }
 
-    // 普通对话下按角色类型显示挑战、购买、事件等按钮
-    private void ConfigureNormalButtons(Canvas dialogueCanvas, WorldInteractionActor actor)
+    // 按对象名找文字组件写入内容，事件文字也使用同一个逐句播放器。
+    private void PlayActorText(string message, Action shown)
+    {
+        var line = new DialogueLine { speakerId = dialogueActor.dialogue.speakerId, text = message };
+        PlayConversation(new[] { line }, () => ShowOptions(message, shown));
+    }
+
+    // 普通对话下按角色配置显示挑战、购买、事件等按钮。
+    private void ConfigureNormalButtons(Canvas canvas, WorldInteractionActor actor)
     {
         dialogueState = DialogueState.Normal;
-        Button challengeButton = FindButton(dialogueCanvas, IsChallengeButtonName);
-        Button shopButton = FindButton(dialogueCanvas, IsShopButtonName);
-        Button eventButton = FindButton(dialogueCanvas, IsEventButtonName);
-        Button chatButton = FindButton(dialogueCanvas, IsChatButtonName);
-        Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
-        bool isShop = actor.type == WorldInteractionType.Shop;
-        bool hasEvent = eventGM != null && eventGM.GetEvent(actor.eventId) != null;
+        NpcDialogueData data = actor.dialogue;
+        tutorialButton.gameObject.SetActive(Array.Exists(data.matches, challenge => challenge.matchId == "first_light_practice"));
+        bool hasEvent = !string.IsNullOrEmpty(data.eventId);
+        SetDialogueButtonVisible(FindButton(canvas, IsChallengeButtonName), data.matches.Length > 0);
+        SetDialogueButtonVisible(FindButton(canvas, IsShopButtonName), data.interactionType == WorldInteractionType.Shop);
+        SetDialogueButtonVisible(FindButton(canvas, IsEventButtonName), hasEvent);
+        SetDialogueButtonVisible(FindButton(canvas, IsChatButtonName), true);
+        SetDialogueButtonVisible(FindButton(canvas, IsLeaveButtonName), true);
+        Button eventButton = FindButton(canvas, IsEventButtonName);
+        UiTool.SetButtonText(eventButton, hasEvent && eventGM.IsResolved(data.eventId) ? "事件回顾" :
+            hasEvent && eventGM.IsActive(data.eventId) ? "查看位置" : "事件");
+        UiTool.SetButtonInteractable(eventButton, true);
+        UiTool.SetButtonText(FindButton(canvas, IsLeaveButtonName), "离开");
+    }
 
-        SetDialogueButtonVisible(challengeButton, true);
-        SetDialogueButtonVisible(shopButton, isShop);
-        SetDialogueButtonVisible(eventButton, !isShop);
-        SetDialogueButtonVisible(chatButton, true);
+    // 事件待接取时的按钮布局。
+    private void ConfigureEventPrompt(Canvas canvas) => ConfigureEventButtons(canvas, "一起调查", true);
+
+    // 事件进行中时的按钮布局。
+    private void ConfigureEventActive(Canvas canvas) => ConfigureEventButtons(canvas, "查看位置", true);
+
+    // 事件完成后的按钮布局。
+    private void ConfigureEventResolved(Canvas canvas) => ConfigureEventButtons(canvas, "事件已完成", false);
+
+    // 显示事件确认与离开选项。
+    private void ConfigureEventButtons(Canvas canvas, string label, bool interactable)
+    {
+        Button eventButton = FindButton(canvas, IsEventButtonName);
+        Button leaveButton = FindButton(canvas, IsLeaveButtonName);
+        SetDialogueButtonVisible(eventButton, true);
         SetDialogueButtonVisible(leaveButton, true);
-        UiTool.SetButtonText(eventButton, hasEvent && eventGM.IsResolved(actor.eventId) ? "事件回顾" :
-            hasEvent && eventGM.IsActive(actor.eventId) ? "查看位置" : "事件");
+        UiTool.SetButtonText(eventButton, label);
+        UiTool.SetButtonInteractable(eventButton, interactable);
         UiTool.SetButtonText(leaveButton, "离开");
-        UiTool.SetButtonInteractable(eventButton, true);
     }
 
-    // 事件待接取时的按钮布局
-    private void ConfigureEventPrompt(Canvas dialogueCanvas)
-    {
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
-        Button eventButton = FindButton(dialogueCanvas, IsEventButtonName);
-        Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
-        SetDialogueButtonVisible(eventButton, true);
-        SetDialogueButtonVisible(leaveButton, true);
-        UiTool.SetButtonText(eventButton, "一起调查");
-        UiTool.SetButtonText(leaveButton, "暂时离开");
-        UiTool.SetButtonInteractable(eventButton, true);
-    }
-
-    // 事件进行中时的按钮布局
-    private void ConfigureEventActive(Canvas dialogueCanvas)
-    {
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
-        Button eventButton = FindButton(dialogueCanvas, IsEventButtonName);
-        Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
-        SetDialogueButtonVisible(eventButton, true);
-        SetDialogueButtonVisible(leaveButton, true);
-        UiTool.SetButtonText(eventButton, "查看位置");
-        UiTool.SetButtonText(leaveButton, "返回");
-        UiTool.SetButtonInteractable(eventButton, true);
-    }
-
-    // 事件完成后的按钮布局
-    private void ConfigureEventResolved(Canvas dialogueCanvas)
-    {
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsChallengeButtonName), false);
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsShopButtonName), false);
-        SetDialogueButtonVisible(FindButton(dialogueCanvas, IsChatButtonName), false);
-        Button eventButton = FindButton(dialogueCanvas, IsEventButtonName);
-        Button leaveButton = FindButton(dialogueCanvas, IsLeaveButtonName);
-        SetDialogueButtonVisible(eventButton, true);
-        SetDialogueButtonVisible(leaveButton, true);
-        UiTool.SetButtonText(eventButton, "事件已完成");
-        UiTool.SetButtonText(leaveButton, "返回");
-        UiTool.SetButtonInteractable(eventButton, false);
-    }
-
-    // 显示或隐藏对话按钮，旁边的「XX选项框框」跟着一起切换
+    // 显示或隐藏对话按钮，旁边的「XX选项框框」跟着一起切换。
     private static void SetDialogueButtonVisible(Button button, bool visible)
     {
         UiTool.SetButtonVisible(button, visible);
         if (button == null) return;
-        Transform frame = button.transform.parent.Find(GetOptionFrameName(button.gameObject.name));
+        Transform frame = button.transform.parent.Find(GetOptionFrameName(button.name));
         if (frame != null) frame.gameObject.SetActive(visible);
     }
 
-    // 按钮旁边的装饰框名字
-    private static string GetOptionFrameName(string buttonName)
+    // 按钮旁边的装饰框名字。
+    private static string GetOptionFrameName(string name)
     {
-        if (IsChallengeButtonName(buttonName)) return "挑战选项框框";
-        if (IsShopButtonName(buttonName)) return "购买选项框框";
-        if (IsEventButtonName(buttonName)) return "事件选项框框";
-        if (IsChatButtonName(buttonName)) return "闲聊选项框框";
+        if (name == "重学教程Button") return "重学教程选项框框";
+        if (IsChallengeButtonName(name)) return "挑战选项框框";
+        if (IsShopButtonName(name)) return "购买选项框框";
+        if (IsEventButtonName(name)) return "事件选项框框";
+        if (IsChatButtonName(name)) return "闲聊选项框框";
         return "离开选项框框";
     }
-    // 按名字条件在对话画布里找按钮
-    private static Button FindButton(Canvas dialogueCanvas, Func<string, bool> namePredicate)
+
+    // 按名字条件在对话画布里找按钮。
+    private static Button FindButton(Canvas canvas, Func<string, bool> predicate)
     {
-        if (dialogueCanvas == null) return null;
-        foreach (Button button in dialogueCanvas.GetComponentsInChildren<Button>(true))
-            if (namePredicate(button.gameObject.name)) return button;
+        foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
+            if (predicate(button.name)) return button;
         return null;
     }
 
-    // 按角色显示名匹配对应的对话框
-    private Canvas GetDialogueCanvas(WorldInteractionActor actor)
-    {
-        string actorName = actor != null ? actor.displayName ?? string.Empty : string.Empty;
-        foreach (KeyValuePair<string, Canvas> item in dialogueCanvases)
-            if (actorName.Contains(item.Key)) return item.Value;
-        return null;
-    }
+    // 按明确的角色标识匹配对应的对话框。
+    private Canvas GetDialogueCanvas(WorldInteractionActor actor) => dialogueManager.GetView(actor.dialogue.speakerId).canvas;
 
-    // 下面几个按钮名都要和场景里的对象名一致，改名要同步这里
-    private static bool IsChallengeButtonName(string objectName)
-    {
-        return objectName.Contains("挑战Button");
-    }
+    // 下面几个按钮名都要和场景里的对象名一致，改名要同步这里。
+    private static bool IsChallengeButtonName(string name) => name.Contains("挑战Button");
 
-    // 按名字判断是不是商店按钮
-    private static bool IsShopButtonName(string objectName)
-    {
-        return objectName.Contains("购买类Buttom");
-    }
+    // 按名字判断是不是商店按钮。
+    private static bool IsShopButtonName(string name) => name.Contains("购买类Buttom");
 
-    // 按名字判断是不是事件按钮
-    private static bool IsEventButtonName(string objectName)
-    {
-        return objectName.Contains("事件类Buttom");
-    }
+    // 按名字判断是不是事件按钮。
+    private static bool IsEventButtonName(string name) => name.Contains("事件类Buttom");
 
-    // 按名字判断是不是闲聊按钮
-    private static bool IsChatButtonName(string objectName)
-    {
-        return objectName.Contains("闲聊Buttom");
-    }
+    // 按名字判断是不是闲聊按钮。
+    private static bool IsChatButtonName(string name) => name.Contains("闲聊Buttom");
 
-    // 按名字判断是不是离开按钮
-    private static bool IsLeaveButtonName(string objectName)
-    {
-        return objectName.Contains("离开Buttom");
-    }
-
-    // 每个 NPC 的闲聊文本
-    private static string GetChatText(string npcName)
-    {
-        if (npcName.Contains("猫姬")) return "先熟悉一下规则吧。真正的比赛开始后，每一步都要谨慎选择。";
-        if (npcName.Contains("企鹅")) return "河岸边的赛事马上就要开始了，记得先准备好你的卡组。";
-        if (npcName.Contains("黑猫少女")) return "夜灯亮起之前，还有时间再检查一次你的战术。";
-        if (npcName.Contains("神秘弓兵")) return "冠军之路不会因为一次胜利就结束，继续保持专注。";
-        if (npcName.Contains("阿米娅")) return "我们一起探索这座城市吧。";
-        return "今天也要加油。";
-    }
-
-    // 按对象名找文字组件写入内容，TMP 和旧版 Text 都试一次
-    private static void SetDialogueText(Canvas dialogueCanvas, string objectName, string value)
-    {
-        TMP_Text[] tmpTexts = dialogueCanvas.GetComponentsInChildren<TMP_Text>(true);
-        foreach (TMP_Text text in tmpTexts)
-        {
-            if (text != null && text.gameObject.name == objectName)
-            {
-                text.text = value;
-                return;
-            }
-        }
-
-        Text[] legacyTexts = dialogueCanvas.GetComponentsInChildren<Text>(true);
-        foreach (Text text in legacyTexts)
-        {
-            if (text != null && text.gameObject.name == objectName)
-            {
-                text.text = value;
-                return;
-            }
-        }
-    }
-
-    // 把闲聊内容写进对话框
-    private static void ShowChatDialogue(Canvas dialogueCanvas, WorldInteractionActor actor)
-    {
-        SetDialogueText(dialogueCanvas, "SpeakerName", actor.displayName);
-        SetDialogueText(dialogueCanvas, "DialogueText", GetChatText(actor.displayName));
-        Debug.Log("显示闲聊内容：" + actor.displayName);
-    }
+    // 按名字判断是不是离开按钮。
+    private static bool IsLeaveButtonName(string name) => name.Contains("离开Buttom");
 }

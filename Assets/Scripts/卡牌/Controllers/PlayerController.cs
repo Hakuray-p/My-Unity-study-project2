@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
     public int fatigueLevel; // 疲劳等级
 
     // 初始化这一方：准备牌堆、洗牌，并设好初始费用和生命
-    public void Init(IList<int> cardIds = null, bool populateDeck = true)
+    public void Init(IList<int> cardIds = null, bool populateDeck = true, bool shuffle = true)
     {
         if (deckCards == null) deckCards = new List<CardController>();
         if (graveCards == null) graveCards = new List<CardController>();
@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
                 CreateRuntimeCard(cardId, CardState.Deck);
             }
 
-            shuffleDeck();
+            if (shuffle) shuffleDeck();
         }
 
         // 部署费用
@@ -116,7 +116,7 @@ public class PlayerController : MonoBehaviour
             return null;
         }
 
-        CardData cardData = GM.Ins.DM.cardListSO.GetData(cardId);
+        CardData cardData = GM.Ins.BM.GetRuntimeCardData(cardId);
         if (cardData == null) return null;
 
         CardController card = Instantiate(GM.Ins.BM.cardPrefab);

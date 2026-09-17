@@ -8,7 +8,8 @@ using UnityEngine;
 public class CampaignSession : MonoBehaviour
 {
     private const string SaveFileName = "campaign_save.json"; // 存档文件名，放在 persistentDataPath 下
-    private const int CurrentSaveVersion = 7; // 当前存档版本号，读档时用它判断要不要升级
+    private const int CurrentSaveVersion = 8; // 当前存档版本号，读档时用它判断要不要升级
+    private bool battleReactionPending; // 本次战后回应是否尚未播放
     private static CampaignSession instance; // 全局单例
 
     public static CampaignSession Instance => EnsureInstance(); // 单例入口，场景里没有就自动建
@@ -16,6 +17,7 @@ public class CampaignSession : MonoBehaviour
     public BattleOutcome LastBattleOutcome { get; private set; } // 上一场战斗的结果
     public string LastResolvedMatchId { get; private set; } // 上一场结算过的比赛 id
     public bool LastBattleResolved { get; private set; } // 上一场战斗是否已经结算
+    public bool HasPendingBattleReaction => battleReactionPending; // 本次战后回应是否尚未播放
     public event Action ProgressChanged; // 进度变化时广播，界面靠它刷新
 
     public bool HasLegalDeck => State != null && IsLegalDeck(State.lastValidDeckCardIds); // 手上有没有一套合法卡组
@@ -227,6 +229,14 @@ public class CampaignSession : MonoBehaviour
 
         int loadedVersion = State.version;
         EnsureStateShape();
+        if (loadedVersion < 8)
+        {
+            State.practiceTutorialHandled = IsMatchComplete("first_light_practice");
+            State.pendingPracticeTutorial = false;
+            if (State.pendingBattle != null)
+                foreach (BattlePlayerSnapshot player in State.pendingBattle.players)
+                    foreach (BattleCardSnapshot card in player.cards) card.ableCast = true;
+        }
         if (loadedVersion != CurrentSaveVersion)
         {
             State.version = CurrentSaveVersion;
@@ -241,6 +251,7 @@ public class CampaignSession : MonoBehaviour
         LastBattleOutcome = BattleOutcome.None;
         LastResolvedMatchId = null;
         LastBattleResolved = false;
+        battleReactionPending = false;
         Save();
         ProgressChanged?.Invoke();
     }
@@ -291,30 +302,46 @@ public class CampaignSession : MonoBehaviour
         return cityState.completedMatchIds != null && cityState.completedMatchIds.Contains(matchId);
     }
 
-    // 判断这场比赛现在能不能打
+    // 判断这场比赛现在能不能打。
     public bool CanStartMatch(MatchData match)
     {
-        if (match == null || !IsCityUnlocked(match.cityId)) return false;
-        if (HasPendingBattle) return false;
-        if (!HasLegalDeck) return false;
-        if (match.matchType == MatchType.Champion)
-        {
-            CityData city = CampaignCatalog.GetCity(match.cityId);
-            if (city == null || GetCityState(match.cityId).leaguePoints < city.requiredPoints) return false;
-        }
-        if (!string.IsNullOrEmpty(match.prerequisiteMatchId) && !IsMatchComplete(match.prerequisiteMatchId)) return false;
+        return GetMatchLockReason(match) == "";
+    }
+
+    // 给对话和场景入口提供一致的赛事解锁说明。
+    public string GetMatchLockReason(MatchData match)
+    {
+        if (match == null) return "赛事不存在";
+        if (HasPendingBattle) return "当前已有一场未结束的战斗";
+        if (!IsCityUnlocked(match.cityId)) return "当前城市尚未解锁";
+        if (match.matchType == MatchType.Champion && GetLeaguePoints(match.cityId) < CampaignCatalog.GetCity(match.cityId).requiredPoints)
+            return $"城市冠军需要 {CampaignCatalog.GetCity(match.cityId).requiredPoints} 积分";
+        if (!string.IsNullOrEmpty(match.prerequisiteMatchId) && !IsMatchComplete(match.prerequisiteMatchId))
+            return $"需要先完成：{CampaignCatalog.GetMatch(match.prerequisiteMatchId).displayName}";
+        if (!HasLegalDeck) return "当前卡组不合法，请按 B 编辑卡组";
+        return "";
+    }
+
+    // 在对应 NPC 第一次回应本场胜负时消耗临时标记，不改变存档结构。
+    public bool ConsumeBattleReaction(string matchId)
+    {
+        if (!battleReactionPending || LastResolvedMatchId != matchId) return false;
+        battleReactionPending = false;
         return true;
     }
 
     // 记下要打的比赛和回城位置，切去战斗场景前调用
-    public void BeginMatch(MatchData match, Vector3 returnPosition)
+    public void BeginMatch(MatchData match, Vector3 returnPosition, bool replayTutorial = false)
     {
         if (match == null) throw new ArgumentNullException(nameof(match));
         State.currentCityId = match.cityId;
         State.playerPosition = returnPosition;
         State.pendingMatchId = match.matchId;
         State.pendingBattle = null;
+        State.pendingPracticeTutorial = match.matchId == "first_light_practice" &&
+            (replayTutorial || !State.practiceTutorialHandled && !IsMatchComplete(match.matchId));
         LastBattleResolved = false;
+        battleReactionPending = false;
         Save();
     }
 
@@ -341,7 +368,8 @@ public class CampaignSession : MonoBehaviour
             returnScene = "One_City_DAY",
             randomSeed = StableSeed(Guid.NewGuid().ToString("N")),
             enemyDeckId = match.enemyDeckId,
-            snapshot = State.pendingBattle
+            snapshot = State.pendingBattle,
+            isTutorial = State.pendingPracticeTutorial
         };
     }
 
@@ -360,6 +388,7 @@ public class CampaignSession : MonoBehaviour
         LastBattleOutcome = result.outcome;
         LastResolvedMatchId = match.matchId;
         LastBattleResolved = true;
+        battleReactionPending = true;
 
         if (won)
         {
@@ -404,6 +433,7 @@ public class CampaignSession : MonoBehaviour
 
         State.pendingBattle = null;
         State.pendingMatchId = null;
+        State.pendingPracticeTutorial = false;
         Save();
         ProgressChanged?.Invoke();
         return result;

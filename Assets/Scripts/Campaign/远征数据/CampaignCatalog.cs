@@ -1,31 +1,14 @@
 using System.Collections.Generic;
+using UnityEngine;
 
-// 远征内容的静态总表：城市、事件、比赛三张表写死在代码里，卡牌数据从 CardListSO 拿。
+// 查询城市赛事资源与事件内容，卡牌数据从 CardListSO 获取。
 public static class CampaignCatalog
 {
     private static CardListSO cardDatabase; // 卡牌数据库，由 DataManager 在开场时传入
 
-    // 目前只有一座城市，一张表串起这座城的比赛、支线和通关奖励
-    private static readonly List<CityData> cities = new List<CityData>
-    {
-        new CityData
-        {
-            cityId = "first_light",
-            displayName = "First Light",
-            sceneName = "One_City_DAY",
-            requiredPoints = 10,
-            championMatchId = "first_light_champion",
-            availableMatchIds = new List<string>
-            {
-                "first_light_practice",
-                "first_light_public_01",
-                "first_light_public_02",
-                "first_light_public_03",
-                "first_light_public_04",
-                "first_light_champion"
-            }
-        }
-    };
+    private static CampaignCatalogData content; // 城市赛事总表资源
+    private static CampaignCatalogData Content => content != null ? content :
+        content = Resources.Load<CampaignCatalogData>("Campaign/FirstCityCampaign"); // 首次查询时读取配置
 
     // 城市里的事件点内容，位置由场景里的交互点决定
     private static readonly List<CampaignEventData> events = new List<CampaignEventData>
@@ -37,107 +20,26 @@ public static class CampaignCatalog
             displayName = "调查裂痕",
             startText = "巷口刚才出现了一道奇怪的裂痕，里面还夹着一张没有主人的卡牌。能陪我去确认一下吗？",
             objectiveText = "裂痕已经出现，去南侧楼梯下的桥前调查。",
-            completeText = "裂痕消失了。",
-            reviewText = "那道裂痕已经消失了。谢谢你当时愿意陪我调查。",
+            completeText = "你将纪念卡轻轻扶正，纷乱的光点渐渐归于平静。裂痕消失了，卡背上留下了一行字：下次，一起参赛。",
+            reviewText = "那不是谁制造的灾难，而是一份未完成的约定留下的回响。谢谢你让卡牌安静下来，商人或许认得它原来的主人。",
             goldReward = 20,
             cardRewardId = 1202,
             cardRewardName = "自奏圣乐·嬉游曲恶魔"
         }
     };
 
-    // 第一城的五场比赛，按 prerequisiteMatchId 串成一条线
-    private static readonly List<MatchData> matches = new List<MatchData>
-    {
-        new MatchData
-        {
-            matchId = "first_light_practice",
-            cityId = "first_light",
-            displayName = "Rookie Practice",
-            matchType = MatchType.Practice,
-            opponentId = "Mira",
-            pointReward = 0,
-            goldReward = 0,
-            enemyDeckId = 1
-        },
-        new MatchData
-        {
-            matchId = "first_light_public_01",
-            cityId = "first_light",
-            displayName = "Riverside Open",
-            matchType = MatchType.Public,
-            opponentId = "Jonah",
-            pointReward = 2,
-            goldReward = 20,
-            prerequisiteMatchId = "first_light_practice",
-            enemyDeckId = 1,
-            rewardCardIds = new List<int> { 1203 }
-        },
-        new MatchData
-        {
-            matchId = "first_light_public_02",
-            cityId = "first_light",
-            displayName = "Lantern Open",
-            matchType = MatchType.Public,
-            opponentId = "Sera",
-            pointReward = 3,
-            goldReward = 30,
-            prerequisiteMatchId = "first_light_public_01",
-            enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1209 }
-        },
-        new MatchData
-        {
-            matchId = "first_light_public_03",
-            cityId = "first_light",
-            displayName = "Sunset Open",
-            matchType = MatchType.Public,
-            opponentId = "Talia",
-            pointReward = 5,
-            goldReward = 40,
-            prerequisiteMatchId = "first_light_public_02",
-            enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1205 }
-        },
-        new MatchData
-        {
-            matchId = "first_light_public_04",
-            cityId = "first_light",
-            displayName = "Merchant's Open",
-            matchType = MatchType.Public,
-            opponentId = "Merchant",
-            pointReward = 5,
-            goldReward = 40,
-            enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1204 }
-        },
-        new MatchData
-        {
-            matchId = "first_light_champion",
-            cityId = "first_light",
-            displayName = "First Light Champion",
-            matchType = MatchType.Champion,
-            opponentId = "Captain Vale",
-            pointReward = 0,
-            goldReward = 80,
-            prerequisiteMatchId = "first_light_public_03",
-            awardsBadge = true,
-            enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1208 }
-        }
-    };
-
-    public static IReadOnlyList<CityData> Cities => cities; // 所有城市
+    public static IReadOnlyList<CityData> Cities => Content.cities; // 所有城市
 
     // 按 id 取城市，找不到返回 null
     public static CityData GetCity(string cityId)
     {
-        return cities.Find(city => city.cityId == cityId);
+        return Content.cities.Find(city => city.cityId == cityId);
     }
 
     // 按 id 取比赛，找不到返回 null
     public static MatchData GetMatch(string matchId)
     {
-        return matches.Find(match => match.matchId == matchId);
+        return Content.matches.Find(match => match.matchId == matchId);
     }
 
     // 按 id 取事件，找不到返回 null

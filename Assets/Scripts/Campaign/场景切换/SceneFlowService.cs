@@ -4,6 +4,20 @@ using UnityEngine.SceneManagement;
 // 场景跳转与跨场景传参的统一入口，跳转前把传参写进静态字段。
 public static class SceneFlowService
 {
+    public static bool IsLoading { get; private set; } // 当前是否正在切换场景
+
+    // 场景载入完成后恢复界面显示。
+    static SceneFlowService()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    // 清除已经结束的转场状态。
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        IsLoading = false;
+    }
+
     private static bool hasCardPreviewRequest; // 是否有待处理的卡牌预览请求
     private static int cardPreviewCardId; // 待预览的卡牌 ID
     private static bool hasShopRestoreState; // 是否有待恢复的商店状态
@@ -37,6 +51,7 @@ public static class SceneFlowService
     // 所有场景切换都先播转场动画，转场组件在当前场景里
     private static void LoadScene(string sceneName)
     {
+        IsLoading = true;
         Object.FindObjectOfType<LevelLoader>().LoadScene(sceneName);
     }
 
@@ -107,11 +122,11 @@ public static class SceneFlowService
     }
 
     // 开一场赛事，校验通过后写入存档并进战斗场景
-    public static void StartMatch(string matchId, UnityEngine.Vector3 returnPosition)
+    public static void StartMatch(string matchId, UnityEngine.Vector3 returnPosition, bool replayTutorial = false)
     {
         MatchData match = CampaignCatalog.GetMatch(matchId);
         if (!CampaignSession.Instance.CanStartMatch(match)) return;
-        CampaignSession.Instance.BeginMatch(match, returnPosition);
+        CampaignSession.Instance.BeginMatch(match, returnPosition, replayTutorial);
         LoadScene("BattleScene");
     }
 

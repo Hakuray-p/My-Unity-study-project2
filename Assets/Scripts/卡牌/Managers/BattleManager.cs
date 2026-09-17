@@ -13,6 +13,7 @@ public class BattleManager : MonoBehaviour
     public EffectManager EM;
     public DragManager DragManager;
     public TargetManager TM;
+    public PracticeTutorialController Tutorial; // 场景中预置的猫姬教学控制器
 
     public CardController cardPrefab;
     public List<PlayerController> players = new();
@@ -27,22 +28,33 @@ public class BattleManager : MonoBehaviour
     private int turn;
     private bool pauseOpen;
     private bool turnChangePending;
+    private float actionReadyAt; // 当前动作完成后允许下一操作的时间
+    private bool snapshotRequested; // 是否需要在稳定状态保存战况
+    public bool IsPaused => pauseOpen; // 教学界面跟随暂停状态
+    public bool IsSettled => !turnChangePending && !EM.IsProcessingEffect && !TM.IsSelecting && Time.time >= actionReadyAt; // 动作和目标选择是否已经结束
 
-    public bool CanSafelyExit => !battleResolved && !turnChangePending &&
-        (EM == null || !EM.IsProcessingEffect) && (TM == null || !TM.IsSelecting);
+    public bool CanSafelyExit => !battleResolved && IsSettled;
 
     // 读取战斗上下文并开战
     public void Init()
     {
         LaunchContext = CampaignSession.Instance.CreateBattleContext();
-        if (LaunchContext != null) UnityEngine.Random.InitState(LaunchContext.randomSeed);
+        if (LaunchContext != null)
+        {
+            UnityEngine.Random.InitState(LaunchContext.randomSeed);
+            GM.Ins.UM.ShowOpponentPortrait(CampaignCatalog.GetMatch(LaunchContext.matchId));
+        }
         if (EM != null) EM.Init();
+        Tutorial.Initialize(this);
         StartBattle();
+        Tutorial.Begin();
     }
 
     // Esc 在安全点暂停 / 继续
     private void Update()
     {
+        if (snapshotRequested && !battleResolved && !Tutorial.IsGuiding && IsSettled) SaveTutorialCheckpoint();
+        if (TM.ViewClosedFrame == Time.frameCount) return;
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
         if (pauseOpen)
         {
@@ -70,12 +82,16 @@ public class BattleManager : MonoBehaviour
             ApplySnapshot(LaunchContext.snapshot);
             curPlayer = GetPlayer(LaunchContext.snapshot.activePlayerId) ?? _mainPlayer;
             turn = LaunchContext.snapshot.turn;
+            NoteAction();
+            if (curPlayer is AIController ai) ai.ResumeTurn();
             return;
         }
 
         PlayerController firstPlayer = UnityEngine.Random.Range(0, 2) == 0
             ? _mainPlayer
             : players.Find(player => player != _mainPlayer);
+        bool teaching = LaunchContext != null && LaunchContext.isTutorial;
+        if (teaching) firstPlayer = _mainPlayer;
 
         // 初始化玩家状态
         foreach (var player in players)
@@ -83,7 +99,8 @@ public class BattleManager : MonoBehaviour
             List<int> deck = player.isMainPlayer
                 ? CampaignSession.Instance.GetBattleDeck()
                 : CampaignCatalog.GetDeck(LaunchContext != null ? LaunchContext.enemyDeckId : player.deckId);
-            player.Init(deck);
+            if (teaching) deck = player.isMainPlayer ? Tutorial.data.playerDeck : Tutorial.data.enemyDeck;
+            player.Init(deck, true, !teaching);
             // 抽初始手牌
             DrawCard(player, player == firstPlayer ? Mathf.Max(0, GameConst.initalHands - 1) : GameConst.initalHands);
         }
@@ -92,6 +109,7 @@ public class BattleManager : MonoBehaviour
         turn = 1;
         curPlayer = firstPlayer ?? _mainPlayer;
         if (curPlayer != null) curPlayer.TurnStart();
+        NoteAction();
         SaveCurrentSnapshot();
     }
 
@@ -102,6 +120,7 @@ public class BattleManager : MonoBehaviour
         {
             matchId = LaunchContext != null ? LaunchContext.matchId : CampaignSession.Instance.State.pendingMatchId,
             turn = turn,
+            tutorialStep = Tutorial.Step,
             randomStateJson = JsonUtility.ToJson(UnityEngine.Random.state),
             activePlayerId = curPlayer != null ? curPlayer.playerId : (_mainPlayer != null ? _mainPlayer.playerId : 0)
         };
@@ -144,6 +163,7 @@ public class BattleManager : MonoBehaviour
                 health = card.mumberHp,
                 healthMax = card.mumberHpMax,
                 ableAttack = card.ableAttack,
+                ableCast = card.ableCast,
                 silenced = card.isSlience
             });
         }
@@ -183,6 +203,7 @@ public class BattleManager : MonoBehaviour
                 card.mumberHp = cardSnapshot.health;
                 card.mumberHpMax = cardSnapshot.healthMax;
                 card.ableAttack = cardSnapshot.ableAttack;
+                card.ableCast = cardSnapshot.ableCast;
                 card.isSlience = cardSnapshot.silenced;
                 if (card.cardDisplay != null)
                 {
@@ -197,7 +218,30 @@ public class BattleManager : MonoBehaviour
     private void SaveCurrentSnapshot()
     {
         if (battleResolved || LaunchContext == null) return;
+        snapshotRequested = true;
+    }
+
+    // 只把已完成的动作或教学步骤写入续战快照。
+    public void SaveTutorialCheckpoint()
+    {
+        if (battleResolved || LaunchContext == null) return;
         CampaignSession.Instance.SaveBattleSnapshot(ExportSnapshot());
+        snapshotRequested = false;
+    }
+
+    // 为出牌、攻击和界面归位保留实际结算时间。
+    public void NoteAction(float duration = 0.6f)
+    {
+        actionReadyAt = Mathf.Max(actionReadyAt, Time.time + duration);
+        SaveCurrentSnapshot();
+    }
+
+    // 教学牌局可以读取专用守卫，其他卡牌仍来自正式数据库。
+    public CardData GetRuntimeCardData(int cardId)
+    {
+        if (LaunchContext != null && LaunchContext.isTutorial && cardId == Tutorial.data.guardCard.index)
+            return Tutorial.data.guardCard;
+        return GM.Ins.DM.cardListSO.GetData(cardId);
     }
 
     // 判断能不能召唤：场上没满且费用够
@@ -216,6 +260,8 @@ public class BattleManager : MonoBehaviour
     public void SummonCard(CardController card)
     {
         if (card == null || card.player == null || card.player.hands == null || card.player.field == null) return;
+        if (card.player.isMainPlayer && !Tutorial.Allows(TutorialAction.Summon, card)) return;
+        NoteAction();
         PlayerController player = card.player;
         Debug.Log($"{player.playerId}召唤{card.cardData.name}");
         player.hands.RemoveCard(card);
@@ -237,6 +283,7 @@ public class BattleManager : MonoBehaviour
             GM.Ins.AM.PlayAudio(card.cardData.enterAudio);
         }
         SaveCurrentSnapshot();
+        if (player.isMainPlayer) Tutorial.ActionAccepted(TutorialAction.Summon);
     }
 
     // 判断这张牌能不能被攻击，对方有守护时只能打守护
@@ -282,6 +329,8 @@ public class BattleManager : MonoBehaviour
     public void AttackCard(CardController attacker, CardController target)
     {
         if (attacker == null || target == null || attacker.cardData == null || target.cardData == null) return;
+        if (attacker.player.isMainPlayer && !Tutorial.Allows(TutorialAction.AttackCard, attacker, target)) return;
+        NoteAction(0.9f);
         if (GM.Ins != null && GM.Ins.AM != null) GM.Ins.AM.PlayAudio(attacker.cardData.attackAudio);
         attacker.ableAttack = false;
         attacker.transform.DOMove(target.transform.position, 0.4f)
@@ -321,12 +370,15 @@ public class BattleManager : MonoBehaviour
                 }
                 SaveCurrentSnapshot();
             });
+        if (attacker.player.isMainPlayer) Tutorial.ActionAccepted(TutorialAction.AttackCard);
     }
 
     // 干员直接攻击玩家
     public void AttackPlayer(CardController attacker, PlayerController player)
     {
         if (attacker == null || player == null || attacker.cardData == null) return;
+        if (attacker.player.isMainPlayer && !Tutorial.Allows(TutorialAction.AttackPlayer, attacker)) return;
+        NoteAction(0.9f);
         if (GM.Ins != null && GM.Ins.AM != null) GM.Ins.AM.PlayAudio(attacker.cardData.attackAudio);
         Debug.Log($"{attacker.cardData.name}直接攻击玩家{player.playerId}");
         attacker.ableAttack = false;
@@ -345,11 +397,13 @@ public class BattleManager : MonoBehaviour
                     SaveCurrentSnapshot();
                 }
             });
+        if (attacker.player.isMainPlayer) Tutorial.ActionAccepted(TutorialAction.AttackPlayer);
     }
 
     // 干员阵亡，送进墓地并触发退场效果
     public void MumberDied(CardController mumber)
     {
+        NoteAction();
         // 送入墓地，并触发退场效果
         EM.TriggerCardEffect(TriggerType.Died, mumber);
         PlayerController player = mumber.player;
@@ -384,6 +438,8 @@ public class BattleManager : MonoBehaviour
     public void CastSpell(CardController spell)
     {
         if (spell == null || spell.player == null || spell.player.hands == null || spell.cardData == null || spellPos == null) return;
+        if (spell.player.isMainPlayer && !Tutorial.Allows(TutorialAction.Spell, spell)) return;
+        NoteAction();
         PlayerController player = spell.player;
         Debug.Log($"{player.playerId}发动{spell.cardData.name}");
         player.cost -= spell.cardData.cost;
@@ -397,6 +453,7 @@ public class BattleManager : MonoBehaviour
         spell.transform.DOLocalRotate(Vector3.zero, 0.5f);
         EM.CastSpell(spell);
         SaveCurrentSnapshot();
+        if (player.isMainPlayer) Tutorial.ActionAccepted(TutorialAction.Spell);
     }
 
     // 抽牌，牌堆空了就吃疲劳伤害
@@ -521,6 +578,7 @@ public class BattleManager : MonoBehaviour
         }
 
         curPlayer.TurnStart();
+        NoteAction();
         turn++;
         string playrStr = curPlayer.isMainPlayer ? "我方" : "敌方";
         GM.Ins.UM.turnPanel.ShowTurnChange($"{playrStr}回合开始");
@@ -532,10 +590,14 @@ public class BattleManager : MonoBehaviour
     // 点结束回合按钮时切回合
     public void OnClickTurnEnd(int playerId)
     {
+        if (Time.timeScale == 0f || !IsSettled || battleResolved) return;
         PlayerController player = GetPlayer(playerId);
         if (player != null && player.isInTurn)
         {
+            if (player.isMainPlayer && !Tutorial.Allows(TutorialAction.EndTurn)) return;
+            NoteAction(2.1f);
             TurnChange();
+            if (player.isMainPlayer) Tutorial.ActionAccepted(TutorialAction.EndTurn);
             SaveCurrentSnapshot();
         }
     }
@@ -543,13 +605,13 @@ public class BattleManager : MonoBehaviour
     // 切到后台时存一次快照
     private void OnApplicationPause(bool paused)
     {
-        if (paused) SaveCurrentSnapshot();
+        if (paused && IsSettled && !Tutorial.IsGuiding) SaveTutorialCheckpoint();
     }
 
     // 退出游戏时存一次快照
     private void OnApplicationQuit()
     {
-        SaveCurrentSnapshot();
+        if (IsSettled && !Tutorial.IsGuiding) SaveTutorialCheckpoint();
     }
 
     // 暂停时画一个简易暂停框
@@ -560,7 +622,7 @@ public class BattleManager : MonoBehaviour
         GUI.Label(new Rect(Screen.width * 0.5f - 150f, Screen.height * 0.5f - 78f, 300f, 42f), "当前处于安全点，可以保存战斗快照。");
         if (GUI.Button(new Rect(Screen.width * 0.5f - 140f, Screen.height * 0.5f - 25f, 280f, 42f), "保存并返回主菜单"))
         {
-            SaveCurrentSnapshot();
+            if (!Tutorial.IsGuiding) SaveTutorialCheckpoint();
             Time.timeScale = 1f;
             pauseOpen = false;
             SceneFlowService.ReturnToMenu();

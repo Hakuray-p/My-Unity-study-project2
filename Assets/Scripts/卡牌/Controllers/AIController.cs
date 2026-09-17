@@ -15,14 +15,28 @@ public class AIController : PlayerController
         base.TurnStart();
         DOVirtual.DelayedCall(1f, () =>
         {
-            isStarted = true;
+            ResumeTurn();
         });
+    }
+
+    // 续战只恢复行动，不重复抽牌或增加费用。
+    public void ResumeTurn()
+    {
+        timer = 0f;
+        isStarted = isInTurn;
+    }
+
+    // 交出回合时停止当前行动计时。
+    public override void TurnEnd()
+    {
+        base.TurnEnd();
+        isStarted = false;
     }
 
     // 每隔 1.5 秒推进一步 AI 行动
     private void Update()
     {
-        if (isStarted)
+        if (isStarted && isInTurn && Time.timeScale > 0f)
         {
             timer += Time.deltaTime;
             if (timer >= 1.5f)
@@ -36,7 +50,12 @@ public class AIController : PlayerController
     // 按优先级走一步：能召唤就召唤，能施法就施法，能发动主动效果就发动，能攻击就攻击，都不行就结束回合
     private void TickOneStep()
     {
-        if (GM.Ins.BM.EM.IsProcessingEffect) return;
+        if (!GM.Ins.BM.IsSettled) return;
+        if (GM.Ins.BM.Tutorial.IsGuiding)
+        {
+            GM.Ins.BM.Tutorial.TakeEnemyTurn(this);
+            return;
+        }
         foreach (var handCard in hands.handCards)
         {
             if (handCard.cardData.cardType == CardType.MUMBER)

@@ -14,6 +14,7 @@ public sealed class EventGM : MonoBehaviour
     private Action<string> showStatusAction; // 显示状态提示的回调，由场景 GM 提供
     private readonly Dictionary<string, WorldEventPoint> eventPoints = new Dictionary<string, WorldEventPoint>(); // 场景里的事件点，按事件 id 索引
     private bool initialized; // 是否已经初始化
+    public float InteractionDistance => interactionDistance; // 事件指引使用的真实交互距离
 
     /// <summary>
     /// 初始化事件管理器并绑定场景中的事件点。
@@ -39,11 +40,12 @@ public sealed class EventGM : MonoBehaviour
 
         foreach (KeyValuePair<string, WorldEventPoint> item in eventPoints)
         {
-            if (item.Value == null || !IsActive(item.Key)) continue;
+            if (item.Value == null || !IsActive(item.Key) || item.Value.IsResolving) continue;
             float distance = Vector3.Distance(characterGM.Player.position, item.Value.transform.position);
             if (distance <= interactionDistance && Input.GetKeyDown(KeyCode.E))
             {
-                ResolveEvent(item.Key, out bool cardAdded);
+                string eventId = item.Key;
+                item.Value.PlayResolve(() => ResolveEvent(eventId, out bool cardAdded));
                 return;
             }
         }

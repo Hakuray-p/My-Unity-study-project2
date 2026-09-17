@@ -32,59 +32,21 @@ public sealed class CharacterGM : MonoBehaviour
         if (controller != null) controller.enabled = false;
         player.position = session.State.playerPosition;
         if (controller != null) controller.enabled = true;
-        player.GetComponent<AmiyaCharacter>()?.SetSafePosition();
+        player.GetComponent<PlayerCharacter>()?.SetSafePosition();
     }
 
-    // 按 NPC 名字绑定交互点，场景里没找到就近生成几个默认的
+    // 按场景中明确配置的角色注册交互，不再用名字覆盖对话和赛事。
     public void CreateWorldActors()
     {
         if (actors.Count > 0) return;
-
-        HDNpcCharacter[] sceneNpcs = FindObjectsOfType<HDNpcCharacter>(true);
-        for (int i = 0; i < sceneNpcs.Length; i++)
-        {
-            HDNpcCharacter npc = sceneNpcs[i];
-            string npcName = npc.name;
-            bool isShopNpc = npcName.Contains("商人");
-            bool isEventNpc = npcName.Contains("黑猫少女");
-            string matchId = npcName.Contains("猫姬") ? GetCatMatchId() :
-                npcName.Contains("企鹅") ? "first_light_public_02" :
-                npcName.Contains("神秘弓兵") ? "first_light_public_03" :
-                isShopNpc ? "first_light_public_04" :
-                isEventNpc ? "first_light_champion" : null;
-            string eventId = isEventNpc ? "first_light_event_01" : null;
-            WorldInteractionType actorType = isShopNpc ? WorldInteractionType.Shop :
-                isEventNpc ? WorldInteractionType.Event : WorldInteractionType.Match;
-            Collider collider = npc.GetComponent<Collider>();
-            if (collider == null) collider = npc.gameObject.AddComponent<SphereCollider>();
-            collider.isTrigger = true;
-            WorldInteractionActor actor = npc.GetComponent<WorldInteractionActor>();
-            if (actor == null) actor = npc.gameObject.AddComponent<WorldInteractionActor>();
-            actor.Bind(this, matchId, eventId, npc.name, actorType);
-            actors.Add(actor);
-        }
-
-        if (actors.Count == 0)
-        {
-            CreateActor("练习赛 / 正式赛1", WorldInteractionType.Match, GetCatMatchId(), null, new Vector3(-7f, 1f, -1f));
-            CreateActor("正式赛2 / 正式赛3", WorldInteractionType.Match,
-                session.IsMatchComplete("first_light_public_02") ? "first_light_public_03" : "first_light_public_02",
-                null, new Vector3(-7f, 1f, 10f));
-            CreateActor("城市冠军赛", WorldInteractionType.Match, "first_light_champion", null, new Vector3(0f, 1f, 20f));
-        }
-        CreateActor("卡牌商店", WorldInteractionType.Shop, "first_light_public_04", null, player.position + new Vector3(3f, 0f, 2f));
-    }
-
-    // 猫姬的挑战：练习赛打过之后换成正式赛1
-    private string GetCatMatchId()
-    {
-        return session.IsMatchComplete("first_light_practice") ? "first_light_public_01" : "first_light_practice";
+        foreach (WorldInteractionActor actor in FindObjectsOfType<WorldInteractionActor>(true))
+            if (actor.gameObject.scene == gameObject.scene) actors.Add(actor);
     }
 
     // 把主角摆进场景并配好移动参数
     private void SetupPlayer()
     {
-        AmiyaCharacter character = FindObjectOfType<AmiyaCharacter>(true);
+        PlayerCharacter character = FindObjectOfType<PlayerCharacter>(true);
         if (character == null) return;
         character.gameObject.SetActive(true);
         character.gameplayCamera = gameplayCamera;
@@ -109,18 +71,4 @@ public sealed class CharacterGM : MonoBehaviour
         }
     }
 
-    // 在场景里造一个可交互的 NPC
-    private void CreateActor(string label, WorldInteractionType type, string matchId, string eventId, Vector3 position)
-    {
-        var actorObject = new GameObject("NPC - " + label);
-        actorObject.transform.position = position;
-        SphereCollider trigger = actorObject.AddComponent<SphereCollider>();
-        trigger.isTrigger = true;
-        trigger.radius = 0.65f;
-        SpriteRenderer renderer = actorObject.AddComponent<SpriteRenderer>();
-        renderer.color = type == WorldInteractionType.Match ? new Color(0.95f, 0.75f, 0.25f) : Color.white;
-        WorldInteractionActor actor = actorObject.AddComponent<WorldInteractionActor>();
-        actor.Bind(this, matchId, eventId, label, type);
-        actors.Add(actor);
-    }
 }

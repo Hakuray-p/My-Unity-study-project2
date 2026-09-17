@@ -1,0 +1,13 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: CityDialogue
+  m_Controller: {fileID: 9100000, guid: ca3be05e929c6c04fa5a7f519e2c6a23, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: cd86816fcd8db28438eff1e592fb6620, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 7b7cc3a607aada3439e4c0a69d2bc988, type: 2}

@@ -101,11 +101,15 @@ public partial class EffectManager : MonoBehaviour
         if (card.isSlience) return;
         if (triggerType == TriggerType.Cast)
         {
+            if (card.player.isMainPlayer && !GM.Ins.BM.Tutorial.Allows(TutorialAction.Ability, card)) return;
             if (!CanCastCard(card)) return; // 条件不满足就整个不发动，摇牌和音效都不播
             card.ableCast = false; // 主动效果每回合只能发动一次
+            GM.Ins.BM.NoteAction();
         }
 
         EnqueueEffect(card, triggerType);
+        if (triggerType == TriggerType.Cast && card.player.isMainPlayer)
+            GM.Ins.BM.Tutorial.ActionAccepted(TutorialAction.Ability);
     }
 
     // 法术牌发动效果
@@ -468,6 +472,7 @@ public partial class EffectManager : MonoBehaviour
         {
             PlayerController player = _castingSpell.player;
             player.graveCards.Add(_castingSpell);
+            _castingSpell.cardState = CardState.Graveyard;
             _castingSpell.transform.parent = player.gravePos;
             _castingSpell.transform.DOLocalMove(Vector3.zero, 0.5f);
             _castingSpell.transform.localRotation = Quaternion.identity;
@@ -476,6 +481,7 @@ public partial class EffectManager : MonoBehaviour
         }
 
         ResetCamera();
+        GM.Ins.BM.NoteAction();
     }
 
     // 把相机摆回战斗视角

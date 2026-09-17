@@ -119,7 +119,7 @@ public sealed class PauseGM : MonoBehaviour
         controller.enabled = false;
         characterGM.Player.position = characterGM.PlayerInitialPosition;
         controller.enabled = true;
-        characterGM.Player.GetComponent<AmiyaCharacter>()?.SetSafePosition();
+        characterGM.Player.GetComponent<PlayerCharacter>()?.SetSafePosition();
         savePlayerAction();
         Close();
     }

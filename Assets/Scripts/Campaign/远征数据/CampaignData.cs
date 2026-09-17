@@ -55,6 +55,9 @@ public class MatchData
     public string displayName; // 界面上显示的比赛名
     public MatchType matchType; // 练习赛 / 公开赛 / 冠军赛
     public string opponentId; // 对手标识
+    public Sprite opponentPortrait; // 对手的战斗头像立绘
+    public float opponentPortraitScale = 1f; // 立绘在头像框内的缩放
+    public Vector2 opponentPortraitOffset; // 立绘在头像框内的位置
     public int pointReward; // 赢了给多少赛事积分
     public int goldReward; // 赢了给多少金币
     public int enemyDeckId; // 敌方卡组编号
@@ -119,6 +122,7 @@ public class BattleCardSnapshot
     public int health; // 当前生命值
     public int healthMax; // 生命值上限
     public bool ableAttack; // 当时能不能攻击
+    public bool ableCast = true; // 当时能不能发动主动技能
     public bool silenced; // 当时是否被沉默
 }
 
@@ -142,6 +146,7 @@ public class BattleSnapshot
 {
     public string matchId; // 比赛标识
     public int turn; // 当前回合数
+    public PracticeTutorialStep tutorialStep; // 本场教学的稳定步骤
     public int activePlayerId; // 该谁行动
     public string randomStateJson; // 随机数生成器的状态
     public List<BattlePlayerSnapshot> players = new List<BattlePlayerSnapshot>(); // 双方玩家
@@ -157,6 +162,7 @@ public class BattleLaunchContext
     public int randomSeed; // 本场随机种子
     public int enemyDeckId; // 敌方卡组编号
     public BattleSnapshot snapshot; // 有值就是中途接着打，没有就是新开一局
+    public bool isTutorial; // 是否使用猫姬教学资源
 }
 
 // 一场战斗打完的结算结果
@@ -177,7 +183,9 @@ public class BattleResult
 [Serializable]
 public class CampaignSaveData
 {
-    public int version = 7; // 存档版本号，改存档结构时要往上加
+    public int version = 8; // 存档版本号，改存档结构时要往上加
+    public bool practiceTutorialHandled; // 是否已完成、跳过或无需首次教学
+    public bool pendingPracticeTutorial; // 未结束的比赛是否为教学牌局
     public string currentCityId; // 玩家当前在哪座城市
     public Vector3 playerPosition; // 玩家在大地图上的位置
     public List<string> unlockedCityIds = new List<string>(); // 已经解锁的城市

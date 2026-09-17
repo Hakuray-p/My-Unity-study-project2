@@ -17,6 +17,7 @@ public class DragManager : MonoBehaviour
 
     void Update()
     {
+        if (Time.timeScale == 0f) return;
         if (Input.GetMouseButtonDown(0))
         {
             MouseDown();
@@ -34,6 +35,7 @@ public class DragManager : MonoBehaviour
     // 按下时判断点到的是墓地、手牌还是场上的卡牌
     void MouseDown()
     {
+        if (!GM.Ins.BM.IsSettled || GM.Ins.BM.Tutorial.BlocksPointer || GM.Ins.BM.TM.ViewClosedFrame == Time.frameCount) return;
         // 正在选目标或查看列表时，这次按下交给 TargetManager 处理（从墓地选牌的流程也在这里）
         if (GM.Ins.BM.TM.IsSelecting) return;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -68,6 +70,7 @@ public class DragManager : MonoBehaviour
         if (!hasHit) return;
         CardController card = nearestHit.collider.GetComponent<CardController>();
         if (card == null || !card.player.isMainPlayer) return;
+        if (!GM.Ins.BM.Tutorial.CanDrag(card)) return;
 
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = 10f; // 距离摄像机的距离
@@ -92,8 +95,11 @@ public class DragManager : MonoBehaviour
     // 打开某一方的墓地查看，说明文字写清楚这是谁的墓地
     private void ViewGrave(PlayerController owner)
     {
+        if (GM.Ins.BM.Tutorial.IsGuiding && !owner.isMainPlayer) return;
+        if (!GM.Ins.BM.Tutorial.Allows(TutorialAction.ViewGrave)) return;
         string title = owner.isMainPlayer ? "我方墓地" : "对手的墓地";
         GM.Ins.BM.TM.StartViewList(owner.graveCards, title + "\n" + viewHint);
+        GM.Ins.BM.Tutorial.ActionAccepted(TutorialAction.ViewGrave);
     }
 
     void DraggingCard()
@@ -127,6 +133,11 @@ public class DragManager : MonoBehaviour
         isDragging = false;
         if (attackAimIcon != null) attackAimIcon.SetActive(false);
         if (releasedCard == null) return;
+        if (GM.Ins.BM.Tutorial.BlocksPointer || !GM.Ins.BM.IsSettled)
+        {
+            GM.Ins.BM.GetMainPlayer.hands.RefreshCards();
+            return;
+        }
         if (!GM.Ins.BM.GetMainPlayer.isInTurn)
         {
             GM.Ins.BM.GetMainPlayer.hands.RefreshCards();

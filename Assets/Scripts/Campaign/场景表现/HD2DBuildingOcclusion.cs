@@ -40,7 +40,7 @@ public sealed class HD2DBuildingOcclusion : MonoBehaviour
         RestoreOccluders();
     }
 
-    // 从相机向玩家打一条射线，把挡在中间的建筑藏起来
+    // 从相机和玩家两端检测视线，把挡在中间的建筑藏起来
     private void FindOccluders()
     {
         currentOccluders.Clear();
@@ -54,15 +54,9 @@ public sealed class HD2DBuildingOcclusion : MonoBehaviour
             return;
         }
 
-        var ray = new Ray(origin, toTarget / distance);
-        float maxDistance = Mathf.Max(0f, distance - rayPadding);
-        int hitCount = Physics.RaycastNonAlloc(ray, raycastHits, maxDistance, ~0, QueryTriggerInteraction.Ignore);
-        for (int i = 0; i < hitCount; i++)
-        {
-            RaycastHit hit = raycastHits[i];
-            if (hit.collider == null || hit.distance <= 0f || hit.distance >= maxDistance) continue;
-            AddOccluderFromCollider(hit.collider);
-        }
+        Vector3 direction = toTarget / distance;
+        FindOccludersOnRay(new Ray(origin, direction), Mathf.Max(0f, distance - rayPadding));
+        FindOccludersOnRay(new Ray(targetPoint, -direction), distance);
 
         foreach (Renderer renderer in currentOccluders)
         {
@@ -73,11 +67,27 @@ public sealed class HD2DBuildingOcclusion : MonoBehaviour
         RestoreOccludersNotInCurrentSet();
     }
 
+    // 收集一条视线射线经过的建筑渲染器
+    private void FindOccludersOnRay(Ray ray, float maxDistance)
+    {
+        int hitCount = Physics.RaycastNonAlloc(ray, raycastHits, maxDistance, ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < hitCount; i++)
+        {
+            RaycastHit hit = raycastHits[i];
+            if (hit.collider == null || hit.distance <= 0f || hit.distance >= maxDistance) continue;
+            AddOccluderFromCollider(hit.collider);
+        }
+    }
+
     // 把碰撞体所属的建筑渲染器记为遮挡物
     private void AddOccluderFromCollider(Collider collider)
     {
-        Renderer[] renderers = collider.GetComponentsInParent<Renderer>(true);
-        foreach (Renderer renderer in renderers)
+        Renderer[] parentRenderers = collider.GetComponentsInParent<Renderer>(true);
+        foreach (Renderer renderer in parentRenderers)
+            if (IsBuildingRenderer(renderer)) currentOccluders.Add(renderer);
+
+        Renderer[] childRenderers = collider.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in childRenderers)
             if (IsBuildingRenderer(renderer)) currentOccluders.Add(renderer);
     }
 
@@ -102,7 +112,7 @@ public sealed class HD2DBuildingOcclusion : MonoBehaviour
         hiddenRenderers.Clear();
     }
 
-    // 按名字关键词判断是不是建筑，排除角色和特效
+    // 判断渲染器是否属于可以临时隐藏的场景模型
     private bool IsBuildingRenderer(Renderer renderer)
     {
         if (renderer == null) return false;
@@ -110,19 +120,6 @@ public sealed class HD2DBuildingOcclusion : MonoBehaviour
         if (renderer.transform == target || renderer.transform.IsChildOf(target)) return false;
         if (renderer.GetComponentInParent<HD2DSceneGM>() != null) return false;
         if (renderer.GetComponentInParent<WorldInteractionActor>() != null) return false;
-
-        string objectName = renderer.transform.name;
-        Transform parent = renderer.transform.parent;
-        while (parent != null)
-        {
-            objectName += " " + parent.name;
-            parent = parent.parent;
-        }
-
-        return objectName.Contains("EnvBdg") || objectName.Contains("EnvMdrMD_") ||
-               objectName.Contains("SM_Wall") || objectName.Contains("SM_wall") ||
-               objectName.Contains("Building") || objectName.Contains("House") ||
-               objectName.Contains("Mansion") || objectName.Contains("DepartmentStore") ||
-               objectName.Contains("Theater") || objectName.Contains("Pub");
+        return true;
     }
 }

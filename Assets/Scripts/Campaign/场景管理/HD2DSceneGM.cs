@@ -30,6 +30,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
     private float statusUntil; // 提示显示到什么时候
     [SerializeField] private CardListSO cardListSO; // 卡牌数据库
     private ShopPanel shopPanel; // 商店面板
+    [SerializeField] private CityGuideController cityGuide; // 场景中预置的主线指引
 
     // 占住单例并初始化城市场景
     private void Awake()
@@ -117,11 +118,12 @@ public sealed class HD2DSceneGM : MonoBehaviour
         TryInitializeScene();
         if (characterGM != null && characterGM.Player != null)
         {
-            AmiyaCharacter character = characterGM.Player.GetComponent<AmiyaCharacter>();
+            PlayerCharacter character = characterGM.Player.GetComponent<PlayerCharacter>();
             if (character != null && character.gameplayCamera != sceneCamera)
                 character.gameplayCamera = sceneCamera;
         }
         ApplyCameraFollow();
+        cityGuide.SetVisible(worldInitialized && !dialogueGM.IsOpen && !shopPanel.IsOpen && !pauseGM.IsOpen && !SceneFlowService.IsLoading);
     }
 
     // 场景对象上缺哪个管理器就补哪个
@@ -164,6 +166,8 @@ public sealed class HD2DSceneGM : MonoBehaviour
             shopPanel.Initialize();
             if (shopPanel.TryRestore()) OpenShopPanel();
             worldInitialized = true;
+            cityGuide.Initialize(session, characterGM, eventGM);
+            dialogueGM.ResumeVictoryDialogue();
         }
     }
 
@@ -357,18 +361,10 @@ public sealed class HD2DSceneGM : MonoBehaviour
         SceneFlowService.StartMatch(match.matchId, characterGM.Player.position);
     }
 
-    // 赛事不能打的原因，能打就返回空
+    // 赛事不能打的原因，能打就返回空。
     private string GetMatchLockReason(MatchData match)
     {
-        if (match == null) return "赛事不存在";
-        if (session.HasPendingBattle) return "当前已有一场未结束的战斗";
-        if (!session.IsCityUnlocked(match.cityId)) return "当前城市尚未解锁";
-        if (match.matchType == MatchType.Champion && session.GetLeaguePoints(match.cityId) < CampaignCatalog.GetCity(match.cityId).requiredPoints)
-            return $"城市冠军需要 {CampaignCatalog.GetCity(match.cityId).requiredPoints} 积分";
-        if (!string.IsNullOrEmpty(match.prerequisiteMatchId) && !session.IsMatchComplete(match.prerequisiteMatchId))
-            return $"需要先完成：{CampaignCatalog.GetMatch(match.prerequisiteMatchId).displayName}";
-        if (!session.HasLegalDeck) return "当前卡组不合法，请按 B 编辑卡组";
-        return "当前无法开始赛事";
+        return session.GetMatchLockReason(match);
     }
 
     // 关掉所有面板并把时间恢复过来
