@@ -3,7 +3,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 // HD 城市探索场景的总管理器，负责相机、UI、商店、卡组管理和世界交互的协调
 public sealed class HD2DSceneGM : MonoBehaviour
@@ -24,13 +23,12 @@ public sealed class HD2DSceneGM : MonoBehaviour
     private bool playerInitialized; // 玩家是否已经初始化
     private bool worldInitialized; // 世界是否已经初始化
     private bool depthOfFieldDisabled; // 景深是否已经关掉
-    private Canvas canvas; // HUD 画布
-    private Text hudText; // HUD 文字
     private string statusMessage = string.Empty; // 当前提示文字
     private float statusUntil; // 提示显示到什么时候
     [SerializeField] private CardListSO cardListSO; // 卡牌数据库
     private ShopPanel shopPanel; // 商店面板
     [SerializeField] private CityGuideController cityGuide; // 场景中预置的主线指引
+    [SerializeField] private CityHudView cityHud; // 场景中预置的积分、金币和交谈提示
 
     // 占住单例并初始化城市场景
     private void Awake()
@@ -124,6 +122,9 @@ public sealed class HD2DSceneGM : MonoBehaviour
         }
         ApplyCameraFollow();
         cityGuide.SetVisible(worldInitialized && !dialogueGM.IsOpen && !shopPanel.IsOpen && !pauseGM.IsOpen && !SceneFlowService.IsLoading);
+        bool canTalk = worldInitialized && !dialogueGM.IsOpen && !shopPanel.IsOpen && !pauseGM.IsOpen &&
+            !SceneFlowService.IsLoading && Time.timeScale > 0f;
+        cityHud.ShowInteraction(canTalk ? dialogueGM.NearbyActor : null);
     }
 
     // 场景对象上缺哪个管理器就补哪个
@@ -158,11 +159,11 @@ public sealed class HD2DSceneGM : MonoBehaviour
 
         if (!worldInitialized)
         {
-            CreateUi();
+            EnsureEventSystem();
             characterGM.CreateWorldActors();
             eventGM.Initialize(session, characterGM, ShowStatus);
             dialogueGM.Initialize(characterGM, session, eventGM, StartMatch, OpenShopPanel, ShowStatus, ClosePanels);
-            pauseGM.Initialize(characterGM, session, SavePlayer, ClosePanels);
+            pauseGM.Initialize(characterGM, SavePlayer, ClosePanels);
             shopPanel.Initialize();
             if (shopPanel.TryRestore()) OpenShopPanel();
             worldInitialized = true;
@@ -269,8 +270,8 @@ public sealed class HD2DSceneGM : MonoBehaviour
         sceneCamera.transform.SetPositionAndRotation(characterGM.Player.position + cameraOffset, cameraRotation);
     }
 
-    // 搭出 HUD 和商店、卡组要用的事件系统
-    private void CreateUi()
+    // 准备静态界面、商店和卡组操作所需的事件系统。
+    private void EnsureEventSystem()
     {
         if (FindObjectOfType<EventSystem>() == null)
         {
@@ -278,47 +279,15 @@ public sealed class HD2DSceneGM : MonoBehaviour
             eventSystem.AddComponent<EventSystem>();
             eventSystem.AddComponent<StandaloneInputModule>();
         }
-
-        var canvasObject = new GameObject("HD2D UI");
-        canvas = canvasObject.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
-        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        canvasObject.AddComponent<GraphicRaycaster>();
-        hudText = CreateText("HD2D HUD", canvas.transform, 22, Color.white);
-        hudText.rectTransform.anchorMin = new Vector2(0f, 1f);
-        hudText.rectTransform.anchorMax = new Vector2(0f, 1f);
-        hudText.rectTransform.pivot = new Vector2(0f, 1f);
-        hudText.rectTransform.anchoredPosition = new Vector2(28f, -24f);
-        hudText.rectTransform.sizeDelta = new Vector2(850f, 150f);
     }
 
-    // 创建一个 HUD 用的文字
-    private Text CreateText(string objectName, Transform parent, int size, Color color)
-    {
-        var textObject = new GameObject(objectName);
-        textObject.transform.SetParent(parent, false);
-        Text text = textObject.AddComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        text.fontSize = size;
-        text.color = color;
-        text.horizontalOverflow = HorizontalWrapMode.Wrap;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
-        return text;
-    }
-
-    // 刷新顶部的城市、积分、金币信息
+    // 刷新静态 HUD 的积分、金币和临时提示。
     private void UpdateHud()
     {
         CityData city = CampaignCatalog.GetCity(session.State.currentCityId);
         CitySaveData state = session.GetCityState(session.State.currentCityId);
-        if (hudText == null) return;
-        string status = Time.unscaledTime < statusUntil ? "\n" + statusMessage : string.Empty;
-        hudText.text = (city?.displayName ?? "第一城") + " | 积分：" + state.leaguePoints + "/" + city?.requiredPoints +
-            " | 金币：" + session.State.currency + " | 收藏：" + session.State.collectedCardIds.Count +
-            " 张 | 徽章：" + session.State.badgeIds.Count + status;
+        string status = Time.unscaledTime < statusUntil ? statusMessage : string.Empty;
+        cityHud.Refresh(state.leaguePoints, session.State.currency, status);
     }
 
     // 打开商店并暂停世界

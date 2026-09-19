@@ -15,62 +15,123 @@ MonoBehaviour:
   speakerId: fei
   displayName: "\u7EEF"
   cityId: first_light
-  storyEventId: first_light_event_01
+  storyEventId: first_light_event_fei
   interactionType: 0
-  eventId: 
+  eventId: first_light_event_fei
+  sceneChat:
+  - speakerId: fei
+    text: "喂！站住！手上的茧子变厚了嘛，要不要现在来一把？不用挑地方，踩着这块砖就能抽卡！"
+  - speakerId: shizuku
+    text: "集市正中央禁止私斗，企鹅的哨子已经在嘴边了，我可不想跟你一起被罚扫大街。"
+  interaction:
+  - speakerId: fei
+    text: "你终于过来了！手痒得要死，你刚才走过来的八步里，我已经脑补了三次把你的前锋砍碎的画面了！打不打？一句话！"
+  - speakerId: shizuku
+    text: "……你脑补的画面未免太暴力了。我是来确认下午集合地点的，别整天脑子里只有抽卡砍人。"
+  - speakerId: fei
+    text: "少啰嗦！真正的牌手用刀剑和手牌说话！不打就别站在我剑风能扫到的范围内晃悠！"
+  eventDialogue:
+  - speakerId: fei
+    text: "迟到了两分十七秒！我不管企鹅发了什么场地延期通告，我的手早就发烫了！"
+  - speakerId: shizuku
+    text: "延期是因为刚才赛场魔力回流，企鹅在重新核验安全线。我来是想告诉你，今天的对决改到明天——"
+  - speakerId: fei
+    text: "闭嘴！约定就是约定，你人既然站在这里，手就别想插在口袋里当看客！拔卡！"
+  - speakerId: shizuku
+    text: "你总是把自己的兴致排在所有规则前面。"
+  - speakerId: fei
+    text: "瞻前顾后的人抽出来的卡也是软绵绵的！雫，你打牌的时候根本没在看我！"
+  - speakerId: shizuku
+    text: "……说我软绵绵？很好。这场不算在正式赛程里，但我会让你知道，尊重对手和遵守规则到底哪个更重要。"
   normal:
   - speakerId: fei
-    text: "\u4F60\u5C31\u662F\u96EB\uFF1F\u542C\u8BF4\u4F60\u4E5F\u51C6\u5907\u53C2\u8D5B\u3002\u6211\u53EB\u7EEF\uFF0C\u559C\u6B22\u628A\u62DB\u547C\u6253\u5728\u724C\u684C\u4E0A\uFF01"
+    text: "雫！来得正好，要不要打一局？"
   - speakerId: shizuku
-    text: "\u90A3\u6211\u5F97\u5148\u95EE\u6E05\u695A\u89C4\u5219\uFF0C\u514D\u5F97\u7B2C\u4E00\u53E5\u62DB\u547C\u5C31\u8F93\u6389\u3002"
+    text: "今天恐怕不行，我答应蕾贝卡先查赛册。"
   - speakerId: fei
-    text: "\u5148\u53BB\u732B\u59EC\u90A3\u91CC\u7EC3\u4E60\uFF0C\u518D\u6765\u627E\u6211\u5207\u78CB\u3002\u6211\u7684\u6311\u6218\u4E0D\u5F71\u54CD\u4F60\u7684\u6B63\u5F0F\u8D5B\u7A0B\u3002"
+    text: "啊？现在就去？"
   - speakerId: shizuku
-    text: "\u4F60\u8FD9\u4E48\u70ED\u60C5\uFF0C\u662F\u5BF9\u6BCF\u4E2A\u65B0\u4EBA\u90FD\u8FD9\u6837\u5417\uFF1F"
+    text: "她已经等一会儿了。"
   - speakerId: fei
-    text: "\u5F53\u7136\uFF01\u4E0D\u8FC7\u5E7F\u573A\u6700\u8FD1\u7684\u5149\u6709\u70B9\u5947\u602A\u3002\u7A7A\u4E00\u76F4\u5728\u770B\uFF0C\u8BF4\u50CF\u5361\u724C\u5728\u56DE\u5E94\u4EC0\u4E48\u3002"
+    text: "那我跟你们一起去，查完总能打吧？"
   - speakerId: shizuku
-    text: "\u6211\u4F1A\u7559\u610F\u3002\u6BD4\u8D5B\u8981\u8BA4\u771F\uFF0C\u57CE\u91CC\u7684\u4E8B\u4E5F\u4E0D\u80FD\u88C5\u4F5C\u6CA1\u770B\u89C1\u3002"
+    text: "你刚才还说只打一局。"
+  - speakerId: fei
+    text: "我想打是真的，答应别人的事也得做完。"
+  - speakerId: shizuku
+    text: "这句话你自己记住就好，回头别赖账。"
   afterEvent:
   - speakerId: fei
-    text: "\u542C\u8BF4\u4F60\u628A\u88C2\u75D5\u5B89\u629A\u4E0B\u6765\u4E86\uFF01\u539F\u6765\u4E00\u5F20\u65E7\u5361\u4E5F\u4F1A\u4E00\u76F4\u8BB0\u7740\u7EA6\u5B9A\u3002"
+    text: "桥边真的安静下来了。你刚才看见了吗？"
   - speakerId: shizuku
-    text: "\u5B83\u4E0D\u662F\u8981\u4F24\u5BB3\u8C01\uFF0C\u53EA\u662F\u628A\u601D\u5FF5\u8868\u8FBE\u5F97\u592A\u7528\u529B\u4E86\u3002"
+    text: "看见了。就是最后那一下光，有点吓人。"
   - speakerId: fei
-    text: "\u6211\u4EE5\u524D\u53EA\u60F3\u7740\u4E00\u5B9A\u8981\u8D62\u3002\u73B0\u5728\u89C9\u5F97\uFF0C\u80FD\u6709\u4EBA\u613F\u610F\u518D\u8DDF\u6211\u6253\u4E00\u573A\u4E5F\u5F88\u91CD\u8981\u3002"
+    text: "我还以为你什么都不怕。"
   - speakerId: shizuku
-    text: "\u80DC\u8D1F\u4F1A\u7ED3\u675F\uFF0C\u613F\u610F\u518D\u89C1\u9762\u7684\u5FC3\u60C5\u4E0D\u4F1A\u3002"
+    text: "比赛我不怕，突然亮一下还是会吓到。"
   - speakerId: fei
-    text: "\u51A0\u519B\u8D5B\u8FD8\u5728\u7B49\u4F60\u3002\u6211\u5C31\u5728\u8857\u89D2\uFF0C\u4E0D\u7BA1\u7EC3\u724C\u8FD8\u662F\u804A\u5929\uFF0C\u90FD\u6B22\u8FCE\uFF01"
+    text: "这事你可别告诉别人。"
   - speakerId: shizuku
-    text: "\u597D\uFF0C\u4E0B\u6B21\u89C1\u9762\u4E5F\u8981\u62FF\u51FA\u5168\u529B\u3002"
+    text: "我考虑一下。"
+  - speakerId: fei
+    text: "喂！"
+  - speakerId: shizuku
+    text: "好啦，不拿这个逗你了。今天还打吗？"
   ending:
   - speakerId: fei
-    text: "\u51A0\u519B\uFF0C\u7EC8\u4E8E\u6765\u4E86\uFF01\u4E0D\u8FC7\u4ECA\u5929\u5148\u522B\u4EAE\u5956\u7AE0\uFF0C\u6211\u6709\u4EF6\u66F4\u91CD\u8981\u7684\u4E8B\u3002"
+    text: "冠军！先别走，问你件事。"
   - speakerId: shizuku
-    text: "\u662F\u4EC0\u4E48\uFF1F\u4F60\u53C8\u60F3\u6311\u6218\u6211\uFF1F"
+    text: "你先问，别又直接把我拉到牌桌边。"
   - speakerId: fei
-    text: "\u6211\u4EEC\u6253\u7B97\u7ED9\u90A3\u5F20\u7EAA\u5FF5\u5361\u7559\u4E00\u4E2A\u4F4D\u7F6E\uFF0C\u518D\u5199\u4E0B\u4ECA\u5E74\u8BA4\u8BC6\u7684\u670B\u53CB\u3002"
+    text: "你今天有空吗？"
   - speakerId: shizuku
-    text: "\u8FD9\u6837\u65E7\u7EA6\u5B9A\u5C31\u4E0D\u662F\u5B64\u96F6\u96F6\u5730\u7559\u5728\u8FC7\u53BB\u4E86\u3002"
+    text: "这次倒记得先问安排了。"
   - speakerId: fei
-    text: "\u6CA1\u9519\u3002\u8FD8\u6709\u6211\u4EEC\u7684\u7EA6\u5B9A\uFF1A\u4EE5\u540E\u6709\u7A7A\uFF0C\u5C31\u5728\u8FD9\u91CC\u6253\u4E00\u573A\uFF01"
+    text: "蕾贝卡教我的。她说不能把别人的空闲当成自己的。"
   - speakerId: shizuku
-    text: "\u6211\u8BB0\u4F4F\u4E86\u3002\u4E0D\u662F\u4E3A\u4E86\u8BC1\u660E\u8C01\u66F4\u5F3A\uFF0C\u53EA\u56E0\u4E3A\u5BF9\u624B\u662F\u4F60\u3002"
+    text: "这话听着挺有用。"
+  - speakerId: fei
+    text: "所以改天再打。今天你想逛街就逛街，想休息就休息。"
+  - speakerId: shizuku
+    text: "好。下次见面，我可不会因为你拿了冠军就放水。"
+  storyVictory:
+  - speakerId: fei
+    text: "痛快！刚才那一手强压真够劲！没想到你咬人这么狠。"
+  - speakerId: shizuku
+    text: "你的攻势如果不留退路，早晚会被反制卡吃空。不过，确实让我打起精神了。"
+  storyDefeat:
+  - speakerId: fei
+    text: "哈！太慢了！你的防壁脆得跟纸糊的一样，根本不够尽兴啊！"
+  - speakerId: shizuku
+    text: "……攻势太凶了，完全没给我喘息的空隙。"
+  - speakerId: fei
+    text: "别摆出一副输不起的脸！回去把卡组改厚一点，下一次我还在这里等你！"
   matches:
   - matchId: first_light_fei_challenge
     beforeMatch:
     - speakerId: fei
-      text: "\u51C6\u5907\u597D\u4E86\u5417\uFF1F\u8FD9\u4E00\u573A\u8BA4\u771F\u6253\uFF0C\u7ED3\u675F\u540E\u6211\u4EEC\u518D\u6162\u6162\u804A\u3002"
+      text: "终于轮到这一局了！先说好，我就是冲着赢来的。"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\u3002\u65E0\u8BBA\u7ED3\u679C\u5982\u4F55\uFF0C\u90FD\u8BF7\u591A\u6307\u6559\u3002"
+      text: "巧了，我也没打算只来陪练。"
+    - speakerId: fei
+      text: "那就好。我最怕人一上来就说“输赢都行”。"
+    - speakerId: shizuku
+      text: "等打完再客气，现在先认真来。"
     victory:
     - speakerId: fei
-      text: "\u8FD9\u573A\u662F\u4F60\u8D62\u4E86\uFF0C\u96EB\u3002\u4F60\u7684\u9009\u62E9\u5F88\u6F02\u4EAE\uFF0C\u6211\u8BB0\u4F4F\u4E86\u3002"
+      text: "……我输了。现在就想再来一局。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u4F60\u8BA4\u771F\u5E94\u6218\u3002\u4E0B\u4E00\u6B21\uFF0C\u6211\u4EEC\u90FD\u4F1A\u66F4\u8FDB\u6B65\u3002"
+      text: "先让我高兴一会儿。你答应认真打，也得认真认输。"
+    - speakerId: fei
+      text: "认，这局你赢。"
+    - speakerId: shizuku
+      text: "那就约下次，别趁我还没反应过来又开一局。"
     defeat:
     - speakerId: fei
-      text: "\u8FD9\u6B21\u8FD8\u5DEE\u4E00\u70B9\u3002\u522B\u6025\uFF0C\u5931\u8D25\u4E0D\u4F1A\u8BA9\u4F60\u7684\u52AA\u529B\u767D\u8D39\u3002"
+      text: "这局归我！你现在是不是也想马上重来？"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u91CD\u65B0\u68C0\u67E5\u5361\u7EC4\uFF0C\u518D\u6765\u8BA4\u771F\u6311\u6218\u4F60\u3002"
+      text: "想，但我先想想自己哪里太急了。"
+    - speakerId: fei
+      text: "要我陪你看吗？我可不会因为说了就下次让你。"
+    - speakerId: shizuku
+      text: "不用让。能赢回来，我才高兴。"

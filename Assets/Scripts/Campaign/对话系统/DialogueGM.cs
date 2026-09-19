@@ -30,6 +30,7 @@ public sealed class DialogueGM : MonoBehaviour
     }
 
     public bool IsOpen => dialogueOpen; // 当前是否正在交谈
+    public WorldInteractionActor NearbyActor { get; private set; } // 当前按 E 可以交谈的最近角色
 
     // 接入场景模块并绑定已经制作好的对话界面。
     public void Initialize(CharacterGM characterManager, CampaignSession campaignSession, EventGM eventManager,
@@ -75,8 +76,8 @@ public sealed class DialogueGM : MonoBehaviour
             if (movedAway || Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)) Close();
             return;
         }
-        WorldInteractionActor nearestActor = FindNearestActor();
-        if (nearestActor != null && Input.GetKeyDown(KeyCode.E)) OpenDialogue(nearestActor);
+        NearbyActor = FindNearestActor();
+        if (NearbyActor != null && Input.GetKeyDown(KeyCode.E)) OpenDialogue(NearbyActor);
     }
 
     // 关闭对话并复位状态，取消尚未完成的战前确认。
@@ -86,6 +87,7 @@ public sealed class DialogueGM : MonoBehaviour
         HideOptions();
         dialogueManager.CloseView();
         dialogueActor = null;
+        NearbyActor = null;
         dialogueOpen = false;
         dialogueState = DialogueState.Normal;
     }
@@ -154,16 +156,17 @@ public sealed class DialogueGM : MonoBehaviour
     // 打开这个角色对应的对话框。
     private void OpenDialogue(WorldInteractionActor actor)
     {
+        NearbyActor = null;
         dialogueActor = actor;
         dialogueOpen = true;
         dialogueState = DialogueState.Normal;
         NpcChallenge lastMatch = Array.Find(actor.dialogue.matches, challenge => challenge.matchId == session.LastResolvedMatchId);
         if (lastMatch != null && session.ConsumeBattleReaction(lastMatch.matchId))
         {
-            PlayConversation(session.LastBattleOutcome == BattleOutcome.PlayerWin ? lastMatch.victory : lastMatch.defeat, ReturnToOptions);
+            PlayConversation(actor.dialogue.GetBattleReaction(lastMatch, session.LastBattleOutcome), ReturnToOptions);
             return;
         }
-        ShowChatDialogue();
+        PlayConversation(actor.dialogue.GetInteractionConversation(session), ReturnToOptions);
     }
 
     // 隐藏所有业务按钮及其装饰，文字播放期间只接受继续或关闭。
@@ -192,7 +195,12 @@ public sealed class DialogueGM : MonoBehaviour
     {
         NpcChallenge challenge = dialogueActor.dialogue.GetChallenge(session);
         string message = "还有什么想聊的吗？";
-        if (challenge != null)
+        if (session.HasPendingBattle)
+        {
+            MatchData pendingMatch = CampaignCatalog.GetMatch(session.State.pendingBattle.matchId);
+            message = "未结束对局：" + pendingMatch.displayName + "\n选择继续战斗，保留原来的回合和教学进度。";
+        }
+        else if (challenge != null)
         {
             MatchData match = CampaignCatalog.GetMatch(challenge.matchId);
             string reason = session.GetMatchLockReason(match);
@@ -211,6 +219,7 @@ public sealed class DialogueGM : MonoBehaviour
     // 播放战前对话，读完且未取消时才进入已有赛事流程。
     private void StartChallenge()
     {
+        if (TryResumePendingBattle()) return;
         NpcChallenge challenge = dialogueActor.dialogue.GetChallenge(session);
         string reason = session.GetMatchLockReason(CampaignCatalog.GetMatch(challenge.matchId));
         if (reason != "")
@@ -231,6 +240,7 @@ public sealed class DialogueGM : MonoBehaviour
     private void ReplayTutorial()
     {
         if (!dialogueOpen || dialogueManager.IsBusy) return;
+        if (TryResumePendingBattle()) return;
         NpcChallenge practice = Array.Find(dialogueActor.dialogue.matches, challenge => challenge.matchId == "first_light_practice");
         string reason = session.GetMatchLockReason(CampaignCatalog.GetMatch(practice.matchId));
         if (reason != "")
@@ -245,6 +255,16 @@ public sealed class DialogueGM : MonoBehaviour
         });
     }
 
+    // 有未结束的对局时先续战，不重新创建比赛或覆盖教学进度。
+    private bool TryResumePendingBattle()
+    {
+        if (!session.HasPendingBattle) return false;
+        string matchId = session.State.pendingBattle.matchId;
+        Close();
+        startMatchAction(matchId);
+        return true;
+    }
+
     // 事件按钮，按待接取 / 进行中 / 已完成三种状态切换文案和按钮。
     private void HandleEventButton(Canvas canvas)
     {
@@ -257,6 +277,11 @@ public sealed class DialogueGM : MonoBehaviour
         }
         if (dialogueState == DialogueState.EventActive)
         {
+            if (data.dialogueOnly)
+            {
+                PlayPersonalEvent(canvas, data);
+                return;
+            }
             showStatusAction(data.objectiveText);
             Close();
             return;
@@ -274,8 +299,25 @@ public sealed class DialogueGM : MonoBehaviour
         else
         {
             dialogueState = DialogueState.EventPrompt;
+            if (data.dialogueOnly)
+            {
+                eventGM.StartEvent(data.eventId);
+                PlayPersonalEvent(canvas, data);
+                return;
+            }
             PlayActorText(data.startText, () => ConfigureEventPrompt(canvas));
         }
+    }
+
+    // 播放 NPC 的专属事件并在完整读完后结算事件。
+    private void PlayPersonalEvent(Canvas canvas, CampaignEventData data)
+    {
+        PlayConversation(dialogueActor.dialogue.eventDialogue, () =>
+        {
+            eventGM.ResolveDialogueEvent(data.eventId);
+            dialogueState = DialogueState.EventResolved;
+            ConfigureEventResolved(canvas);
+        });
     }
 
     // 按对象名找文字组件写入内容，事件文字也使用同一个逐句播放器。
@@ -290,9 +332,11 @@ public sealed class DialogueGM : MonoBehaviour
     {
         dialogueState = DialogueState.Normal;
         NpcDialogueData data = actor.dialogue;
-        tutorialButton.gameObject.SetActive(Array.Exists(data.matches, challenge => challenge.matchId == "first_light_practice"));
+        tutorialButton.gameObject.SetActive(!session.HasPendingBattle &&
+            Array.Exists(data.matches, challenge => challenge.matchId == "first_light_practice"));
         bool hasEvent = !string.IsNullOrEmpty(data.eventId);
         SetDialogueButtonVisible(FindButton(canvas, IsChallengeButtonName), data.matches.Length > 0);
+        UiTool.SetButtonText(FindButton(canvas, IsChallengeButtonName), session.HasPendingBattle ? "继续战斗" : "挑战");
         SetDialogueButtonVisible(FindButton(canvas, IsShopButtonName), data.interactionType == WorldInteractionType.Shop);
         SetDialogueButtonVisible(FindButton(canvas, IsEventButtonName), hasEvent);
         SetDialogueButtonVisible(FindButton(canvas, IsChatButtonName), true);

@@ -71,6 +71,14 @@ public sealed class EventGM : MonoBehaviour
         return eventData != null && session != null && session.IsEventResolved(eventData.cityId, eventId);
     }
 
+    // 结束只通过角色对话完成的个人事件。
+    public void ResolveDialogueEvent(string eventId)
+    {
+        CampaignEventData eventData = GetEvent(eventId);
+        if (eventData == null || !eventData.dialogueOnly) return;
+        if (session.ResolveEvent(eventData, out _)) RefreshEventPoints();
+    }
+
     /// <summary>
     /// 接取事件并显示地图目标提示。
     /// </summary>

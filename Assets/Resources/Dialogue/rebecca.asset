@@ -15,62 +15,127 @@ MonoBehaviour:
   speakerId: rebecca
   displayName: "\u857E\u8D1D\u5361"
   cityId: first_light
-  storyEventId: first_light_event_01
+  storyEventId: first_light_event_rebecca
   interactionType: 0
-  eventId: 
+  eventId: first_light_event_rebecca
+  sceneChat:
+  - speakerId: rebecca
+    text: "根据《城市集会秩序法》第十二条，两人在走廊对视超过三秒即存在斗殴前兆！好了，既然你移开视线了，嫌疑解除。"
+  - speakerId: shizuku
+    text: "我只是在确认公告板上的比赛时间，请不要随便给人加戏。"
+  interaction:
+  - speakerId: rebecca
+    text: "停下！按 E 的动作过于果断，我合理怀疑你携带着未报备的违禁卡组！经过目测，你的卡盒符合规格，指控撤销。找本风纪委员有什么业务？"
+  - speakerId: shizuku
+    text: "你的怀疑能不能稍微讲点概率学……我只是想问一下今天赛区的通行限制。"
+  - speakerId: rebecca
+    text: "目前全线通畅！不过只要石桥那边有一点动静，我随时准备启动全城封锁令，你最好时刻保持警惕！"
+  eventDialogue:
+  - speakerId: rebecca
+    text: "停步！嫌疑人雫！你踏入档案室的左脚倾斜了五度，这显然是企图潜入销毁证据的心虚步态！"
+  - speakerId: shizuku
+    text: "我只是来查下一轮比赛的场地限制。还有，那边的梯子螺丝松了，你最好扶好。"
+  - speakerId: rebecca
+    text: "关于三年前石桥那对搭档的档案，为什么偏偏在今天被抽走了两页？真相只有一个：就是你为了掩盖桥下的异常！"
+  - speakerId: shizuku
+    text: "借阅记录上最后签字的是商人，时间是今天上午九点。你下定论前，哪怕多低头看一眼呢？"
+  - speakerId: rebecca
+    text: "好的！关于你的指控全部作废！转为将商人列为头号嫌疑人！陪我打一场模拟推演战！"
+  - speakerId: shizuku
+    text: "……你改口的速度如果能分一半给打牌的思考时间，风纪部大概早就天下太平了。"
   normal:
   - speakerId: rebecca
-    text: "\u96EB\uFF0C\u5BF9\u5427\uFF1F\u6211\u53EB\u857E\u8D1D\u5361\u3002\u6BD4\u8D5B\u7684\u7B2C\u4E00\u6761\u89C4\u77E9\uFF0C\u662F\u522B\u628A\u516C\u5E73\u7559\u5728\u724C\u684C\u5916\u3002"
+    text: "你找我？先说好，桥边的传闻我还没查完。"
   - speakerId: shizuku
-    text: "\u542C\u8D77\u6765\u4F60\u5BF9\u8FD9\u6B21\u8D5B\u4E8B\u5F88\u8BA4\u771F\u3002"
+    text: "我想问问那本旧赛册。"
   - speakerId: rebecca
-    text: "\u5F53\u7136\u3002\u6700\u8FD1\u6709\u4EBA\u628A\u6865\u8FB9\u7684\u5F02\u5E38\u4F20\u6210\u4F5C\u5F0A\uFF0C\u6211\u67E5\u8FC7\uFF0C\u4E0D\u80FD\u51ED\u4F20\u95FB\u7ED9\u4EBA\u5B9A\u7F6A\u3002"
+    text: "可以问，但我现在只能说我确认过的。"
   - speakerId: shizuku
-    text: "\u4F60\u627E\u5230\u522B\u7684\u7EBF\u7D22\u4E86\u5417\uFF1F"
+    text: "我不想把猜测当结论。"
   - speakerId: rebecca
-    text: "\u65E7\u8D5B\u518C\u91CC\u6709\u4E00\u5BF9\u7EA6\u597D\u4E00\u8D77\u53C2\u8D5B\u7684\u642D\u6863\uFF0C\u540E\u6765\u6CA1\u80FD\u540C\u65F6\u5230\u573A\u3002\u5546\u4EBA\u5E94\u8BE5\u8FD8\u8BB0\u5F97\u3002"
+    text: "那我们说得很清楚。最近有人把裂痕说成作弊，我还在查是不是同一件事。"
   - speakerId: shizuku
-    text: "\u6211\u53BB\u95EE\u95EE\u4ED6\u3002\u5148\u5F04\u6E05\u695A\u4E8B\u5B9E\uFF0C\u518D\u4E0B\u7ED3\u8BBA\u3002"
+    text: "如果需要帮忙，我可以去问商人。"
+  - speakerId: rebecca
+    text: "好。不过先听完我再安排你，别一听见线索就自己冲过去。"
+  - speakerId: shizuku
+    text: "知道，我这次等你说完。"
   afterEvent:
   - speakerId: rebecca
-    text: "\u8C03\u67E5\u7ED3\u679C\u6211\u542C\u8BF4\u4E86\u3002\u6CA1\u6709\u4F5C\u5F0A\uFF0C\u4E5F\u6CA1\u6709\u8C01\u5728\u6697\u4E2D\u7834\u574F\u6BD4\u8D5B\u3002"
+    text: "调查结果我已经整理好了。没有作弊。"
   - speakerId: shizuku
-    text: "\u53EA\u662F\u5F88\u4E45\u4EE5\u524D\u7684\u4E00\u4EFD\u601D\u5FF5\uFF0C\u88AB\u5927\u5BB6\u7684\u6BD4\u8D5B\u5524\u9192\u4E86\u3002"
+    text: "那传闻可以停了。"
   - speakerId: rebecca
-    text: "\u5E78\u597D\u4F60\u6CA1\u6709\u8DDF\u7740\u4F20\u95FB\u8D70\u3002\u6211\u4F1A\u628A\u771F\u5B9E\u7ECF\u8FC7\u544A\u8BC9\u8BA4\u8BC6\u7684\u53C2\u8D5B\u8005\u3002"
+    text: "我会把经过写清楚，免得又有人乱猜。"
   - speakerId: shizuku
-    text: "\u4E5F\u8BF7\u522B\u8BA9\u90A3\u5BF9\u642D\u6863\u7684\u6545\u4E8B\u53D8\u6210\u65B0\u7684\u8C08\u8D44\u3002"
+    text: "旧卡主人的私事呢？"
   - speakerId: rebecca
-    text: "\u653E\u5FC3\uFF0C\u53EA\u8BB0\u4E0B\u503C\u5F97\u88AB\u5C0A\u91CD\u7684\u90E8\u5206\u3002\u73B0\u5728\uFF0C\u516C\u5E73\u5730\u51C6\u5907\u4E0B\u4E00\u573A\u6BD4\u8D5B\u5427\u3002"
+    text: "……不必全写。我刚才只想着把事情讲完整，忘了有些事不该到处传。"
   - speakerId: shizuku
-    text: "\u597D\u3002\u6211\u4EEC\u90FD\u7528\u81EA\u5DF1\u7684\u9009\u62E9\u53BB\u4E89\u53D6\u80DC\u5229\u3002"
+    text: "能意识到就好。"
+  - speakerId: rebecca
+    text: "你这句话听起来像在批改我的报告。"
+  - speakerId: shizuku
+    text: "如果你愿意，我可以帮你看一遍。"
+  - speakerId: rebecca
+    text: "好。不过不合适的地方，你直接说。"
+  - speakerId: shizuku
+    text: "我本来就会直接说。"
   ending:
   - speakerId: rebecca
-    text: "\u672C\u5C4A\u51A0\u519B\uFF0C\u5BA1\u6838\u901A\u8FC7\uFF1A\u8BA4\u771F\u53C2\u8D5B\uFF0C\u4E5F\u8BA4\u771F\u5BF9\u5F85\u4E86\u522B\u4EBA\u7684\u7EA6\u5B9A\u3002"
+    text: "恭喜夺冠。今天我不查记录，先给自己放半天假。"
   - speakerId: shizuku
-    text: "\u8FD9\u662F\u4F60\u65B0\u52A0\u7684\u51A0\u519B\u8D44\u683C\u5417\uFF1F"
+    text: "你还会给自己放假吗？"
   - speakerId: rebecca
-    text: "\u4E0D\u662F\u89C4\u5219\uFF0C\u662F\u670B\u53CB\u7684\u8BC4\u4EF7\u3002\u7EAA\u5FF5\u5361\u7684\u8BF4\u660E\u6211\u5DF2\u7ECF\u6574\u7406\u597D\u4E86\uFF0C\u4E0D\u4F1A\u5938\u5927\u5F02\u5E38\u3002"
+    text: "会。绯要是来约战，我就说今天不打。"
   - speakerId: shizuku
-    text: "\u8C22\u8C22\u4F60\u4E00\u76F4\u575A\u6301\u5148\u770B\u4E8B\u5B9E\u3002"
+    text: "听上去你已经想好怎么拒绝她了。"
   - speakerId: rebecca
-    text: "\u4E5F\u8C22\u8C22\u4F60\u8BC1\u660E\u4E86\uFF0C\u60F3\u8D62\u548C\u5584\u5F85\u522B\u4EBA\u5E76\u4E0D\u51B2\u7A81\u3002\u6539\u5929\u6765\u573A\u53CB\u8C0A\u8D5B\uFF1F"
+    text: "她最近学会先问安排了，我也得学。"
   - speakerId: shizuku
-    text: "\u4E00\u8A00\u4E3A\u5B9A\u3002\u5728\u8FD9\u5EA7\u57CE\u91CC\uFF0C\u6211\u4EEC\u8FD8\u6709\u5F88\u591A\u6B21\u8BA4\u771F\u4EA4\u624B\u7684\u673A\u4F1A\u3002"
+    text: "那我不占你的假期。"
+  - speakerId: rebecca
+    text: "你可以留下聊天。我说的是不比赛，不是赶人。"
+  - speakerId: shizuku
+    text: "哦，那我刚才走得有点早。"
+  storyVictory:
+  - speakerId: rebecca
+    text: "手牌保留率极高，反制逻辑无懈可击……好吧！本席宣布，你的战术推演完全成立。"
+  - speakerId: shizuku
+    text: "能痛快承认别人的推论，大概是你身上唯一称得上可靠的地方了。"
+  storyDefeat:
+  - speakerId: rebecca
+    text: "判决成立！在我的严密推理连锁面前，你的破绽像没关严的档案室大门一样显眼！"
+  - speakerId: shizuku
+    text: "……被你的连环封锁压得一张核心都打不出来，确实输得彻底。"
+  - speakerId: rebecca
+    text: "回去把你的防守检索牌多加两张，遇到破坏分子你连自保都做不到！"
   matches:
   - matchId: first_light_rebecca_challenge
     beforeMatch:
     - speakerId: rebecca
-      text: "\u51C6\u5907\u597D\u4E86\u5417\uFF1F\u8FD9\u4E00\u573A\u8BA4\u771F\u6253\uFF0C\u7ED3\u675F\u540E\u6211\u4EEC\u518D\u6162\u6162\u804A\u3002"
+      text: "准备好了吗？有拿不准的规则，我们先说。"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\u3002\u65E0\u8BBA\u7ED3\u679C\u5982\u4F55\uFF0C\u90FD\u8BF7\u591A\u6307\u6559\u3002"
+      text: "规则清楚。拿不准的是我能不能赢。"
+    - speakerId: rebecca
+      text: "这个要打过才知道，我也不会因为你客气就让。"
+    - speakerId: shizuku
+      text: "那就好。请认真跟我打一场。"
     victory:
     - speakerId: rebecca
-      text: "\u8FD9\u573A\u662F\u4F60\u8D62\u4E86\uFF0C\u96EB\u3002\u4F60\u7684\u9009\u62E9\u5F88\u6F02\u4EAE\uFF0C\u6211\u8BB0\u4F4F\u4E86\u3002"
+      text: "是你赢了。这局算得明明白白。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u4F60\u8BA4\u771F\u5E94\u6218\u3002\u4E0B\u4E00\u6B21\uFF0C\u6211\u4EEC\u90FD\u4F1A\u66F4\u8FDB\u6B65\u3002"
+      text: "听你这么说，我才敢松口气。"
+    - speakerId: rebecca
+      text: "怎么，怕我输了不认？"
+    - speakerId: shizuku
+      text: "不怕。只是你一直很认真，我也不想敷衍。"
     defeat:
     - speakerId: rebecca
-      text: "\u8FD9\u6B21\u8FD8\u5DEE\u4E00\u70B9\u3002\u522B\u6025\uFF0C\u5931\u8D25\u4E0D\u4F1A\u8BA9\u4F60\u7684\u52AA\u529B\u767D\u8D39\u3002"
+      text: "这局我赢。你不用急着说自己准备得不够。"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u91CD\u65B0\u68C0\u67E5\u5361\u7EC4\uFF0C\u518D\u6765\u8BA4\u771F\u6311\u6218\u4F60\u3002"
+      text: "我确实有想错的地方。但我也不是随便来的。"
+    - speakerId: rebecca
+      text: "我知道。刚才那句话说得像在评你，是我说快了。"
+    - speakerId: shizuku
+      text: "那我们只聊这一局，好吗？"

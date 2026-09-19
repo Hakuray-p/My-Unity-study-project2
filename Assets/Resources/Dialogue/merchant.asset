@@ -15,62 +15,129 @@ MonoBehaviour:
   speakerId: merchant
   displayName: "\u5546\u4EBA"
   cityId: first_light
-  storyEventId: first_light_event_01
+  storyEventId: first_light_event_merchant
   interactionType: 1
-  eventId: 
+  eventId: first_light_event_merchant
+  sceneChat:
+  - speakerId: merchant
+    text: "买卡包三折起，买关键单卡按市价翻倍。闲聊五分钟收一枚铜币折旧费，考虑清楚再张嘴。"
+  - speakerId: shizuku
+    text: "我只是路过看了一眼招牌，收银台的算盘就已经拨响三回了，老板。"
+  interaction:
+  - speakerId: merchant
+    text: "‘叮铃’一声，客官踏进店门的损耗折合半枚铜币。买卡、打听八卦，还是纯粹找老骨头消磨时间？"
+  - speakerId: shizuku
+    text: "按一次 E 就要收半枚铜币，整座城物价最离谱的就是你这里了。"
+  - speakerId: merchant
+    text: "嘿，小本生意，诚信经营。看在熟客的分上，今天看橱窗里的卡套免费，摸一下还是要收钱的。"
+  eventDialogue:
+  - speakerId: merchant
+    text: "买药草在前面右拐，找稀有卡在前面左拐。后巷闲逛要收折损费，一分钟一枚铜币。"
+  - speakerId: shizuku
+    text: "我只是想问，柜子里那个红丝绒盒，上面的封蜡看起来换了不下五次吧？"
+  - speakerId: merchant
+    text: "一件三年卖不出去、也没人来赎的东西，在账本上叫‘死账’，早该扔进熔炉当废料。"
+  - speakerId: shizuku
+    text: "那你为什么每天傍晚都要把它拿出来擦一遍？也是为了计入维护成本吗？"
+  - speakerId: merchant
+    text: "有个傻瓜当年把这东西押在我这儿，换了半袋盘缠出城。他说等他回来，照十倍市价赎。"
+  - speakerId: shizuku
+    text: "所以你在等他回来还债。"
+  - speakerId: merchant
+    text: "不，我是在等一个能证明世上真有傻子会信守承诺的证据。抽三张牌，拿出一点不计成本的狠劲，我就免费讲给你听。"
   normal:
   - speakerId: merchant
-    text: "\u6B22\u8FCE\uFF0C\u96EB\u3002\u7B2C\u4E00\u6B21\u53C2\u52A0\u672C\u57CE\u8D5B\u4E8B\uFF1F\u5148\u627E\u732B\u59EC\u7EC3\u4E60\uFF0C\u518D\u6CBF\u7740\u516C\u5F00\u8D5B\u6162\u6162\u6765\u3002"
+    text: "看卡还是参赛？你先看，我把这笔账记完。"
   - speakerId: shizuku
-    text: "\u6211\u60F3\u5148\u770B\u770B\u5927\u5BB6\u600E\u4E48\u6253\uFF0C\u4E5F\u60F3\u77E5\u9053\u8FD9\u91CC\u6709\u6CA1\u6709\u8865\u7ED9\u3002"
+    text: "我想配卡，但今天先不买。"
   - speakerId: merchant
-    text: "\u5361\u724C\u548C\u8865\u7ED9\u90FD\u53EF\u4EE5\u5728\u6211\u8FD9\u91CC\u770B\u770B\u3002\u60F3\u7EC3\u624B\uFF0C\u6211\u4E5F\u6709\u4E00\u573A\u5546\u4EBA\u516C\u5F00\u8D5B\u3002"
+    text: "那就先看。想清楚缺什么，再花钱。"
   - speakerId: shizuku
-    text: "\u542C\u8BF4\u6865\u8FB9\u51FA\u73B0\u4E86\u65E0\u4E3B\u5361\u724C\uFF0C\u4F60\u89C1\u8FC7\u7C7B\u4F3C\u7684\u4E1C\u897F\u5417\uFF1F"
+    text: "你不劝我多买几张？"
   - speakerId: merchant
-    text: "\u5982\u679C\u5361\u80CC\u6709\u4E24\u6761\u4EA4\u53C9\u7684\u7EC6\u7EBF\uFF0C\u90A3\u53EF\u80FD\u662F\u5F80\u5C4A\u53C2\u8D5B\u642D\u6863\u7559\u4E0B\u7684\u7EAA\u5FF5\u3002\u627E\u9ED1\u732B\u5C11\u5973\u8C03\u67E5\u65F6\uFF0C\u8BB0\u5F97\u8F7B\u4E00\u70B9\u3002"
+    text: "劝你买错了，明天还得回来找我。"
   - speakerId: shizuku
-    text: "\u6211\u4F1A\u7684\u3002\u4E5F\u8BB8\u5B83\u7B49\u7684\u4E0D\u662F\u4E70\u5BB6\uFF0C\u800C\u662F\u542C\u61C2\u90A3\u4EFD\u7EA6\u5B9A\u7684\u4EBA\u3002"
+    text: "听起来你挺怕麻烦。"
+  - speakerId: merchant
+    text: "我怕的是账对不上。麻烦倒还好。"
+  - speakerId: shizuku
+    text: "那我先记住自己缺什么，再来找你。"
   afterEvent:
   - speakerId: merchant
-    text: "\u4F60\u5E26\u56DE\u7684\u6D88\u606F\u8BA9\u6211\u60F3\u8D77\u90A3\u4E24\u4E2A\u5E74\u8F7B\u4EBA\u3002\u4ED6\u4EEC\u66FE\u8BF4\uFF0C\u4E0B\u6B21\u4E00\u5B9A\u4E00\u8D77\u53C2\u8D5B\u3002"
+    text: "卡背那两道细线，我认得。那两个年轻人以前来过店里。"
   - speakerId: shizuku
-    text: "\u7EAA\u5FF5\u5361\u4E0A\u4E5F\u7559\u4E0B\u4E86\u8FD9\u53E5\u8BDD\u3002\u88C2\u75D5\u5DF2\u7ECF\u5E73\u606F\u4E86\u3002"
+    text: "他们后来没一起参赛？"
   - speakerId: merchant
-    text: "\u540E\u6765\u751F\u6D3B\u8BA9\u4ED6\u4EEC\u5206\u5F00\uFF0C\u90A3\u5F20\u5361\u5374\u4E00\u76F4\u4FDD\u7559\u7740\u4E34\u522B\u65F6\u7684\u5FC3\u60C5\u3002\u6CA1\u4EBA\u6545\u610F\u5236\u9020\u5F02\u5E38\u3002"
+    text: "我只知道他们说过“下次一起”。后面的事，我不能替他们补。"
   - speakerId: shizuku
-    text: "\u90A3\u6211\u4EEC\u8BE5\u628A\u5B83\u653E\u5728\u54EA\u91CC\uFF1F"
+    text: "那张卡先别拿来卖。"
   - speakerId: merchant
-    text: "\u5148\u597D\u597D\u4FDD\u7BA1\u3002\u7B49\u672C\u5C4A\u6BD4\u8D5B\u7ED3\u675F\uFF0C\u7ED9\u5B83\u4E00\u4E2A\u80FD\u88AB\u670B\u53CB\u4EEC\u770B\u89C1\u7684\u4F4D\u7F6E\uFF0C\u4E0D\u62FF\u6765\u552E\u5356\u3002"
+    text: "放心，我也没打算卖。谁交来的、放了多久，我会记清楚。"
   - speakerId: shizuku
-    text: "\u597D\u3002\u6709\u4E9B\u4E1C\u897F\u7684\u4EF7\u503C\uFF0C\u786E\u5B9E\u4E0D\u80FD\u5199\u5728\u4EF7\u7B7E\u4E0A\u3002"
+    text: "黑猫少女也在整理记录。"
+  - speakerId: merchant
+    text: "她要是需要暂存，我可以帮忙。"
+  - speakerId: shizuku
+    text: "条件呢？"
+  - speakerId: merchant
+    text: "写清楚谁保管，什么时候拿走。人情也得有个说法。"
+  - speakerId: shizuku
+    text: "这样我反而放心。"
   ending:
   - speakerId: merchant
-    text: "\u606D\u559C\u593A\u51A0\uFF0C\u96EB\u3002\u7EAA\u5FF5\u5361\u5DF2\u7ECF\u5B89\u9759\u4E86\uFF0C\u670B\u53CB\u4EEC\u4E5F\u613F\u610F\u4E00\u8D77\u7167\u770B\u5B83\u3002"
+    text: "恭喜夺冠。今天买卡，还是只看看？"
   - speakerId: shizuku
-    text: "\u7EEF\u8BF4\u60F3\u628A\u4ECA\u5E74\u8BA4\u8BC6\u7684\u670B\u53CB\u4E5F\u5199\u4E0B\u6765\uFF0C\u7A7A\u548C\u857E\u8D1D\u5361\u90FD\u540C\u610F\u3002"
+    text: "只看看。冠军也没有突然多一份预算。"
   - speakerId: merchant
-    text: "\u90A3\u5C31\u7ED9\u8FD9\u4EFD\u65E7\u7EA6\u5B9A\u52A0\u4E0A\u4E00\u6BB5\u65B0\u6545\u4E8B\uFF0C\u4E0D\u5FC5\u66FF\u8FC7\u53BB\u7684\u4EBA\u51B3\u5B9A\u7ED3\u5C40\u3002"
+    text: "这才像会过日子。旧卡的事呢？"
   - speakerId: shizuku
-    text: "\u6211\u4EEC\u8BB0\u5F97\u4ED6\u4EEC\uFF0C\u4E5F\u73CD\u60DC\u73B0\u5728\u80FD\u591F\u89C1\u9762\u7684\u4EBA\u3002"
+    text: "先照原来的约定保管，不摆到货架上。"
   - speakerId: merchant
-    text: "\u8BF4\u5F97\u597D\u3002\u4ECA\u5929\u7684\u5E86\u795D\u5C31\u5728\u672C\u57CE\uFF0C\u660E\u5929\u5546\u5E97\u7167\u5E38\u5F00\u95E8\uFF0C\u4F60\u4EEC\u4E5F\u7167\u5E38\u6765\u3002"
+    text: "好。你们今年认识的人，可以另记一份。"
   - speakerId: shizuku
-    text: "\u90A3\u5C31\u7EA6\u597D\u4E86\u3002\u6BD4\u8D5B\u544A\u4E00\u6BB5\u843D\uFF0C\u6211\u4EEC\u7684\u65E5\u5E38\u624D\u521A\u521A\u5F00\u59CB\u3002"
+    text: "别把我的账本也算进去。"
+  - speakerId: merchant
+    text: "账本是我的，不外借。"
+  - speakerId: shizuku
+    text: "知道了，我今天不碰你的账。"
+  storyVictory:
+  - speakerId: merchant
+    text: "为了抢最后一点伤害，居然敢把手牌全当弃子扔进墓地……真是一笔烂账，但确实够狠。"
+  - speakerId: shizuku
+    text: "把放不下的回忆说成讨债，你的利息算得可真够别扭的。"
+  storyDefeat:
+  - speakerId: merchant
+    text: "承蒙惠顾。你的资源管理算得太漂亮，可惜漂亮在真正的生意场上可换不来胜利。"
+  - speakerId: shizuku
+    text: "……算得太精，反而被你的卖血换卡套牢了，奸商。"
+  - speakerId: merchant
+    text: "骂得好！这叫沉没成本的教训，输给我不丢人，至少我没收你双倍学费。"
   matches:
   - matchId: first_light_public_04
     beforeMatch:
     - speakerId: merchant
-      text: "\u51C6\u5907\u597D\u4E86\u5417\uFF1F\u8FD9\u4E00\u573A\u8BA4\u771F\u6253\uFF0C\u7ED3\u675F\u540E\u6211\u4EEC\u518D\u6162\u6162\u804A\u3002"
+      text: "我把账本收好了，可以打一局。"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\u3002\u65E0\u8BBA\u7ED3\u679C\u5982\u4F55\uFF0C\u90FD\u8BF7\u591A\u6307\u6559\u3002"
+      text: "输赢不会影响店里的价吧？"
+    - speakerId: merchant
+      text: "不会。价钱归价钱，比赛归比赛。"
+    - speakerId: shizuku
+      text: "那我也把卡检查一遍，省得输了怪牌。"
     victory:
     - speakerId: merchant
-      text: "\u8FD9\u573A\u662F\u4F60\u8D62\u4E86\uFF0C\u96EB\u3002\u4F60\u7684\u9009\u62E9\u5F88\u6F02\u4EAE\uFF0C\u6211\u8BB0\u4F4F\u4E86\u3002"
+      text: "输了。这局打得我没空算账。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u4F60\u8BA4\u771F\u5E94\u6218\u3002\u4E0B\u4E00\u6B21\uFF0C\u6211\u4EEC\u90FD\u4F1A\u66F4\u8FDB\u6B65\u3002"
+      text: "那我算不算帮你休息了一会儿？"
+    - speakerId: merchant
+      text: "脑子更忙了，但确实比算账有意思。"
+    - speakerId: shizuku
+      text: "那下次有空再来，账和牌分开算。"
     defeat:
     - speakerId: merchant
-      text: "\u8FD9\u6B21\u8FD8\u5DEE\u4E00\u70B9\u3002\u522B\u6025\uFF0C\u5931\u8D25\u4E0D\u4F1A\u8BA9\u4F60\u7684\u52AA\u529B\u767D\u8D39\u3002"
+      text: "这场我赢了。先别急着买一整副新卡。"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u91CD\u65B0\u68C0\u67E5\u5361\u7EC4\uFF0C\u518D\u6765\u8BA4\u771F\u6311\u6218\u4F60\u3002"
+      text: "你赢了还不推销？"
+    - speakerId: merchant
+      text: "缺什么再买，买错了我也不替你背锅。"
+    - speakerId: shizuku
+      text: "行，我先把手里的用明白。"

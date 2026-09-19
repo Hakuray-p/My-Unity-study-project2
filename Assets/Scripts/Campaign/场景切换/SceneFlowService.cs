@@ -103,8 +103,10 @@ public static class SceneFlowService
     // 从预览返回商店所在城市，这条线不播转场
     public static void ReturnFromCardPreview()
     {
+        hasShopRestoreState = false;
+        hasCardPreviewRequest = false;
         Time.timeScale = 1f;
-        SceneManager.LoadScene("One_City_DAY");
+        LoadScene("One_City_DAY");
     }
 
     // 进入卡组管理场景

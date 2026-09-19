@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cities:
   - cityId: first_light
-    displayName: First Light
+    displayName: "第一城"
     sceneName: One_City_DAY
     requiredPoints: 10
     championMatchId: first_light_champion
@@ -31,7 +31,7 @@ MonoBehaviour:
   matches:
   - matchId: first_light_practice
     cityId: first_light
-    displayName: Rookie Practice
+    displayName: "猫姬练习赛"
     matchType: 0
     opponentId: Mira
     opponentPortrait: {fileID: 21300000, guid: 8c0859adc46ca144bb2fbb30e8b8f23d, type: 3}
@@ -41,11 +41,10 @@ MonoBehaviour:
     goldReward: 0
     enemyDeckId: 1
     prerequisiteMatchId: 
-    awardsBadge: 0
     rewardCardIds: 
   - matchId: first_light_public_01
     cityId: first_light
-    displayName: Riverside Open
+    displayName: "河岸公开赛"
     matchType: 1
     opponentId: Jonah
     opponentPortrait: {fileID: 21300000, guid: 8c0859adc46ca144bb2fbb30e8b8f23d, type: 3}
@@ -55,11 +54,10 @@ MonoBehaviour:
     goldReward: 20
     enemyDeckId: 1
     prerequisiteMatchId: first_light_practice
-    awardsBadge: 0
     rewardCardIds: b3040000
   - matchId: first_light_public_02
     cityId: first_light
-    displayName: Lantern Open
+    displayName: "灯影公开赛"
     matchType: 1
     opponentId: Sera
     opponentPortrait: {fileID: 21300000, guid: 2dbf99b57427e994baa4c78cdcb4cd48, type: 3}
@@ -69,11 +67,10 @@ MonoBehaviour:
     goldReward: 30
     enemyDeckId: 2
     prerequisiteMatchId: first_light_public_01
-    awardsBadge: 0
     rewardCardIds: b9040000
   - matchId: first_light_public_03
     cityId: first_light
-    displayName: Sunset Open
+    displayName: "黄昏公开赛"
     matchType: 1
     opponentId: Talia
     opponentPortrait: {fileID: 21300000, guid: 20d188849f274c740a7f9a777d5cab72, type: 3}
@@ -83,11 +80,10 @@ MonoBehaviour:
     goldReward: 40
     enemyDeckId: 2
     prerequisiteMatchId: first_light_public_02
-    awardsBadge: 0
     rewardCardIds: b5040000
   - matchId: first_light_public_04
     cityId: first_light
-    displayName: Merchant's Open
+    displayName: "商人公开赛"
     matchType: 1
     opponentId: Merchant
     opponentPortrait: {fileID: 21300000, guid: e068cb445b13bfd4c95f48e9ac4d2f1f, type: 3}
@@ -97,11 +93,10 @@ MonoBehaviour:
     goldReward: 40
     enemyDeckId: 2
     prerequisiteMatchId: 
-    awardsBadge: 0
     rewardCardIds: b4040000
   - matchId: first_light_champion
     cityId: first_light
-    displayName: First Light Champion
+    displayName: "第一城冠军赛"
     matchType: 2
     opponentId: Captain Vale
     opponentPortrait: {fileID: 21300000, guid: 03454359a4ce42e49b54b01b7b6cbfdc, type: 3}
@@ -111,7 +106,6 @@ MonoBehaviour:
     goldReward: 80
     enemyDeckId: 2
     prerequisiteMatchId: first_light_public_03
-    awardsBadge: 1
     rewardCardIds: b8040000
   - matchId: first_light_fei_challenge
     cityId: first_light
@@ -125,7 +119,6 @@ MonoBehaviour:
     goldReward: 20
     enemyDeckId: 1
     prerequisiteMatchId: first_light_practice
-    awardsBadge: 0
     rewardCardIds: 
   - matchId: first_light_kong_challenge
     cityId: first_light
@@ -139,7 +132,6 @@ MonoBehaviour:
     goldReward: 25
     enemyDeckId: 2
     prerequisiteMatchId: first_light_practice
-    awardsBadge: 0
     rewardCardIds: 
   - matchId: first_light_rebecca_challenge
     cityId: first_light
@@ -153,5 +145,4 @@ MonoBehaviour:
     goldReward: 30
     enemyDeckId: 2
     prerequisiteMatchId: first_light_practice
-    awardsBadge: 0
     rewardCardIds: 

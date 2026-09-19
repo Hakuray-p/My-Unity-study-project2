@@ -15,38 +15,123 @@ MonoBehaviour:
   speakerId: penguin
   displayName: "\u4F01\u9E45"
   cityId: first_light
-  storyEventId: first_light_event_01
+  storyEventId: first_light_event_penguin
   interactionType: 0
-  eventId: 
+  eventId: first_light_event_penguin
+  sceneChat:
+  - speakerId: penguin
+    text: "第一，禁止在检录处吃爆米花；第二，禁止在对战表画乌龟；第三——雫小姐，请收好你的报名卡，不要把它和面包发票混在一起！"
+  - speakerId: shizuku
+    text: "……发票是刚才买水找零给的，而且画乌龟的分明是路过的猫姬吧。"
+  interaction:
+  - speakerId: penguin
+    text: "第一，禁止在非工作时间随意敲击办公桌；第二，我的羽毛笔墨水只剩三分之一；第三——如果不是来提交弃权申请或核验盖章，请不要干扰裁判官的神圣工作！"
+  - speakerId: shizuku
+    text: "我只是来确认一下分组名单有没有更新，你别一副马上要晕过去的表情。"
+  - speakerId: penguin
+    text: "名单！又是名单！我的脑细胞正在以每秒三万个的速度阵亡！请严格按照白纸黑字的章程行事，拜托了！"
+  eventDialogue:
+  - speakerId: penguin
+    text: "灾难！毁灭性的灾难！第一，四号台的石板开裂了三寸；第二，八号台的参赛者申请延后；第三——绯把五号台的计分板劈成了两半！"
+  - speakerId: shizuku
+    text: "冷静点。让四号台和八号台合并调换，把绯挪去最坚固的中央石台，这样不就刚好空出一个维修时间了吗？"
+  - speakerId: penguin
+    text: "这是外来人员的非官方提议，而且完全打乱了我原本的甲乙丙分类法……居然听起来意外地有道理？"
+  - speakerId: shizuku
+    text: "所以别在桌子上转圈了，笔给你，快点重批吧。"
+  - speakerId: penguin
+    text: "在采纳你的方案之前，必须进行秩序适应性压力测试！来对决！如果你还能按时完成展开，我就承认赛程表有效！"
+  - speakerId: shizuku
+    text: "……你只是想找个人宣泄加班的暴躁情绪吧？"
   normal:
   - speakerId: penguin
-    text: "\u6CB3\u5CB8\u8FB9\u7684\u8D5B\u4E8B\u9A6C\u4E0A\u5C31\u8981\u5F00\u59CB\u4E86\uFF0C\u8BB0\u5F97\u5148\u51C6\u5907\u597D\u4F60\u7684\u5361\u7EC4\u3002"
+    text: "来参赛吗？先把卡组检查一遍，我给你留了准备时间。"
   - speakerId: shizuku
-    text: "\u597D\uFF0C\u6211\u4F1A\u8BA4\u771F\u51C6\u5907\u3002\u4E5F\u60F3\u542C\u542C\u8FD9\u5EA7\u57CE\u91CC\u5927\u5BB6\u7684\u6545\u4E8B\u3002"
+    text: "你还专门给每个人留时间啊？我还怕自己来晚，让你一直等。"
+  - speakerId: penguin
+    text: "所以才要先说清楚。晚一点来也没关系，别让人站着猜。"
+  - speakerId: shizuku
+    text: "你是不是很怕安排被打乱？"
+  - speakerId: penguin
+    text: "我更怕有人按约定来了，却不知道还要等多久。"
+  - speakerId: shizuku
+    text: "那我检查好了就告诉你，不让你猜。"
+  - speakerId: penguin
+    text: "好。要改时间也直接说，我可以重新排。"
+  - speakerId: shizuku
+    text: "听你这么说，我反而没那么紧张了。"
   afterEvent:
   - speakerId: penguin
-    text: "\u6865\u8FB9\u7684\u88C2\u75D5\u5DF2\u7ECF\u5E73\u606F\u4E86\u3002\u539F\u6765\u90A3\u5F20\u5361\u8BB0\u7740\u4E00\u4EFD\u5F88\u4E45\u4EE5\u524D\u7684\u7EA6\u5B9A\u3002"
+    text: "桥边恢复了。我把绕路的提醒划掉了。"
   - speakerId: shizuku
-    text: "\u5927\u5BB6\u4E00\u8D77\u627E\u56DE\u4E86\u5B83\u7684\u6765\u5386\uFF0C\u6211\u4E5F\u80FD\u5B89\u5FC3\u51C6\u5907\u63A5\u4E0B\u6765\u7684\u6BD4\u8D5B\u4E86\u3002"
+    text: "你还记着这个？"
+  - speakerId: penguin
+    text: "有人为了比赛提前出门，走错一次就会很懊恼。"
+  - speakerId: shizuku
+    text: "我以前只想着赶紧把裂痕处理掉。"
+  - speakerId: penguin
+    text: "你处理的是最难的部分。我只是让后来的人少白跑。"
+  - speakerId: shizuku
+    text: "这也很重要。"
+  - speakerId: penguin
+    text: "那以后找不到路就问我，不用自己绕两圈。"
+  - speakerId: shizuku
+    text: "好，这次我不会硬撑到迷路。"
   ending:
   - speakerId: penguin
-    text: "\u606D\u559C\u4F60\u6210\u4E3A\u51A0\u519B\uFF0C\u4E5F\u8C22\u8C22\u4F60\u8BA4\u771F\u5BF9\u5F85\u90A3\u5F20\u7EAA\u5FF5\u5361\u3002\u4EE5\u540E\u4E5F\u5E38\u6765\u8FD9\u91CC\u5427\u3002"
+    text: "冠军赛结束了。我还没想好接下来怎么安排。"
   - speakerId: shizuku
-    text: "\u4F1A\u7684\u3002\u6BD4\u8D5B\u6709\u7EC8\u70B9\uFF0C\u4F46\u6211\u8FD8\u60F3\u7EE7\u7EED\u8BA4\u8BC6\u8FD9\u91CC\u7684\u6BCF\u4E00\u4E2A\u4EBA\u3002"
+    text: "一定要马上安排吗？"
+  - speakerId: penguin
+    text: "不用。只是有人约我时，我想把时间分开记。"
+  - speakerId: shizuku
+    text: "那我们只约一件事，别把一天填满。"
+  - speakerId: penguin
+    text: "好。弓兵说要陪你复盘，不过我还没替他定时间。"
+  - speakerId: shizuku
+    text: "那就先问他，不要替他答应。"
+  - speakerId: penguin
+    text: "这次我会问清楚。"
+  - speakerId: shizuku
+    text: "我也会说清楚自己什么时候有空。"
+  storyVictory:
+  - speakerId: penguin
+    text: "第一，计时精准无误；第二，操作符合一切比赛条令；第三——我承认你的调度完全有效！"
+  - speakerId: shizuku
+    text: "辛苦了，裁判官。至少今晚不用加班到天亮了。"
+  storyDefeat:
+  - speakerId: penguin
+    text: "出局！第一，你在第四回合超时两秒；第二，手牌摆放严重歪斜；第三——你彻底败北了！"
+  - speakerId: shizuku
+    text: "……被你的限时机制搞得手忙脚乱，连锁都没对齐。"
+  - speakerId: penguin
+    text: "拿去，按这个节奏每天默背三遍规则，别在正式台上丢我的脸！"
   matches:
   - matchId: first_light_public_02
     beforeMatch:
     - speakerId: penguin
-      text: "\u51C6\u5907\u597D\u4E86\u5C31\u5F00\u59CB\u5427\u3002\u8FD9\u4E00\u573A\uFF0C\u8BF7\u62FF\u51FA\u81EA\u5DF1\u7684\u5224\u65AD\u3002"
+      text: "卡组、准备时间，都确认好了。你这边呢？"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\uFF0C\u8BF7\u591A\u6307\u6559\u3002"
+      text: "好了。谢谢你留的时间，不用再替我担心。"
+    - speakerId: penguin
+      text: "那我把其他事情放下，只看这一局。"
+    - speakerId: shizuku
+      text: "我也是。开始吧。"
     victory:
     - speakerId: penguin
-      text: "\u8FD9\u4E00\u573A\u4F60\u8D62\u4E86\uFF0C\u7EE7\u7EED\u4FDD\u6301\u4E13\u6CE8\u3002"
+      text: "这场你赢了。我准备的打法没有全用上。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u3002\u6211\u4E5F\u4ECE\u4F60\u7684\u9009\u62E9\u91CC\u5B66\u5230\u4E86\u5F88\u591A\u3002"
+      text: "没用上，不代表你白准备。"
+    - speakerId: penguin
+      text: "嗯。但现在得换个想法。我可以请你一起看看吗？"
+    - speakerId: shizuku
+      text: "可以。只看这一局，不必连下一次的安排都现在定。"
     defeat:
     - speakerId: penguin
-      text: "\u522B\u7070\u5FC3\uFF0C\u8C03\u6574\u5361\u7EC4\u4EE5\u540E\u8FD8\u53EF\u4EE5\u518D\u6311\u6218\u3002"
+      text: "我赢了。你要休息的话，我把后面的时间空着。"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u8BB0\u4F4F\u8FD9\u4E00\u573A\uFF0C\u518D\u6765\u627E\u4F60\u5207\u78CB\u3002"
+      text: "不用专门为我空着。你有事先去忙。"
+    - speakerId: penguin
+      text: "不是迁就你，是我本来就留了休息时间。"
+    - speakerId: shizuku
+      text: "那我就不急着走了。刚才一直紧绷着。"

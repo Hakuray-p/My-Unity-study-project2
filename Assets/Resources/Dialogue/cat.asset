@@ -15,54 +15,151 @@ MonoBehaviour:
   speakerId: cat
   displayName: "\u732B\u59EC"
   cityId: first_light
-  storyEventId: first_light_event_01
+  storyEventId: first_light_event_cat
   interactionType: 0
-  eventId: 
+  eventId: first_light_event_cat
+  sceneChat:
+  - speakerId: cat
+    text: "喵哈哈！凡人啊，今天的抽卡概率也是绝赞的 0.0001% 喵！想改命就先向伟大的猫猫大宗师上缴两罐金枪鱼！"
+  - speakerId: shizuku
+    text: "……0.0001% 的卡池根本是诈骗吧，而且训练馆里禁止投喂罐头。"
+  interaction:
+  - speakerId: cat
+    text: "按什么按！按 E 键不用消耗键盘寿命的吗喵？！找伟大的猫猫大宗师有什么事？"
+  - speakerId: shizuku
+    text: "……只是想确认一下这边的训练设施能不能用。你别把爪子按在对话框边框上，贴图都要被你抓坏了。"
+  - speakerId: cat
+    text: "哼，凡人就是缺乏对第四面墙的敬畏之心喵！想特训就赶紧掏牌，不然本座就要回去钻纸箱补觉了！"
+  eventDialogue:
+  - speakerId: cat
+    text: "（笔直坠落砸在桌上，弹性十足地弹起）喵哈哈！终于在夜黑风高、没有未成年人保护条例的时刻踏入本座的巢穴了吗，雫君！"
+  - speakerId: shizuku
+    text: "……门没锁，路过看到里面有红光乱闪，还以为失火了。你在桌上画的是什么？魔法阵？"
+  - speakerId: cat
+    text: "无知！这是利用高维猫猫几何学计算出的‘绝对神抽轨迹图’！听好了，白天你的第三手切牌，手指迟疑了整整 8 个像素点喵！"
+  - speakerId: shizuku
+    text: "这是卡牌游戏，没有滞空判定。而且那是因为对手的费用算错了。"
+  - speakerId: cat
+    text: "借口！真正的强者连对方打喷嚏的间隙都能算作压制帧！把主卡组亮出来，接不下本座的三连崩防连段，今晚就留下扫掉落的毛球喵！"
+  - speakerId: shizuku
+    text: "虽然你的比喻乱七八糟……但挑起好胜心这点，你确实很擅长。来吧，今晚我不会让你得逞一次。"
   normal:
   - speakerId: cat
-    text: "\u5148\u719F\u6089\u4E00\u4E0B\u89C4\u5219\u5427\u3002\u771F\u6B63\u7684\u6BD4\u8D5B\u5F00\u59CB\u540E\uFF0C\u6BCF\u4E00\u6B65\u90FD\u8981\u8C28\u614E\u9009\u62E9\u3002"
+    text: "你先别急着动。想从哪张开始？"
   - speakerId: shizuku
-    text: "\u597D\uFF0C\u6211\u4F1A\u8BA4\u771F\u51C6\u5907\u3002\u4E5F\u60F3\u542C\u542C\u8FD9\u5EA7\u57CE\u91CC\u5927\u5BB6\u7684\u6545\u4E8B\u3002"
+    text: "我还在看。"
+  - speakerId: cat
+    text: "好，我先不说——我尽量。"
+  - speakerId: shizuku
+    text: "你刚才是不是想把答案说出来？"
+  - speakerId: cat
+    text: "有这么明显吗？"
+  - speakerId: shizuku
+    text: "你的眼睛已经飘到那张牌上了。"
+  - speakerId: cat
+    text: "行，算我输。你先试，卡住了再叫我。"
+  - speakerId: shizuku
+    text: "这还差不多。"
   afterEvent:
   - speakerId: cat
-    text: "\u6865\u8FB9\u7684\u88C2\u75D5\u5DF2\u7ECF\u5E73\u606F\u4E86\u3002\u539F\u6765\u90A3\u5F20\u5361\u8BB0\u7740\u4E00\u4EFD\u5F88\u4E45\u4EE5\u524D\u7684\u7EA6\u5B9A\u3002"
+    text: "桥边的事总算告一段落了。你还好吗？"
   - speakerId: shizuku
-    text: "\u5927\u5BB6\u4E00\u8D77\u627E\u56DE\u4E86\u5B83\u7684\u6765\u5386\uFF0C\u6211\u4E5F\u80FD\u5B89\u5FC3\u51C6\u5907\u63A5\u4E0B\u6765\u7684\u6BD4\u8D5B\u4E86\u3002"
+    text: "累是有一点，脑子还没停下来。"
+  - speakerId: cat
+    text: "那今天不加练，先歇会儿。"
+  - speakerId: shizuku
+    text: "你这句话听着很像命令。"
+  - speakerId: cat
+    text: "是建议。你要是不听，我也不能把你按在椅子上。"
+  - speakerId: shizuku
+    text: "原来你还知道。"
+  - speakerId: cat
+    text: "我当然知道，只是以前比较爱抢着帮忙。"
+  - speakerId: shizuku
+    text: "现在倒像是学会先问我了。"
   ending:
   - speakerId: cat
-    text: "\u606D\u559C\u4F60\u6210\u4E3A\u51A0\u519B\uFF0C\u4E5F\u8C22\u8C22\u4F60\u8BA4\u771F\u5BF9\u5F85\u90A3\u5F20\u7EAA\u5FF5\u5361\u3002\u4EE5\u540E\u4E5F\u5E38\u6765\u8FD9\u91CC\u5427\u3002"
+    text: "冠军来了。今天还要继续练吗？"
   - speakerId: shizuku
-    text: "\u4F1A\u7684\u3002\u6BD4\u8D5B\u6709\u7EC8\u70B9\uFF0C\u4F46\u6211\u8FD8\u60F3\u7EE7\u7EED\u8BA4\u8BC6\u8FD9\u91CC\u7684\u6BCF\u4E00\u4E2A\u4EBA\u3002"
+    text: "先不了，我想让脑子休息一下。"
+  - speakerId: cat
+    text: "好。那我问个不着急的问题——刚才最后一手，你为什么那么出？"
+  - speakerId: shizuku
+    text: "你不是应该先夸我赢了吗？"
+  - speakerId: cat
+    text: "也可以先夸。你赢得很漂亮。现在能告诉我了吗？"
+  - speakerId: shizuku
+    text: "因为我觉得你会等我自己想明白。"
+  - speakerId: cat
+    text: "嗯，这次我等到了。"
+  - speakerId: shizuku
+    text: "下次也别抢答，老师。"
+  storyVictory:
+  - speakerId: cat
+    text: "咕哇——！本座的绝对压制帧怎么可能有盲区……哼，算你合格！"
+  - speakerId: shizuku
+    text: "连认输都要找这么多借口……不过，刚才那个连段确实很险，谢了。"
+  storyDefeat:
+  - speakerId: cat
+    text: "喵哈哈哈！看到了吧！这就是本座的高维超绝大招！叫你第四回合不防我的突刺喵！"
+  - speakerId: shizuku
+    text: "……咕，那个无消耗连击到底是什么离谱判定……"
+  - speakerId: cat
+    text: "手牌上限留得太死，贪图高费王牌就是这个下场喵！回去多练练前三回合的低费过渡！"
   matches:
   - matchId: first_light_practice
     beforeMatch:
     - speakerId: cat
-      text: "\u51C6\u5907\u597D\u4E86\u5C31\u5F00\u59CB\u5427\u3002\u8FD9\u4E00\u573A\uFF0C\u8BF7\u62FF\u51FA\u81EA\u5DF1\u7684\u5224\u65AD\u3002"
+      text: "来，先打一场练习。你想自己试，还是要我提醒？"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\uFF0C\u8BF7\u591A\u6307\u6559\u3002"
+      text: "先让我自己来。真卡住了我会问。"
+    - speakerId: cat
+      text: "好，我把想说的话先放回去。"
+    - speakerId: shizuku
+      text: "你最好真的放回去。"
     victory:
     - speakerId: cat
-      text: "\u8FD9\u4E00\u573A\u4F60\u8D62\u4E86\uFF0C\u7EE7\u7EED\u4FDD\u6301\u4E13\u6CE8\u3002"
+      text: "赢得不错！我刚才有好几次差点开口。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u3002\u6211\u4E5F\u4ECE\u4F60\u7684\u9009\u62E9\u91CC\u5B66\u5230\u4E86\u5F88\u591A\u3002"
+      text: "我听见了，你吸气的声音都变大了。"
+    - speakerId: cat
+      text: "这么明显？"
+    - speakerId: shizuku
+      text: "很明显。不过最后那步是我没想到的。"
     defeat:
     - speakerId: cat
-      text: "\u522B\u7070\u5FC3\uFF0C\u8C03\u6574\u5361\u7EC4\u4EE5\u540E\u8FD8\u53EF\u4EE5\u518D\u6311\u6218\u3002"
+      text: "先别急着收牌。你想自己看看，还是听我说？"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u8BB0\u4F4F\u8FD9\u4E00\u573A\uFF0C\u518D\u6765\u627E\u4F60\u5207\u78CB\u3002"
+      text: "先让我想一会儿。"
+    - speakerId: cat
+      text: "好，我等你。"
+    - speakerId: shizuku
+      text: "谢谢。这次我想先把输的地方找出来。"
   - matchId: first_light_public_01
     beforeMatch:
     - speakerId: cat
-      text: "\u51C6\u5907\u597D\u4E86\u5C31\u5F00\u59CB\u5427\u3002\u8FD9\u4E00\u573A\uFF0C\u8BF7\u62FF\u51FA\u81EA\u5DF1\u7684\u5224\u65AD\u3002"
+      text: "现在是正式比赛。我不会偷偷给提示。"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\uFF0C\u8BF7\u591A\u6307\u6559\u3002"
+      text: "你说“偷偷”，听起来很有经验。"
+    - speakerId: cat
+      text: "……以前确实有过几次。今天没有。"
+    - speakerId: shizuku
+      text: "那就请你认真打，别放水。"
     victory:
     - speakerId: cat
-      text: "\u8FD9\u4E00\u573A\u4F60\u8D62\u4E86\uFF0C\u7EE7\u7EED\u4FDD\u6301\u4E13\u6CE8\u3002"
+      text: "这局我输了。你刚才那一下，确实比我想的快。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u3002\u6211\u4E5F\u4ECE\u4F60\u7684\u9009\u62E9\u91CC\u5B66\u5230\u4E86\u5F88\u591A\u3002"
+      text: "你先别急着夸我，我还有一手差点选错。"
+    - speakerId: cat
+      text: "那我们就聊那一手。"
+    - speakerId: shizuku
+      text: "好，但你先让我喝口水。"
     defeat:
     - speakerId: cat
-      text: "\u522B\u7070\u5FC3\uFF0C\u8C03\u6574\u5361\u7EC4\u4EE5\u540E\u8FD8\u53EF\u4EE5\u518D\u6311\u6218\u3002"
+      text: "这次我赢了。你想现在复盘，还是过一会儿？"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u8BB0\u4F4F\u8FD9\u4E00\u573A\uFF0C\u518D\u6765\u627E\u4F60\u5207\u78CB\u3002"
+      text: "过一会儿。我现在只看得见自己输。"
+    - speakerId: cat
+      text: "那我等你缓过来。"
+    - speakerId: shizuku
+      text: "嗯，等我准备好再问你。"

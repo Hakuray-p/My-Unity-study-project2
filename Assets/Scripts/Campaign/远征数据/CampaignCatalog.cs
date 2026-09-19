@@ -18,13 +18,97 @@ public static class CampaignCatalog
             eventId = "first_light_event_01",
             cityId = "first_light",
             displayName = "调查裂痕",
-            startText = "巷口刚才出现了一道奇怪的裂痕，里面还夹着一张没有主人的卡牌。能陪我去确认一下吗？",
+            startText = "南侧桥前的裂痕里夹着一张无主卡。我来查旧记录，你愿意去看看卡背和周围的光吗？拿不准的地方先记着，我们回来一起核对。",
             objectiveText = "裂痕已经出现，去南侧楼梯下的桥前调查。",
             completeText = "你将纪念卡轻轻扶正，纷乱的光点渐渐归于平静。裂痕消失了，卡背上留下了一行字：下次，一起参赛。",
-            reviewText = "那不是谁制造的灾难，而是一份未完成的约定留下的回响。谢谢你让卡牌安静下来，商人或许认得它原来的主人。",
+            reviewText = "确认了，是旧卡残留的思念随着赛事共鸣，并不是谁在破坏比赛。共鸣已经平息。来历还有些细节要向商人核对，我把不确定的部分留出来，我们一起看。",
             goldReward = 20,
             cardRewardId = 1202,
             cardRewardName = "自奏圣乐·嬉游曲恶魔"
+        },
+        new CampaignEventData
+        {
+            eventId = "first_light_event_cat",
+            cityId = "first_light",
+            displayName = "混沌教官的深夜加练",
+            dialogueOnly = true,
+            startText = "猫姬把雫叫到训练馆，准备进行一次临时加练。",
+            objectiveText = "完成猫姬的专属事件对话。",
+            completeText = "猫姬的深夜加练结束了。",
+            reviewText = "猫姬还是会抢着提示，不过现在会先等雫自己想一会儿。",
+            cardRewardName = "无"
+        },
+        new CampaignEventData
+        {
+            eventId = "first_light_event_rebecca",
+            cityId = "first_light",
+            displayName = "未被定性的搜查令",
+            dialogueOnly = true,
+            startText = "蕾贝卡发现档案室少了两页记录，准备重新核对借阅痕迹。",
+            objectiveText = "完成蕾贝卡的专属事件对话。",
+            completeText = "蕾贝卡重新整理了搜查结论。",
+            reviewText = "蕾贝卡已经学会先核对证据，再下结论。",
+            cardRewardName = "无"
+        },
+        new CampaignEventData
+        {
+            eventId = "first_light_event_fei",
+            cityId = "first_light",
+            displayName = "被撕毁的赛程表",
+            dialogueOnly = true,
+            startText = "绯把改期通知踩进了泥里，坚持要和雫马上打一场。",
+            objectiveText = "完成绯的专属事件对话。",
+            completeText = "绯答应下次先确认安排，再发起挑战。",
+            reviewText = "绯还是想随时切磋，不过已经会先问雫有没有空。",
+            cardRewardName = "无"
+        },
+        new CampaignEventData
+        {
+            eventId = "first_light_event_merchant",
+            cityId = "first_light",
+            displayName = "非卖品的折旧价",
+            dialogueOnly = true,
+            startText = "商人不肯出售柜中的旧卡，却每天都把它擦得很干净。",
+            objectiveText = "完成商人的专属事件对话。",
+            completeText = "商人决定继续按约定保管那张旧卡。",
+            reviewText = "商人还是把人情写进账本，却没有把所有东西都标成商品。",
+            cardRewardName = "无"
+        },
+        new CampaignEventData
+        {
+            eventId = "first_light_event_kong",
+            cityId = "first_light",
+            displayName = "芦苇荡里的停顿音",
+            dialogueOnly = true,
+            startText = "空在河岸听见了旧卡传来的微弱声音，想找个人一起坐一会儿。",
+            objectiveText = "完成空的专属事件对话。",
+            completeText = "空终于主动邀请雫陪自己听完河岸的风声。",
+            reviewText = "空还是喜欢安静，但不会再把想说的话一个人留着。",
+            cardRewardName = "无"
+        },
+        new CampaignEventData
+        {
+            eventId = "first_light_event_penguin",
+            cityId = "first_light",
+            displayName = "被推翻的三重构想",
+            dialogueOnly = true,
+            startText = "企鹅的赛程表同时遇到三处变故，整套安排眼看就要失控。",
+            objectiveText = "完成企鹅的专属事件对话。",
+            completeText = "企鹅采用了雫的调度方案，重新排好了赛程。",
+            reviewText = "企鹅仍然重视规则，但开始接受临时调整也可以有秩序。",
+            cardRewardName = "无"
+        },
+        new CampaignEventData
+        {
+            eventId = "first_light_event_archer",
+            cityId = "first_light",
+            displayName = "未出手的第十一箭",
+            dialogueOnly = true,
+            startText = "神秘弓兵愿意谈起三年前那场没有等到对手的比赛。",
+            objectiveText = "完成神秘弓兵的专属事件对话。",
+            completeText = "神秘弓兵把旧式弓弦的标记交给了雫。",
+            reviewText = "神秘弓兵仍然说话直接，但愿意把自己的失误也摆到桌面上。",
+            cardRewardName = "无"
         }
     };
 

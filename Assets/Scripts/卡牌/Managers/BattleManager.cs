@@ -26,11 +26,11 @@ public class BattleManager : MonoBehaviour
     public BattleLaunchContext LaunchContext { get; private set; }
     private bool battleResolved;
     private int turn;
-    private bool pauseOpen;
+    [SerializeField] private PauseGM pauseGM; // 战斗场景的统一暂停菜单
     private bool turnChangePending;
     private float actionReadyAt; // 当前动作完成后允许下一操作的时间
     private bool snapshotRequested; // 是否需要在稳定状态保存战况
-    public bool IsPaused => pauseOpen; // 教学界面跟随暂停状态
+    public bool IsPaused => pauseGM.IsOpen; // 教学界面跟随暂停状态
     public bool IsSettled => !turnChangePending && !EM.IsProcessingEffect && !TM.IsSelecting && Time.time >= actionReadyAt; // 动作和目标选择是否已经结束
 
     public bool CanSafelyExit => !battleResolved && IsSettled;
@@ -38,6 +38,7 @@ public class BattleManager : MonoBehaviour
     // 读取战斗上下文并开战
     public void Init()
     {
+        pauseGM.Initialize(null, SavePausedBattle, null);
         LaunchContext = CampaignSession.Instance.CreateBattleContext();
         if (LaunchContext != null)
         {
@@ -55,19 +56,7 @@ public class BattleManager : MonoBehaviour
     {
         if (snapshotRequested && !battleResolved && !Tutorial.IsGuiding && IsSettled) SaveTutorialCheckpoint();
         if (TM.ViewClosedFrame == Time.frameCount) return;
-        if (!Input.GetKeyDown(KeyCode.Escape)) return;
-        if (pauseOpen)
-        {
-            pauseOpen = false;
-            Time.timeScale = 1f;
-            return;
-        }
-
-        if (CanSafelyExit)
-        {
-            pauseOpen = true;
-            Time.timeScale = 0f;
-        }
+        if (IsPaused || CanSafelyExit) pauseGM.Tick(false);
     }
 
     // 开始战斗
@@ -207,7 +196,8 @@ public class BattleManager : MonoBehaviour
                 card.isSlience = cardSnapshot.silenced;
                 if (card.cardDisplay != null)
                 {
-                    card.cardDisplay.ShowBack(cardSnapshot.state == CardState.Hand && !player.isMainPlayer);
+                    card.cardDisplay.ShowBack(cardSnapshot.state == CardState.Deck ||
+                        (cardSnapshot.state == CardState.Hand && !player.isMainPlayer));
                     card.cardDisplay.UpdateDisplay();
                 }
             }
@@ -614,23 +604,9 @@ public class BattleManager : MonoBehaviour
         if (IsSettled && !Tutorial.IsGuiding) SaveTutorialCheckpoint();
     }
 
-    // 暂停时画一个简易暂停框
-    private void OnGUI()
+    // 离开暂停菜单前保存战况，教学沿用最近的稳定检查点。
+    private void SavePausedBattle()
     {
-        if (!pauseOpen) return;
-        GUI.Box(new Rect(Screen.width * 0.5f - 180f, Screen.height * 0.5f - 120f, 360f, 240f), "暂停");
-        GUI.Label(new Rect(Screen.width * 0.5f - 150f, Screen.height * 0.5f - 78f, 300f, 42f), "当前处于安全点，可以保存战斗快照。");
-        if (GUI.Button(new Rect(Screen.width * 0.5f - 140f, Screen.height * 0.5f - 25f, 280f, 42f), "保存并返回主菜单"))
-        {
-            if (!Tutorial.IsGuiding) SaveTutorialCheckpoint();
-            Time.timeScale = 1f;
-            pauseOpen = false;
-            SceneFlowService.ReturnToMenu();
-        }
-        if (GUI.Button(new Rect(Screen.width * 0.5f - 140f, Screen.height * 0.5f + 30f, 280f, 42f), "继续战斗"))
-        {
-            pauseOpen = false;
-            Time.timeScale = 1f;
-        }
+        if (!Tutorial.IsGuiding) SaveTutorialCheckpoint();
     }
 }

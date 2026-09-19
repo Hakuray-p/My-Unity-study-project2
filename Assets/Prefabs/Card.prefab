@@ -738,7 +738,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u5FB7\u514B\u8428\u65AF"
+  m_text: "\u793A\u4F8B\u5361"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 51ad3aabb834ca84a8afd8021f75b556, type: 2}
   m_sharedMaterial: {fileID: 8467539277029784261, guid: 51ad3aabb834ca84a8afd8021f75b556, type: 2}
@@ -1496,7 +1496,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u51B2\u950B\u3002\\n\u9000\u573A\uFF1A\u52A01\u90E8\u7F72\u70B9\u4E0A\u9650"
+  m_text: "\u793A\u4F8B\u6548\u679C\u3002\\n\u51FA\u573A\uFF1A\u83B7\u5F971\u70B9\u80FD\u91CF"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 51ad3aabb834ca84a8afd8021f75b556, type: 2}
   m_sharedMaterial: {fileID: 8467539277029784261, guid: 51ad3aabb834ca84a8afd8021f75b556, type: 2}
@@ -1730,7 +1730,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_Sprite: {fileID: -566984622, guid: b42d5aecf0ce97146ba91bf572207233, type: 3}
-  m_Color: {r: 0.48427665, g: 0.48427665, b: 0.48427665, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
@@ -1836,7 +1836,7 @@ GameObject:
   - component: {fileID: 4471395586990607870}
   - component: {fileID: 8919933931632273947}
   m_Layer: 0
-  m_Name: "Logo_\u7F57\u5FB7\u5C9B"
+  m_Name: "RX logo"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1898,7 +1898,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 25
-  m_Sprite: {fileID: 21300000, guid: 8e0cee3224f09d24eae059b8417ed0ad, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 715f9f25be8374f4ca26f2d98ca6d380, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

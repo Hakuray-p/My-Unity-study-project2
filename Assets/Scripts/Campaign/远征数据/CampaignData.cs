@@ -62,7 +62,6 @@ public class MatchData
     public int goldReward; // 赢了给多少金币
     public int enemyDeckId; // 敌方卡组编号
     public string prerequisiteMatchId; // 前置比赛，没打完不能进
-    public bool awardsBadge; // 赢了是否发徽章
     public List<int> rewardCardIds = new List<int>(); // 首胜奖励的卡牌
 }
 
@@ -73,6 +72,7 @@ public class CampaignEventData
     public string eventId; // 事件标识，存档里按它记录做没做过
     public string cityId; // 属于哪座城市
     public string displayName; // 界面上显示的事件名
+    public bool dialogueOnly; // 是否只通过角色对话完成
     [TextArea] public string startText; // 刚开始时的描述
     [TextArea] public string objectiveText; // 当前目标的描述
     [TextArea] public string completeText; // 完成后的描述
@@ -175,7 +175,6 @@ public class BattleResult
     public int leaguePoints; // 结算后拿到多少赛事积分
     public int gold; // 结算后拿到多少金币
     public bool firstWin; // 是不是首胜
-    public bool badgeAwarded; // 有没有发徽章
     public List<int> rewardCardIds = new List<int>(); // 拿到的卡牌
 }
 
@@ -183,7 +182,7 @@ public class BattleResult
 [Serializable]
 public class CampaignSaveData
 {
-    public int version = 8; // 存档版本号，改存档结构时要往上加
+    public int version = 9; // 存档版本号，改存档结构时要往上加
     public bool practiceTutorialHandled; // 是否已完成、跳过或无需首次教学
     public bool pendingPracticeTutorial; // 未结束的比赛是否为教学牌局
     public string currentCityId; // 玩家当前在哪座城市
@@ -193,7 +192,6 @@ public class CampaignSaveData
     public List<int> collectedCardIds = new List<int>(); // 已经拥有的卡牌
     public List<int> sharedDeckCardIds = new List<int>(); // 通用卡组
     public int currency; // 金币数量
-    public List<string> badgeIds = new List<string>(); // 已经拿到的徽章
     public List<int> deckDraftCardIds = new List<int>(); // 卡组管理里还没保存的草稿
     public List<int> lastValidDeckCardIds = new List<int>(); // 最近一次合法的卡组，草稿改坏时回退用
     public List<CardHoloVariantSaveData> cardHoloVariants = new List<CardHoloVariantSaveData>(); // 每张 UR 卡的颜色

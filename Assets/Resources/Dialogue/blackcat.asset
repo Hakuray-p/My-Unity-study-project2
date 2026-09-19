@@ -18,35 +18,122 @@ MonoBehaviour:
   storyEventId: first_light_event_01
   interactionType: 2
   eventId: first_light_event_01
+  sceneChat:
+  - speakerId: blackcat
+    text: "如果只是观光，请移步商业街。城防节点周围十米禁止闲杂人员停留。"
+  - speakerId: shizuku
+    text: "我只是确认一下这条路通不通。你眉毛拧得太紧，会让整条街的气氛都变沉。"
+  interaction:
+  - speakerId: blackcat
+    text: "有事？如果不是赛场安全隐患汇报，请不要占用城卫人员的时间。"
+  - speakerId: shizuku
+    text: "只是顺路来看看你。从昨天开始你就没合过眼吧，黑眼圈都要挂到嘴角了。"
+  - speakerId: blackcat
+    text: "……这是合理的执勤损耗，城律里没有犯困就可以撤岗的特例。请退到安全警戒线以外，谢谢。"
+  eventDialogue:
+  - speakerId: blackcat
+    text: "离开这里。这里的魔力共振已经达到阈值，不是外来参赛者该看的热闹。"
+  - speakerId: shizuku
+    text: "你的手在抖。刚才强行用罗盘压制回路，被反噬了吧？"
+  - speakerId: blackcat
+    text: "只是静电反应。城卫署的手册上没有因疲惫请求支援这一项。我能处理。"
+  - speakerId: shizuku
+    text: "‘我不确定’有这么难说出口吗？桥下的那张卡也是，这里的节点也是，你把所有责任都压在自己一个人头上。"
+  - speakerId: blackcat
+    text: "那也比寄希望于不可靠的外人强！如果失败，代价由我一个人承担！"
+  - speakerId: shizuku
+    text: "那就打一场。如果你输了，至少在节点排查完之前，允许我站在你旁边递工具。"
+  - speakerId: blackcat
+    text: "……狂妄的新人。你会为你的多管闲事后悔的。"
   normal:
   - speakerId: blackcat
-    text: "\u5357\u4FA7\u6865\u524D\u51FA\u73B0\u4E86\u4E00\u9053\u88C2\u75D5\uFF0C\u91CC\u9762\u6709\u5F20\u6CA1\u6709\u4E3B\u4EBA\u7684\u5361\u3002\u4F60\u613F\u610F\u548C\u6211\u4E00\u8D77\u786E\u8BA4\u5B83\u7684\u6765\u5386\u5417\uFF1F"
+    text: "来得正好——等等，你现在有空吗？"
   - speakerId: shizuku
-    text: "\u597D\uFF0C\u6211\u4F1A\u8BA4\u771F\u51C6\u5907\u3002\u4E5F\u60F3\u542C\u542C\u8FD9\u5EA7\u57CE\u91CC\u5927\u5BB6\u7684\u6545\u4E8B\u3002"
+    text: "有空。是桥边又出事了？"
+  - speakerId: blackcat
+    text: "南侧桥前有道裂痕，里面夹着一张无主卡。我还没查清原因。"
+  - speakerId: shizuku
+    text: "你想让我做什么？"
+  - speakerId: blackcat
+    text: "我去翻旧记录，你去看看卡背和周围的光。看不懂的地方别硬猜。"
+  - speakerId: shizuku
+    text: "好，我会把看到的先记下来。"
+  - speakerId: blackcat
+    text: "谢谢。刚才我差点又想一个人全包了。"
+  - speakerId: shizuku
+    text: "那就现在分好，别等忙完才说。"
   afterEvent:
   - speakerId: blackcat
-    text: "\u6865\u8FB9\u7684\u88C2\u75D5\u5DF2\u7ECF\u5E73\u606F\u4E86\u3002\u539F\u6765\u90A3\u5F20\u5361\u8BB0\u7740\u4E00\u4EFD\u5F88\u4E45\u4EE5\u524D\u7684\u7EA6\u5B9A\u3002"
+    text: "记录还差最后一段。裂痕平息时，那些光是先聚起来，再散开，对吗？"
   - speakerId: shizuku
-    text: "\u5927\u5BB6\u4E00\u8D77\u627E\u56DE\u4E86\u5B83\u7684\u6765\u5386\uFF0C\u6211\u4E5F\u80FD\u5B89\u5FC3\u51C6\u5907\u63A5\u4E0B\u6765\u7684\u6BD4\u8D5B\u4E86\u3002"
+    text: "我记得大概是，但中间有几下太亮，我没看清。"
+  - speakerId: blackcat
+    text: "那就写“没看清”，别替它补答案。旧卡留下的思念已经平息，这点能确定。"
+  - speakerId: shizuku
+    text: "商人说他认得那对搭档，但也不是每件事都知道。"
+  - speakerId: blackcat
+    text: "嗯。卡可以请他暂存，记录我来核对。只是交接还得写清楚——"
+  - speakerId: shizuku
+    text: "这些能不能等会儿？我有点饿了。"
+  - speakerId: blackcat
+    text: "……我也没吃。再写一行也不会让饭自己出现。"
+  - speakerId: shizuku
+    text: "那先到这里，吃完回来再看。"
   ending:
   - speakerId: blackcat
-    text: "\u606D\u559C\u4F60\u6210\u4E3A\u51A0\u519B\uFF0C\u4E5F\u8C22\u8C22\u4F60\u8BA4\u771F\u5BF9\u5F85\u90A3\u5F20\u7EAA\u5FF5\u5361\u3002\u4EE5\u540E\u4E5F\u5E38\u6765\u8FD9\u91CC\u5427\u3002"
+    text: "冠军赛和调查都结束了，我手里突然少了两件事。"
   - speakerId: shizuku
-    text: "\u4F1A\u7684\u3002\u6BD4\u8D5B\u6709\u7EC8\u70B9\uFF0C\u4F46\u6211\u8FD8\u60F3\u7EE7\u7EED\u8BA4\u8BC6\u8FD9\u91CC\u7684\u6BCF\u4E00\u4E2A\u4EBA\u3002"
+    text: "你不会马上再找两件新的补上吧？"
+  - speakerId: blackcat
+    text: "我刚才确实这么想过。"
+  - speakerId: shizuku
+    text: "那今天先别想。"
+  - speakerId: blackcat
+    text: "你现在说话越来越像猫姬了。"
+  - speakerId: shizuku
+    text: "她至少会先问我想不想听。"
+  - speakerId: blackcat
+    text: "好，那你想不想陪我走一段？"
+  - speakerId: shizuku
+    text: "想。今天不用急着解决什么。"
+  storyVictory:
+  - speakerId: blackcat
+    text: "防线被正面击穿了。既然输了，协议成立……递扳手的时候别挡住仪表灯。"
+  - speakerId: shizuku
+    text: "先擦手上的擦伤。逞强赢不了比赛，也护不住整座城。"
+  storyDefeat:
+  - speakerId: blackcat
+    text: "胜负已分。你的战术存在致命的迟疑，防壁被攻破时还想保留反击的手牌。天真。"
+  - speakerId: shizuku
+    text: "……我想把伤害降到最低，结果反而被你连环击破了。"
+  - speakerId: blackcat
+    text: "犹疑只会招致全灭。至少把这种软弱收起来，别死在半路上。"
   matches:
   - matchId: first_light_champion
     beforeMatch:
     - speakerId: blackcat
-      text: "\u51C6\u5907\u597D\u4E86\u5C31\u5F00\u59CB\u5427\u3002\u8FD9\u4E00\u573A\uFF0C\u8BF7\u62FF\u51FA\u81EA\u5DF1\u7684\u5224\u65AD\u3002"
+      text: "这场先不谈调查。我也想好好当一次你的对手。"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\uFF0C\u8BF7\u591A\u6307\u6559\u3002"
+      text: "我正想这么说。别一边出牌一边惦记其他事。"
+    - speakerId: blackcat
+      text: "好。能走到这里，你也准备很久了。"
+    - speakerId: shizuku
+      text: "所以我想赢。今天先不客气。"
     victory:
     - speakerId: blackcat
-      text: "\u8FD9\u4E00\u573A\u4F60\u8D62\u4E86\uFF0C\u7EE7\u7EED\u4FDD\u6301\u4E13\u6CE8\u3002"
+      text: "你赢了，雫。冠军是你的。让我缓一口气，再好好恭喜你。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u3002\u6211\u4E5F\u4ECE\u4F60\u7684\u9009\u62E9\u91CC\u5B66\u5230\u4E86\u5F88\u591A\u3002"
+      text: "我也想缓一会儿。刚才一直不敢松劲。"
+    - speakerId: blackcat
+      text: "看来我们都没你表现得那么镇定。"
+    - speakerId: shizuku
+      text: "我可没说自己镇定。只是想先把这一局打完。"
     defeat:
     - speakerId: blackcat
-      text: "\u522B\u7070\u5FC3\uFF0C\u8C03\u6574\u5361\u7EC4\u4EE5\u540E\u8FD8\u53EF\u4EE5\u518D\u6311\u6218\u3002"
+      text: "这场我赢了。你不用现在就决定什么时候再来。"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u8BB0\u4F4F\u8FD9\u4E00\u573A\uFF0C\u518D\u6765\u627E\u4F60\u5207\u78CB\u3002"
+      text: "我会再来。但我想先把这一局消化掉。"
+    - speakerId: blackcat
+      text: "好。我在这里，等你准备好。"
+    - speakerId: shizuku
+      text: "到时也请这样认真打。我不想因为别的事情被让着。"

@@ -8,7 +8,7 @@ using UnityEngine;
 public class CampaignSession : MonoBehaviour
 {
     private const string SaveFileName = "campaign_save.json"; // 存档文件名，放在 persistentDataPath 下
-    private const int CurrentSaveVersion = 8; // 当前存档版本号，读档时用它判断要不要升级
+    private const int CurrentSaveVersion = 9; // 当前存档版本号，读档时用它判断要不要升级
     private bool battleReactionPending; // 本次战后回应是否尚未播放
     private static CampaignSession instance; // 全局单例
 
@@ -88,8 +88,6 @@ public class CampaignSession : MonoBehaviour
         Save();
         ProgressChanged?.Invoke();
     }
-
-    public bool HasBadge(string badgeId) => State != null && State.badgeIds != null && State.badgeIds.Contains(badgeId);
 
     // 数一下某张卡已经拥有几张
     private int CountOwnedCard(int cardId)
@@ -418,12 +416,6 @@ public class CampaignSession : MonoBehaviour
             if (match.matchType == MatchType.Champion && firstWin)
             {
                 city.championDefeated = true;
-                string badgeId = match.cityId + "_badge";
-                if (match.awardsBadge && !HasBadge(badgeId))
-                {
-                    State.badgeIds.Add(badgeId);
-                    result.badgeAwarded = true;
-                }
             }
         }
         else
@@ -489,7 +481,6 @@ public class CampaignSession : MonoBehaviour
         if (State.cityStates == null) State.cityStates = new List<CitySaveData>();
         if (State.collectedCardIds == null) State.collectedCardIds = new List<int>();
         if (State.sharedDeckCardIds == null) State.sharedDeckCardIds = new List<int>();
-        if (State.badgeIds == null) State.badgeIds = new List<string>();
         if (State.deckDraftCardIds == null) State.deckDraftCardIds = new List<int>();
         if (State.lastValidDeckCardIds == null) State.lastValidDeckCardIds = new List<int>();
         if (State.lastValidDeckCardIds.Count == 0 && IsLegalDeck(State.sharedDeckCardIds))

@@ -15,38 +15,125 @@ MonoBehaviour:
   speakerId: archer
   displayName: "\u795E\u79D8\u5F13\u5175"
   cityId: first_light
-  storyEventId: first_light_event_01
+  storyEventId: first_light_event_archer
   interactionType: 0
-  eventId: 
+  eventId: first_light_event_archer
+  sceneChat:
+  - speakerId: archer
+    text: "步伐虚浮，出牌前指尖习惯性摸两次卡套。如果我是你下一轮的对手，第三回合你就会被盲区穿刺。"
+  - speakerId: shizuku
+    text: "……多谢你毫无温情的战术提醒，不过习惯摸卡套是为了确认牌序，我改不掉，也不打算改。"
+  interaction:
+  - speakerId: archer
+    text: "走路不看路，还偏偏往这种偏僻的死角钻。你到底是对自己的感知力太自信，还是单纯缺乏危机感？"
+  - speakerId: shizuku
+    text: "只是在城里散步复盘，顺便看看某个喜欢站在高处吹风的红衣弓兵会不会被风吹感冒。"
+  - speakerId: archer
+    text: "多余的善意。有闲心担心别人的体温，不如去把你卡组里那些华而不实的展开组件拆掉换成防御符文。"
+  eventDialogue:
+  - speakerId: archer
+    text: "上来得太慢了。爬七十二级台阶用了整整一分半，呼吸频率乱了三次。换作实战，你已经死在射程盲区里了。"
+  - speakerId: shizuku
+    text: "我不是来和你比刺客基本功的。商人说，三年前坐在弃权席上看完全程的人，除了他，就是你。"
+  - speakerId: archer
+    text: "……老东西嘴真碎。"
+  - speakerId: shizuku
+    text: "你白天说那是你的失误。可如果你只是旁观者，弃权是别人的选择，你有什么好失误的？"
+  - speakerId: archer
+    text: "那场比赛原本是我的晋级战。我的对手没有来，只留下一封弃权信。我看着另一个人在雨里的桥头站了一夜，却连一句‘要不要打一场’都没问出口。"
+  - speakerId: shizuku
+    text: "所以你现在一直站在最高处，也是怕再错过什么？"
+  - speakerId: archer
+    text: "少自以为是。抽卡吧，雫。让我看看，现在的你配不配去解开那对搭档留在桥下的执念。"
   normal:
   - speakerId: archer
-    text: "\u51A0\u519B\u4E4B\u8DEF\u4E0D\u4F1A\u56E0\u4E3A\u4E00\u6B21\u80DC\u5229\u5C31\u7ED3\u675F\uFF0C\u7EE7\u7EED\u4FDD\u6301\u4E13\u6CE8\u3002"
+    text: "你的卡组想解决什么问题？"
   - speakerId: shizuku
-    text: "\u597D\uFF0C\u6211\u4F1A\u8BA4\u771F\u51C6\u5907\u3002\u4E5F\u60F3\u542C\u542C\u8FD9\u5EA7\u57CE\u91CC\u5927\u5BB6\u7684\u6545\u4E8B\u3002"
+    text: "想赢。这样说是不是太空了？"
+  - speakerId: archer
+    text: "有一点。你打算怎么赢？"
+  - speakerId: shizuku
+    text: "我想先自己试，没试过的我也说不准。"
+  - speakerId: archer
+    text: "可以。试完带着具体问题来，别只问“怎么变强”。"
+  - speakerId: shizuku
+    text: "你说话一直这么直接？"
+  - speakerId: archer
+    text: "大多数时候。刚才像是在赶你？"
+  - speakerId: shizuku
+    text: "有一点，不过我还会来问。"
   afterEvent:
   - speakerId: archer
-    text: "\u6865\u8FB9\u7684\u88C2\u75D5\u5DF2\u7ECF\u5E73\u606F\u4E86\u3002\u539F\u6765\u90A3\u5F20\u5361\u8BB0\u7740\u4E00\u4EFD\u5F88\u4E45\u4EE5\u524D\u7684\u7EA6\u5B9A\u3002"
+    text: "调查结束了？你看起来不像是来开局的。"
   - speakerId: shizuku
-    text: "\u5927\u5BB6\u4E00\u8D77\u627E\u56DE\u4E86\u5B83\u7684\u6765\u5386\uFF0C\u6211\u4E5F\u80FD\u5B89\u5FC3\u51C6\u5907\u63A5\u4E0B\u6765\u7684\u6BD4\u8D5B\u4E86\u3002"
+    text: "我确实想问个打法，但有点累。"
+  - speakerId: archer
+    text: "那就先别问。"
+  - speakerId: shizuku
+    text: "你居然会劝人休息。"
+  - speakerId: archer
+    text: "我只是看得出来你现在听不进去。"
+  - speakerId: shizuku
+    text: "……这倒是实话。"
+  - speakerId: archer
+    text: "等你缓过来，把刚才那局带来。我也有输得很难看的时候。"
+  - speakerId: shizuku
+    text: "好。到时候别只说我哪里错。"
   ending:
   - speakerId: archer
-    text: "\u606D\u559C\u4F60\u6210\u4E3A\u51A0\u519B\uFF0C\u4E5F\u8C22\u8C22\u4F60\u8BA4\u771F\u5BF9\u5F85\u90A3\u5F20\u7EAA\u5FF5\u5361\u3002\u4EE5\u540E\u4E5F\u5E38\u6765\u8FD9\u91CC\u5427\u3002"
+    text: "拿了冠军，还有哪一局想回头看？"
   - speakerId: shizuku
-    text: "\u4F1A\u7684\u3002\u6BD4\u8D5B\u6709\u7EC8\u70B9\uFF0C\u4F46\u6211\u8FD8\u60F3\u7EE7\u7EED\u8BA4\u8BC6\u8FD9\u91CC\u7684\u6BCF\u4E00\u4E2A\u4EBA\u3002"
+    text: "有一局。我自己想了半天，越想越绕。"
+  - speakerId: archer
+    text: "拿出来。"
+  - speakerId: shizuku
+    text: "你先别直接告诉我答案，问我两句。"
+  - speakerId: archer
+    text: "可以。上次我只给结论，省了自己的事，倒让你一直猜。"
+  - speakerId: shizuku
+    text: "这次讲完整。"
+  - speakerId: archer
+    text: "你要是觉得我说得不对，也直接打断。"
+  - speakerId: shizuku
+    text: "那我就不客气了。"
+  storyVictory:
+  - speakerId: archer
+    text: "在极限压迫下也没有放弃侧翼的防线么。你比当年的我果断得多。"
+  - speakerId: shizuku
+    text: "有些失误哪怕过了三年，只要肯走下台阶，就还算来得及弥补。"
+  storyDefeat:
+  - speakerId: archer
+    text: "结束了。为了抢攻而舍弃侧翼埋伏，明知是陷阱却为了翻盘希望硬闯。结果就是手牌耗尽，防线全面崩溃。"
+  - speakerId: shizuku
+    text: "……只要那张牌能打出来，连锁就能接上……"
+  - speakerId: archer
+    text: "战场上没有如果。把胜负寄托在还未抽到的奇迹上，不是勇敢，是逃避现实的傲慢。"
   matches:
   - matchId: first_light_public_03
     beforeMatch:
     - speakerId: archer
-      text: "\u51C6\u5907\u597D\u4E86\u5C31\u5F00\u59CB\u5427\u3002\u8FD9\u4E00\u573A\uFF0C\u8BF7\u62FF\u51FA\u81EA\u5DF1\u7684\u5224\u65AD\u3002"
+      text: "不用先解释卡组。打的时候我会看。"
     - speakerId: shizuku
-      text: "\u51C6\u5907\u597D\u4E86\uFF0C\u8BF7\u591A\u6307\u6559\u3002"
+      text: "那我也会看你的，不只顾着证明自己。"
+    - speakerId: archer
+      text: "遇到拿不准的地方，别因为我在等就乱出。"
+    - speakerId: shizuku
+      text: "我会认真想，也会认真出。"
     victory:
     - speakerId: archer
-      text: "\u8FD9\u4E00\u573A\u4F60\u8D62\u4E86\uFF0C\u7EE7\u7EED\u4FDD\u6301\u4E13\u6CE8\u3002"
+      text: "你赢了。我得重新看自己的判断。"
     - speakerId: shizuku
-      text: "\u8C22\u8C22\u3002\u6211\u4E5F\u4ECE\u4F60\u7684\u9009\u62E9\u91CC\u5B66\u5230\u4E86\u5F88\u591A\u3002"
+      text: "我以为你会先说我的问题。"
+    - speakerId: archer
+      text: "这次先看我自己的。你想听，我再说。"
+    - speakerId: shizuku
+      text: "想听，但别只给结论。"
     defeat:
     - speakerId: archer
-      text: "\u522B\u7070\u5FC3\uFF0C\u8C03\u6574\u5361\u7EC4\u4EE5\u540E\u8FD8\u53EF\u4EE5\u518D\u6311\u6218\u3002"
+      text: "你输了。想知道我刚才为什么这么出吗？"
     - speakerId: shizuku
-      text: "\u6211\u4F1A\u8BB0\u4F4F\u8FD9\u4E00\u573A\uFF0C\u518D\u6765\u627E\u4F60\u5207\u78CB\u3002"
+      text: "想，但先听理由。"
+    - speakerId: archer
+      text: "行。你也说说当时在想什么，免得我讲偏。"
+    - speakerId: shizuku
+      text: "那我从自己犹豫的地方开始。"
