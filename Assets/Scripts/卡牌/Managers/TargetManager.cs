@@ -9,7 +9,10 @@ using UnityEngine.Events;
 public class TargetManager : MonoBehaviour
 {
     private bool _isSelecting; // 正在选择目标中
-    public bool IsSelecting => _isSelecting;
+    public bool IsSelecting => _isSelecting || _isViewing;
+    private bool _isViewing; // 正在查看墓地这类只看的列表
+    public bool IsViewing => _isViewing;
+    private int _viewFrame; // 打开查看的那一帧
     private List<CardController> _targetCards = new(); // 候选目标
     private UnityAction<TargetPack> _finishCallBack; // 选完后的回调
     public GameObject selectIcon; // 选择时跟随鼠标的图标
@@ -29,6 +32,17 @@ public class TargetManager : MonoBehaviour
     //private Func<CardController, bool> filterCondition;
     private void Update()
     {
+        if (_isViewing)
+        {
+            // 打开查看的那一下点击不算收起
+            if (Time.frameCount > _viewFrame &&
+                (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Escape)))
+            {
+                CloseViewList();
+            }
+            return;
+        }
+
         if (_isSelecting)
         {
             if (Input.GetMouseButtonDown(0))
@@ -64,6 +78,7 @@ public class TargetManager : MonoBehaviour
         foreach (var card in _targetCards)
         {
             card.cardDisplay.ShowSpecial(false);
+            card.cardDisplay.SetBaseScale(1f);
             if (_origionParent != null)
             {
                 card.transform.SetParent(_origionParent);
@@ -73,6 +88,24 @@ public class TargetManager : MonoBehaviour
         }
 
         _origionParent = null;
+    }
+
+    // 打开墓地这类只看的列表，点一下屏幕或按 Esc 收起
+    public void StartViewList(List<CardController> cards, string prompt)
+    {
+        _targetCards = cards != null ? cards : new List<CardController>();
+        _origionParent = _targetCards.Count > 0 ? _targetCards[0].transform.parent : null;
+        _viewFrame = Time.frameCount;
+        _isViewing = true;
+        selectContainer.ShowSelect(_targetCards, prompt);
+    }
+
+    // 收起查看列表，把卡放回原位并让相机回战斗视角
+    private void CloseViewList()
+    {
+        _isViewing = false;
+        SelectFinish(false);
+        GM.Ins.BM.EM.ResetCamera();
     }
 
     // 射线选中一张候选卡，选够就收尾
@@ -106,7 +139,7 @@ public class TargetManager : MonoBehaviour
     /// </summary>
     public void SelectFormList(PlayerController effectPlayer
         , List<CardController> targetCards,
-        int num, UnityAction<TargetPack> finishCallBack, bool showBack = true)
+        int num, UnityAction<TargetPack> finishCallBack, bool showBack = true, string prompt = "")
     {
         if (targetCards == null) targetCards = new List<CardController>();
         if (finishCallBack == null) return;
@@ -130,7 +163,7 @@ public class TargetManager : MonoBehaviour
             _targetPack = new TargetPack();
             selectNum = Math.Min(num, targetCards.Count);
             _origionParent = targetCards.Count > 0 ? targetCards[0].transform.parent : null;
-            selectContainer.ShowSelect(targetCards);
+            selectContainer.ShowSelect(targetCards, prompt);
             if (selectNum > 0)
             {
                 SelectStart();

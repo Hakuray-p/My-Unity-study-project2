@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
-// 电脑玩家，每 1.5 秒做一个动作：召唤 / 施法 / 攻击 / 结束回合
+// 电脑玩家，每 1.5 秒做一个动作：召唤 / 施法 / 发动主动效果 / 攻击 / 结束回合
 public class AIController : PlayerController
 {
     private bool isStarted = false; // 本回合是否已经开始行动
@@ -33,7 +33,7 @@ public class AIController : PlayerController
         }
     }
 
-    // 按优先级走一步：能召唤就召唤，能施法就施法，能攻击就攻击，都不行就结束回合
+    // 按优先级走一步：能召唤就召唤，能施法就施法，能发动主动效果就发动，能攻击就攻击，都不行就结束回合
     private void TickOneStep()
     {
         if (GM.Ins.BM.EM.IsProcessingEffect) return;
@@ -55,6 +55,16 @@ public class AIController : PlayerController
                     GM.Ins.BM.CastSpell(handCard);
                     return;
                 }
+            }
+        }
+
+        foreach (var fieldCard in field.cards)
+        {
+            // 发动场上角色的主动效果
+            if (GM.Ins.BM.EM.CanCastCard(fieldCard))
+            {
+                GM.Ins.BM.EM.TriggerCardEffect(TriggerType.Cast, fieldCard);
+                return;
             }
         }
 

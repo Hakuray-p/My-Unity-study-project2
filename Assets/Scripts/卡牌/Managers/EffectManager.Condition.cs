@@ -20,6 +20,20 @@ public partial class EffectManager
         return CheckCondition(effectCard, effectCard.cardData.effects[0]);
     }
 
+    // 判断这张卡现在有没有能发动的主动效果，条件不满足时不发动的表现也不该有
+    public bool CanCastCard(CardController effectCard)
+    {
+        if (effectCard == null || effectCard.cardData == null || effectCard.cardData.effects == null) return false;
+        if (effectCard.isSlience || !effectCard.ableCast) return false;
+        foreach (CardEffect effect in effectCard.cardData.effects)
+        {
+            if (effect.triggerType != TriggerType.Cast) continue;
+            if (CheckCondition(effectCard, effect)) return true;
+        }
+
+        return false;
+    }
+
     // 按效果自己的发动条件判断能不能发动
     private bool CheckCondition(CardController effectCard, CardEffect effect)
     {
@@ -42,19 +56,6 @@ public partial class EffectManager
                     return false;
                 }
                 break;
-            case ConditionType.HasAmiya:
-                player = effectCard.player;
-                foreach (var fieldCard in player.field.cards)
-                {
-                    if (fieldCard.cardData.index == 1007)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-                break;
-
             case ConditionType.HasEnemy:
                 player = GM.Ins.BM.GetEnemyPlayer(effectCard.player.playerId);
                 if (player.field.cards.Count < 1)
@@ -82,7 +83,6 @@ public partial class EffectManager
                 }
 
                 return false;
-                break;
             default:
                 break;
         }

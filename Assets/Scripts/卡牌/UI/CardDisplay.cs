@@ -109,6 +109,15 @@ public class CardDisplay : MonoBehaviour
 
     }
     private Tween tween; // 缩放动画
+    private float baseScale = 1f; // 卡牌的基础缩放，放大时按它算倍率
+    // 设定卡牌的基础缩放，并停掉正在跑的缩放动画
+    public void SetBaseScale(float scale)
+    {
+        baseScale = scale;
+        tween.Kill();
+        transform.localScale = Vector3.one * scale;
+    }
+
     // 放大 / 还原卡牌并调整渲染层级
     public void ZoomCard(bool option)
     {
@@ -116,14 +125,14 @@ public class CardDisplay : MonoBehaviour
         if (option)
         {
             tween.Kill();
-            tween = transform.DOScale(1.4f, 0.3f);
+            tween = transform.DOScale(baseScale * 1.4f, 0.3f);
             originOrder = GetComponent<SortingGroup>().sortingOrder;
             GetComponent<SortingGroup>().sortingOrder += 10;
         }
         else
         {
             tween.Kill();
-            tween = transform.DOScale(1.0f, 0.3f);
+            tween = transform.DOScale(baseScale, 0.3f);
             GetComponent<SortingGroup>().sortingOrder = originOrder;
 
         }

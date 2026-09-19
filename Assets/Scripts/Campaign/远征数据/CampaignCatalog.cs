@@ -40,8 +40,8 @@ public static class CampaignCatalog
             completeText = "裂痕消失了。",
             reviewText = "那道裂痕已经消失了。谢谢你当时愿意陪我调查。",
             goldReward = 20,
-            cardRewardId = 1109,
-            cardRewardName = "希望之花"
+            cardRewardId = 1202,
+            cardRewardName = "自奏圣乐·嬉游曲恶魔"
         }
     };
 
@@ -70,7 +70,7 @@ public static class CampaignCatalog
             goldReward = 20,
             prerequisiteMatchId = "first_light_practice",
             enemyDeckId = 1,
-            rewardCardIds = new List<int> { 1001 }
+            rewardCardIds = new List<int> { 1203 }
         },
         new MatchData
         {
@@ -83,7 +83,7 @@ public static class CampaignCatalog
             goldReward = 30,
             prerequisiteMatchId = "first_light_public_01",
             enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1002 }
+            rewardCardIds = new List<int> { 1209 }
         },
         new MatchData
         {
@@ -96,7 +96,7 @@ public static class CampaignCatalog
             goldReward = 40,
             prerequisiteMatchId = "first_light_public_02",
             enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1003 }
+            rewardCardIds = new List<int> { 1205 }
         },
         new MatchData
         {
@@ -108,7 +108,7 @@ public static class CampaignCatalog
             pointReward = 5,
             goldReward = 40,
             enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1004 }
+            rewardCardIds = new List<int> { 1204 }
         },
         new MatchData
         {
@@ -122,7 +122,7 @@ public static class CampaignCatalog
             prerequisiteMatchId = "first_light_public_03",
             awardsBadge = true,
             enemyDeckId = 2,
-            rewardCardIds = new List<int> { 1107 }
+            rewardCardIds = new List<int> { 1208 }
         }
     };
 
@@ -145,6 +145,9 @@ public static class CampaignCatalog
     {
         return events.Find(campaignEvent => campaignEvent.eventId == eventId);
     }
+
+    // 卡牌数据库是否已经就位
+    public static bool HasCardDatabase => cardDatabase != null;
 
     // 由 DataManager 在开场时把卡牌数据库交进来，之后才能查卡
     public static void SetCardDatabase(CardListSO database)
@@ -233,17 +236,33 @@ public static class CampaignCatalog
         return rarity == CardRarity.Common ? 30 : rarity == CardRarity.Rare ? 60 : 100;
     }
 
-    // 取某套预置卡组，目前只有一套
+    private const int DeckCopies = 3; // 预置卡组里每种卡的份数
+
+    private static readonly int[] starterCardIds = // 玩家初始卡组，1 费到 5 费混编
+    {
+        1203, 1205, 1214, 1209, 1201, 1202, 1211, 1204, 1206, 1213
+    };
+
+    private static readonly int[] enemyCardIds = // 练习和第一场用的敌方卡组，偏低费
+    {
+        1220, 1203, 1209, 1215, 1218, 1245, 1268, 1231, 1263, 1258
+    };
+
+    private static readonly int[] eliteEnemyCardIds = // 后面几场用的敌方卡组，1 费到 5 费铺满
+    {
+        1243, 1232, 1205, 1216, 1261, 1264, 1204, 1206, 1207, 1212
+    };
+
+    // 取某套预置卡组，0 是玩家初始卡组，2 是后面的敌方卡组，其余编号走初级敌方卡组
     public static List<int> GetDeck(int deckId)
     {
-        // Deck 0 is the starter/AI fallback. Authored decks can replace this lookup later.
-        return new List<int>
+        int[] cardIds = deckId == 0 ? starterCardIds : deckId == 2 ? eliteEnemyCardIds : enemyCardIds;
+        var deck = new List<int>();
+        for (int copy = 0; copy < DeckCopies; copy++)
         {
-            1112, 1016, 1001, 1002, 1003, 1004, 1005, 1006,
-            1010, 1011, 1012, 1013, 1101, 1102, 1104, 1109,
-            1105, 1106, 1107, 1108,
-            1001, 1002, 1003, 1004, 1011, 1013, 1101, 1104,
-            1105, 1112
-        };
+            foreach (int cardId in cardIds) deck.Add(cardId);
+        }
+
+        return deck;
     }
 }

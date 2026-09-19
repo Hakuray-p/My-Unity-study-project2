@@ -180,6 +180,8 @@ public class PlayerController : MonoBehaviour
             {
                 card.ableAttack = true;
             }
+
+            card.ableCast = true;
         }
     }
 
@@ -187,6 +189,19 @@ public class PlayerController : MonoBehaviour
     public virtual void TurnEnd()
     {
         isInTurn = false;
+    }
+
+    // 把手牌里的这张卡送进墓地
+    public void DiscardHandCard(CardController card)
+    {
+        if (card == null) return;
+        hands.RemoveCard(card);
+        graveCards.Add(card);
+        card.cardState = CardState.Graveyard;
+        card.transform.parent = gravePos;
+        card.transform.DOLocalMove(Vector3.zero, 0.5f);
+        card.transform.localRotation = Quaternion.identity;
+        card.cardDisplay.ShowBack(false);
     }
 
     // 刷新费用显示

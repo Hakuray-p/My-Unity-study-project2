@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering;
 
 
@@ -199,12 +200,12 @@ public class BattleManager : MonoBehaviour
         CampaignSession.Instance.SaveBattleSnapshot(ExportSnapshot());
     }
 
-    // 判断能不能召唤：场上不满 7 张且费用够
+    // 判断能不能召唤：场上没满且费用够
     public bool CheckSummonCondition(CardController card)
     {
         if (card == null || card.player == null || card.player.field == null || card.cardData == null) return false;
         // 检查场上位置数量
-        if (card.player.field.cards.Count >= 7) return false;
+        if (card.player.field.IsFull) return false;
         // 检查费用满足
         if (card.player.cost < card.cardData.cost) return false;
 
@@ -224,6 +225,7 @@ public class BattleManager : MonoBehaviour
         card.cardState = CardState.Field;
         if (card.cardDisplay != null) card.cardDisplay.ShowBack(false);
         card.ableAttack = card.cardData.passiveType == PassiveType.Rush;// 具有冲锋则可以攻击
+        card.ableCast = true;// 本回合可以发动主动效果
         // 触发登场时点
         if (EM != null) EM.TriggerCardEffect(TriggerType.Enter, card);
         if (GM.Ins != null && GM.Ins.AM != null && card.cardData.enterAudio == null)
@@ -477,25 +479,54 @@ public class BattleManager : MonoBehaviour
         GM.Ins.UM.turnPanel.ShowTurnChange($"{playrStr}回合结束");
         GM.Ins.AM.PlayAudio(AudioType.NextTurn);
 
-        DOVirtual.DelayedCall(2f, () =>
-        {
-            if (curPlayer == players[0])
-            {
-                curPlayer = players[1];
-            }
-            else
-            {
-                curPlayer = players[0];
-            }
+        DOVirtual.DelayedCall(2f, () => DiscardExcessHand(curPlayer, SwitchTurn));
+    }
 
-            curPlayer.TurnStart();
-            turn++;
-            string playrStr = curPlayer.isMainPlayer ? "我方" : "敌方";
-            GM.Ins.UM.turnPanel.ShowTurnChange($"{playrStr}回合开始");
-            GM.Ins.BM.EM.TriggerStartEnd(TriggerType.Start, curPlayer.playerId);
-            SaveCurrentSnapshot();
-            turnChangePending = false;
-        });
+    // 结束回合的一方把超出上限的手牌弃进墓地，弃完再切回合
+    private void DiscardExcessHand(PlayerController player, UnityAction onFinish)
+    {
+        if (EM.IsProcessingEffect)
+        {
+            DOVirtual.DelayedCall(0.5f, () => DiscardExcessHand(player, onFinish));
+            return;
+        }
+
+        int excess = player.hands.handCards.Count - GameConst.handMax;
+        if (excess <= 0)
+        {
+            onFinish();
+            return;
+        }
+
+        var handCards = new List<CardController>(player.hands.handCards);
+        TM.SelectFormList(player, handCards, excess, targetPack =>
+        {
+            foreach (var card in targetPack.cards) player.DiscardHandCard(card);
+            player.hands.RefreshCards();
+            EM.ResetCamera();
+            onFinish();
+        }, false, $"手牌超过 {GameConst.handMax} 张，请弃掉 {excess} 张");
+    }
+
+    // 把回合交给另一方
+    private void SwitchTurn()
+    {
+        if (curPlayer == players[0])
+        {
+            curPlayer = players[1];
+        }
+        else
+        {
+            curPlayer = players[0];
+        }
+
+        curPlayer.TurnStart();
+        turn++;
+        string playrStr = curPlayer.isMainPlayer ? "我方" : "敌方";
+        GM.Ins.UM.turnPanel.ShowTurnChange($"{playrStr}回合开始");
+        GM.Ins.BM.EM.TriggerStartEnd(TriggerType.Start, curPlayer.playerId);
+        SaveCurrentSnapshot();
+        turnChangePending = false;
     }
 
     // 点结束回合按钮时切回合

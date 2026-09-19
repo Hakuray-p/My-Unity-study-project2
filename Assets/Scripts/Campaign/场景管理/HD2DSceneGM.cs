@@ -44,6 +44,7 @@ public sealed class HD2DSceneGM : MonoBehaviour
         Time.timeScale = 1f;
         CampaignCatalog.SetCardDatabase(cardListSO);
         session = CampaignSession.Instance;
+        session.PurgeMissingCards();
         shopPanel = new ShopPanel(session, ShowStatus, ClosePanels);
         ConfigureCamera();
         DisableDepthOfField();

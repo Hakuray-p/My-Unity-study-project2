@@ -154,7 +154,7 @@ public class BattleLaunchContext
     public string matchId; // 打哪场比赛
     public string cityId; // 从哪座城市来的
     public string returnScene; // 打完回到哪个场景
-    public int randomSeed; // 本场敌人AI行为
+    public int randomSeed; // 本场随机种子
     public int enemyDeckId; // 敌方卡组编号
     public BattleSnapshot snapshot; // 有值就是中途接着打，没有就是新开一局
 }

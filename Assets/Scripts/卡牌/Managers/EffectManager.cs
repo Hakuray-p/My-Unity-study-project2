@@ -48,7 +48,7 @@ public partial class EffectManager : MonoBehaviour
             , { EffectType.DigMumber, DigMumber }, { EffectType.DestoryEnemy, DestoryEnemy }
             , { EffectType.SearchMumberCostUp, SearchMumberCostUp }, { EffectType.HealPlayer, HealPlayer }
             , { EffectType.SearchMumberTrigger, SearchMumberTrigger }
-            , { EffectType.Henshin, Henshin }, { EffectType.Revive, Revive }
+            , { EffectType.Revive, Revive }
             , { EffectType.AddCost, AddCost }, { EffectType.BackHandAddCost, BackHandAddCost }
             , { EffectType.BuffLowHpAlly, BuffLowHpAlly }
             , { EffectType.AttackAgain, AttackAgain }
@@ -99,6 +99,12 @@ public partial class EffectManager : MonoBehaviour
         if (card == null || card.cardData == null) return;
         if (!card.cardData.HasEffect(triggerType)) return;
         if (card.isSlience) return;
+        if (triggerType == TriggerType.Cast)
+        {
+            if (!CanCastCard(card)) return; // 条件不满足就整个不发动，摇牌和音效都不播
+            card.ableCast = false; // 主动效果每回合只能发动一次
+        }
+
         EnqueueEffect(card, triggerType);
     }
 
@@ -469,9 +475,14 @@ public partial class EffectManager : MonoBehaviour
             _castingSpell = null;
         }
 
-        Camera.main.transform.DOMove(cameraOriginPos, 0.5f);
+        ResetCamera();
     }
 
+    // 把相机摆回战斗视角
+    public void ResetCamera()
+    {
+        Camera.main.transform.DOMove(cameraOriginPos, 0.5f);
+    }
 
     // 复用的通用效果
     private void BuffCard(CardController target, int addAtk, int addHp)

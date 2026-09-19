@@ -14,6 +14,7 @@ public class CardController : MonoBehaviour
     public int mumberHpMax; // 生命值上限
 
     public bool ableAttack; // 本回合能不能攻击
+    public bool ableCast; // 本回合能不能发动主动效果
     //public bool inField;
     public CardState cardState; // 当前所在区域（牌堆 / 手牌 / 场上 / 墓地）
     public CardDisplay cardDisplay; // 对应的显示组件
@@ -29,6 +30,7 @@ public class CardController : MonoBehaviour
         mumberHp = cardData.health;
         mumberHpMax = cardData.health;
         isSlience = false;
+        ableCast = true;
         if (cardDisplay != null)
         {
             cardDisplay.Init(this);
@@ -66,15 +68,4 @@ public class CardController : MonoBehaviour
         if (cardDisplay != null) cardDisplay.UpdateDisplay();
     }
 
-
-    // 点击场上的自己时触发主动效果
-    private void OnMouseDown()
-    {
-        if (!player.isInTurn) return;
-        if (cardState != CardState.Field) return;
-        if (cardData.HasEffect(TriggerType.Cast)) // 主动释放
-        {
-            GM.Ins.BM.EM.TriggerCardEffect(TriggerType.Cast, this);
-        }
-    }
 }

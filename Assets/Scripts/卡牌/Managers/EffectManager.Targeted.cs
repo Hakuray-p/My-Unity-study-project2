@@ -268,6 +268,7 @@ public partial class EffectManager
         {
             foreach (var target in targetPack.cards)
             {
+                if (effectPlayer.field.IsFull) continue; // 场上满了就留在墓地
                 target.Init(target.cardData, target.player);
                 // 加入场上
                 effectPlayer.graveCards.Remove(target);
@@ -325,18 +326,7 @@ public partial class EffectManager
             }
         }
 
-        GM.Ins.BM.TM.SelectFormList(effectPlayer, targetCards, 1, (targetPack) =>
-        {
-            foreach (var target in targetPack.cards)
-            {
-                effectPlayer.deckCards.Remove(target);
-                effectPlayer.hands.AddCard(target);
-                target.cardState = CardState.Hand;
-                target.cardDisplay.ShowBack(!effectPlayer.isMainPlayer);
-            }
-
-            FinishStep();
-        });
+        GM.Ins.BM.TM.SelectFormList(effectPlayer, targetCards, 1, (targetPack) => RevealSearchedCard(effectPlayer, targetPack));
     }
 
     // 从牌堆检索一张指定触发时点的干员加入手牌
@@ -358,52 +348,30 @@ public partial class EffectManager
             }
         }
 
-        GM.Ins.BM.TM.SelectFormList(effectPlayer, targetCards, 1, (targetPack) =>
-        {
-            foreach (var target in targetPack.cards)
-            {
-                effectPlayer.deckCards.Remove(target);
-                effectPlayer.hands.AddCard(target);
-                target.cardState = CardState.Hand;
-                target.cardDisplay.ShowBack(!effectPlayer.isMainPlayer);
-            }
-
-            FinishStep();
-        });
+        GM.Ins.BM.TM.SelectFormList(effectPlayer, targetCards, 1, (targetPack) => RevealSearchedCard(effectPlayer, targetPack));
     }
 
-
-    // 把场上的阿米娅变身成近卫阿米娅
-    private void Henshin(CardController effectCard, CardEffect effect)
+    // 把检索到的卡亮给对方看，看完再收进手牌
+    private void RevealSearchedCard(PlayerController player, TargetPack targetPack)
     {
-        _isProcessingEffect = true;
-        PlayerController effectPlayer = effectCard.player; // 效果发动玩家
-        List<CardController> targetCards = new();
-        foreach (var target in effectPlayer.field.cards)
+        if (targetPack.cards.Count == 0)
         {
-            // 判定条件
-            if (target.cardData.index == 1007 && target.cardData.cardType == CardType.MUMBER)
-            {
-                targetCards.Add(target);
-                target.cardDisplay.ShowSpecial(true);
-            }
+            FinishStep();
+            return;
         }
 
-        GM.Ins.BM.TM.StartSelectFieldCards(effectPlayer, targetCards, 1, (targetPack) =>
+        CardController target = targetPack.cards[0];
+        player.deckCards.Remove(target);
+        string title = player.isMainPlayer ? "我方检索到的卡牌" : "对手检索到的卡牌";
+        GM.Ins.BM.TM.selectContainer.ShowReveal(target, title, () =>
         {
-            foreach (var target in targetPack.cards)
-            {
-                CardData cardData = GM.Ins.DM.cardListSO.GetData(1017); // 变身为近卫阿米娅
-                effectPlayer.field.RemoveCard(target);
-                target.Init(cardData, target.player);
-                effectPlayer.field.AddCard(target);
-                target.cardState = CardState.Field;
-                target.cardDisplay.ShowBack(false);
-            }
-
+            player.hands.AddCard(target);
+            target.cardState = CardState.Hand;
+            target.cardDisplay.ShowBack(!player.isMainPlayer);
             FinishStep();
         });
     }
+
 
     // 选一张场上的牌弹回手牌并加费用
     private void BackHandAddCost(CardController effectCard, CardEffect effect)

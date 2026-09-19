@@ -8,6 +8,8 @@ public class FieldController : MonoBehaviour
     public PlayerController player; // 玩家控制器
     public List<CardController> cards; // 场上的卡牌
     private Sequence sequence; // 排列用的动画序列
+
+    public bool IsFull => cards != null && cards.Count >= GameConst.fieldMax; // 场上是否已经放满
     /// <summary>
     /// 重新排列所有卡牌
     /// </summary>

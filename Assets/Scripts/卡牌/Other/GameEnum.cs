@@ -40,7 +40,6 @@ public enum EffectType
     DestoryEnemy = 20,
     SearchMumberCostUp = 21,// 检索1名干员，费用x以上
     SearchMumberTrigger = 23, // 检索一名带有某触发条件的干员
-    Henshin = 24,
     Revive = 25, // 复活
     AddCost = 26,// 增加费用
     BackHandAddCost = 27,// 返回手牌并增加费用
@@ -74,7 +73,6 @@ public enum ConditionType
     None = 0,
     TwoMumber = 1,
     ThreeMoreHand = 2, // 手牌数大于等于3
-    HasAmiya = 3, // 有阿米娅存在
     HasEnemy = 4,// 有任何敌人存在
     HasAlly = 5,// 有任何友军存在
     HasDiedMumber = 6, // 墓地有干员

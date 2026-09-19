@@ -29,6 +29,8 @@ public class CampaignSession : MonoBehaviour
         var counts = new Dictionary<int, int>();
         foreach (int cardId in deck)
         {
+            if (CampaignCatalog.HasCardDatabase && CampaignCatalog.GetCardData(cardId) == null)
+                return $"卡牌 {cardId} 已经不在卡牌数据库里";
             if (!counts.ContainsKey(cardId)) counts[cardId] = 0;
             counts[cardId]++;
             if (counts[cardId] > 3) return $"卡牌 {cardId} 不能超过 3 张";
@@ -59,6 +61,30 @@ public class CampaignSession : MonoBehaviour
         return IsLegalDeck(State.lastValidDeckCardIds)
             ? new List<int>(State.lastValidDeckCardIds)
             : new List<int>(CampaignCatalog.GetDeck(0));
+    }
+
+    // 清掉数据库里已经不存在的卡，卡组因此失效时换回默认卡组
+    public void PurgeMissingCards()
+    {
+        if (State == null || !CampaignCatalog.HasCardDatabase) return;
+
+        State.collectedCardIds.RemoveAll(cardId => CampaignCatalog.GetCardData(cardId) == null);
+        State.deckDraftCardIds.RemoveAll(cardId => CampaignCatalog.GetCardData(cardId) == null);
+        State.lastValidDeckCardIds.RemoveAll(cardId => CampaignCatalog.GetCardData(cardId) == null);
+
+        if (!IsLegalDeck(State.lastValidDeckCardIds))
+            State.lastValidDeckCardIds = new List<int>(CampaignCatalog.GetDeck(0));
+        if (!IsLegalDeck(State.deckDraftCardIds))
+            State.deckDraftCardIds = new List<int>(State.lastValidDeckCardIds);
+
+        foreach (int cardId in State.lastValidDeckCardIds)
+        {
+            if (!State.collectedCardIds.Contains(cardId)) State.collectedCardIds.Add(cardId);
+        }
+
+        State.sharedDeckCardIds = new List<int>(State.lastValidDeckCardIds);
+        Save();
+        ProgressChanged?.Invoke();
     }
 
     public bool HasBadge(string badgeId) => State != null && State.badgeIds != null && State.badgeIds.Contains(badgeId);
@@ -313,7 +339,7 @@ public class CampaignSession : MonoBehaviour
             matchId = match.matchId,
             cityId = match.cityId,
             returnScene = "One_City_DAY",
-            randomSeed = StableSeed(match.matchId),
+            randomSeed = StableSeed(Guid.NewGuid().ToString("N")),
             enemyDeckId = match.enemyDeckId,
             snapshot = State.pendingBattle
         };

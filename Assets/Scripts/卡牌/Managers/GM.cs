@@ -17,6 +17,7 @@ public class GM : MonoSingleton<GM>
     public void Start()
     {
         CampaignSession.Instance.ToString();
+        if (DM != null) CampaignCatalog.SetCardDatabase(DM.cardListSO);
         if (AM != null) AM.Init();
         if (BM != null) BM.Init();
     }
